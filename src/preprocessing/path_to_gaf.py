@@ -64,7 +64,9 @@ def transform_string(input_string):
             result.append('>' + item[:-1])
         elif item.endswith('-'):
             result.append('<' + item[:-1])
-    
+        elif item.endswith(']'):
+            result.append(item)
+            
     # Join the processed items into a single string
     return ''.join(result)
 
