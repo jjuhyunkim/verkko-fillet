@@ -4,3 +4,5 @@ verkko-fillet is an easy-to-use toolkit for cleaning [Verkko](https://github.com
 
 This Python-based implementation streamlines the entire process, starting right after the Verkko assembly is completed and preparing for the CNS run.
 
+dependencies : 
+* gfacpp
