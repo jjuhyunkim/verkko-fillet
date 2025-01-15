@@ -5,4 +5,4 @@ build:
     python: '3.9'
 sphinx:
   fail_on_warning: true # do not change or you will be fired
-  configuration: docs/source/conf.py
+  configuration: docs/conf.py
