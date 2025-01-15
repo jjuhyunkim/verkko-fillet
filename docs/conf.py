@@ -20,7 +20,7 @@ extensions = [
 exclude_patterns = []  # List of patterns to ignore when looking for source files
 
 # -- Options for HTML output -------------------------------------------------
-html_theme = 'sphinx_rtd_theme'
-# html_theme = 'alabaster'  # Choose a theme (default is 'alabaster')
+# html_theme = 'sphinx_rtd_theme'
+html_theme = 'alabaster'  # Choose a theme (default is 'alabaster')
 #html_static_path = ['_static']  # Path to custom static files (e.g., CSS)
 
