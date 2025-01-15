@@ -12,9 +12,9 @@ extensions = [
     'sphinx.ext.viewcode',     # Add links to highlighted source code
 ]
 
-templates_path = ['_templates']  # Path to custom HTML templates
+#templates_path = ['_templates']  # Path to custom HTML templates
 exclude_patterns = []  # List of patterns to ignore when looking for source files
 
 # -- Options for HTML output -------------------------------------------------
 html_theme = 'alabaster'  # Choose a theme (default is 'alabaster')
-html_static_path = ['_static']  # Path to custom static files (e.g., CSS)
+#html_static_path = ['_static']  # Path to custom static files (e.g., CSS)
