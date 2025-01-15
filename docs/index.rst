@@ -1,14 +1,10 @@
-.. Your Project Documentation
-
 Welcome to Your Project's documentation!
 =========================================
 
-Contents:
+This is a test page.
 
 .. toctree::
    :maxdepth: 2
    :caption: Table of Contents:
 
-   introduction
-   installation
-   usage
+   example
