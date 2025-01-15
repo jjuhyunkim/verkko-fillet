@@ -1,22 +1,20 @@
-import sys, os
-import CodeChat.CodeToRest
+# Configuration file for the Sphinx documentation builder.
 
-project = "Verkko-fillet"
-copyright = "2025, NIH/NHGRI Adam Phillippy group"
+# -- Project information -----------------------------------------------------
+project = 'Verkko-fillet'
+author = 'Juhyun Kim'
+release = '0.1'  # The full version, including alpha/beta/rc tags
 
-version = "0.1"
-release = "version 0.1"
+# -- General configuration ---------------------------------------------------
+extensions = [
+    'sphinx.ext.autodoc',      # Include documentation from docstrings
+    'sphinx.ext.napoleon',     # Support for Google-style and NumPy-style docstrings
+    'sphinx.ext.viewcode',     # Add links to highlighted source code
+]
 
-highlight_language = "python3"
-pygments_style = "sphinx"
+templates_path = ['_templates']  # Path to custom HTML templates
+exclude_patterns = []  # List of patterns to ignore when looking for source files
 
-extensions = ["CodeChat.CodeToRestSphinx", "sphinx.ext.graphviz", ]
-
-
-### Options for HTML output ### 
-html_theme = "alabaster"
-html_static_path = CodeChat.CodeToRest.html_static_path()
-html_last_updated_fmt = "%b, %d, %Y"
-html_copy_source = True
-html_show_sourcelink = True
-html_sourcelink_suffix = ""
+# -- Options for HTML output -------------------------------------------------
+html_theme = 'alabaster'  # Choose a theme (default is 'alabaster')
+html_static_path = ['_static']  # Path to custom static files (e.g., CSS)
