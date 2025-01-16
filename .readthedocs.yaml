@@ -4,11 +4,13 @@ build:
   tools:
     python: '3.9'
     
+
 python:
   install:
     - method: pip
       path: .
       requirements: requirements.txt  # Optional, if using requirements.txt
+
 sphinx:
   fail_on_warning: true # do not change or you will be fired
   configuration: docs/conf.py
