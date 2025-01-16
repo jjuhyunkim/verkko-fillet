@@ -78,6 +78,10 @@ exclude_patterns = [
     "release-notes/[!i]*.md",
 ]
 
+# -- Options for jupyter notebooks ----
+nb_execution_mode = "off"  # Prevents notebook execution
+
+
 # -- Options for HTML output ----------------------------------------------
 
 # The theme is sphinx-book-theme, with patches for readthedocs-sphinx-search
