@@ -54,6 +54,23 @@ extensions = [
     *[p.stem for p in (HERE / "extensions").glob("*.py") if p.stem not in {"git_ref"}],
 ]
 
+# Bibliography settings
+bibtex_bibfiles = ["references.bib"]
+bibtex_reference_style = "author_year"
+
+# default settings
+templates_path = ["_templates"]
+master_doc = "index"
+default_role = "literal"
+exclude_patterns = [
+    "_build",
+    "Thumbs.db",
+    ".DS_Store",
+    "**.ipynb_checkpoints",
+    # exclude all 0.x.y.md files, but not index.md
+    "release-notes/[!i]*.md",
+]
+
 # -- Options for HTML output ----------------------------------------------
 
 # The theme is sphinx-book-theme, with patches for readthedocs-sphinx-search
