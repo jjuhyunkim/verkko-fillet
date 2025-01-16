@@ -58,11 +58,16 @@ extensions = [
     *[p.stem for p in (HERE / "extensions").glob("*.py") if p.stem not in {"git_ref"}],
 ]
 
-#templates_path = ['_templates']  # Path to custom HTML templates
-exclude_patterns = []  # List of patterns to ignore when looking for source files
+# -- Options for HTML output ----------------------------------------------
 
-# -- Options for HTML output -------------------------------------------------
-# html_theme = 'sphinx_rtd_theme'
-html_theme = 'alabaster'  # Choose a theme (default is 'alabaster')
-#html_static_path = ['_static']  # Path to custom static files (e.g., CSS)
+# The theme is sphinx-book-theme, with patches for readthedocs-sphinx-search
+html_theme = "verkkofilletdoc"
+html_theme_options = {
+    "repository_url": repository_url,
+    "use_repository_button": True,
+}
+html_static_path = ["_static"]
+html_show_sphinx = False
+html_logo = "_static/verkko-fillet_logo.png"
+html_title = "verkko-fillet"
 
