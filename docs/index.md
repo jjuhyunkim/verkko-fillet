@@ -75,5 +75,5 @@ contributors
 references
 ```
 
-[contribution guide]: dev/index.md
+[contribution guide]: dev/index.rst
 [github]: https://github.com/jjuhyunkim/verkko-fillet
