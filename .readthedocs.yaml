@@ -7,9 +7,7 @@ build:
 
 python:
   install:
-    - method: pip
-      path: .
-      requirements: requirements.txt  # Optional, if using requirements.txt
+    - requirements: requirements.txt
 
 sphinx:
   fail_on_warning: true # do not change or you will be fired
