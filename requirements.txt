@@ -5,3 +5,4 @@ myst-parser
 myst-nb
 sphinxcontrib-bibtex
 sphinx_autodoc_typehints
+sphinx_tabs
