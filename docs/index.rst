@@ -5,5 +5,5 @@
 :hidden: true
 :maxdepth: 1
 
-installation
+tutorials/index
 ```
