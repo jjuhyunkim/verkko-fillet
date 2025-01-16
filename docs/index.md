@@ -5,7 +5,7 @@
 :hidden: true
 :maxdepth: 1
 
-installations
+installation
 usage-principles
 how-to/index
 tutorials/index
