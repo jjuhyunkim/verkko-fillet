@@ -1,4 +1,4 @@
-Welcome to Your Project's documentation!
+Welcome to Verkko-fillet documentation!
 =========================================
 
 This is a test page.
