@@ -48,8 +48,6 @@ extensions = [
     "sphinxcontrib.bibtex",
     "matplotlib.sphinxext.plot_directive",
     "sphinx_autodoc_typehints",  # needs to be after napoleon
-    "git_ref",  # needs to be before scanpydoc.rtd_github_links
-    "scanpydoc",  # needs to be before sphinx.ext.linkcode
     "sphinx.ext.linkcode",
     "sphinx_design",
     "sphinx_tabs.tabs",
