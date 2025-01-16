@@ -6,7 +6,6 @@ from functools import partial
 from pathlib import Path, PurePosixPath
 from typing import TYPE_CHECKING
 
-import matplotlib  # noqa
 from docutils import nodes
 from packaging.version import Version
 
