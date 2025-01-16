@@ -53,6 +53,14 @@ extensions = [
     "sphinx_tabs.tabs",
 ]
 
+def linkcode_resolve(domain, info):
+    if domain != 'py':
+        return None
+    if not info['module']:
+        return None
+    filename = info['module'].replace('.', '/')
+    return "https://github.com/jjuhyunkim/verkko-fillet/%s.py" % filename
+
 # Bibliography settings
 bibtex_bibfiles = ["references.bib"]
 bibtex_reference_style = "author_year"
