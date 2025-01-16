@@ -46,7 +46,7 @@ Find a bug? Interested in improving scanpy? Checkout our GitHub for the latest d
 
 ## News
 
-```{include} news.md
+```{include} news.rst
 :start-after: '<!-- marker: after prelude -->'
 :end-before: '<!-- marker: before old news -->'
 ```
