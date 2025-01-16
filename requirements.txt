@@ -3,3 +3,5 @@ sphinx-copybutton
 sphinx-rtd-theme
 myst-parser
 myst-nb
+sphinxcontrib-bibtex
+sphinx_autodoc_typehints
