@@ -74,7 +74,7 @@ exclude_patterns = [
 # -- Options for HTML output ----------------------------------------------
 
 # The theme is sphinx-book-theme, with patches for readthedocs-sphinx-search
-html_theme = "verkkofilletdoc"
+
 html_theme_options = {
     "repository_url": repository_url,
     "use_repository_button": True,
