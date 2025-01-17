@@ -6,3 +6,9 @@ This Python-based implementation streamlines the entire process, starting right 
 
 dependencies : 
 * gfacpp
+
+### Installation
+```
+mamba env update --file environment.yaml
+pip install verkkofillet==0.1.1
+```
