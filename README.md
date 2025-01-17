@@ -8,7 +8,10 @@ dependencies :
 * gfacpp
 
 ### Installation
+Using `pip` is recommended. [link](https://pypi.org/project/verkkofillet/)
 ```
+mamba create -n verkko-fillet python=3.9
+mamba activate verkko-fillet
 mamba env update --file environment.yaml
 pip install verkkofillet==0.1.1
 ```
