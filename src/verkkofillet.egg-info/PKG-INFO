@@ -1,0 +1,42 @@
+Metadata-Version: 2.2
+Name: verkkofillet
+Version: 0.1.1
+Summary: verkko fillet pkg
+Author-email: Juhyun Kim <kimj75@nih.gov>
+Maintainer-email: Juhyun Kim <kimj75@nih.gov>
+License: Copyright (c) 2018 The Python Packaging Authority
+        
+        Permission is hereby granted, free of charge, to any person obtaining a copy
+        of this software and associated documentation files (the "Software"), to deal
+        in the Software without restriction, including without limitation the rights
+        to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+        copies of the Software, and to permit persons to whom the Software is
+        furnished to do so, subject to the following conditions:
+        
+        The above copyright notice and this permission notice shall be included in all
+        copies or substantial portions of the Software.
+        
+        THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+        IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+        FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+        AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+        LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+        OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+        SOFTWARE.
+        
+Project-URL: Homepage, https://github.com/jjuhyunkim/verkko-fillet
+Project-URL: Issues, https://github.com/jjuhyunkim/verkko-fillet/issues
+Classifier: Programming Language :: Python :: 3
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.9
+Description-Content-Type: text/markdown
+License-File: LICENSE
+
+# verkko-fillet : post verkko graph and assembly cleaning in Python
+
+verkko-fillet is an easy-to-use toolkit for cleaning [Verkko](https://github.com/marbl/verkko) assemblies. It includes tools for generating the Verkko-Fillet object, performing assembly quality checks, identifying gaps, assigning chromosomes, searching for ONT reads to help resolve gaps, filling gaps, and generating the final Rukki path (in a GAF-like format) for future Verkko CNS runs.
+
+This Python-based implementation streamlines the entire process, starting right after the Verkko assembly is completed and preparing for the CNS run.
+
+dependencies : 
+* gfacpp

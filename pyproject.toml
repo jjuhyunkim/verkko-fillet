@@ -1,0 +1,25 @@
+[project]
+name = "verkkofillet"
+version = "0.1.1"
+authors = [
+  { name = "Juhyun Kim", email = "kimj75@nih.gov" },
+]
+maintainers = [
+  { name = "Juhyun Kim", email = "kimj75@nih.gov" },
+]
+description = "verkko fillet pkg"
+readme = "README.md"
+requires-python = ">=3.9"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+license = { file = "LICENSE" }
+
+[tool.setuptools]
+license-files = ["LICEN[CS]E*"]
+
+[project.urls]
+Homepage = "https://github.com/jjuhyunkim/verkko-fillet"
+Issues = "https://github.com/jjuhyunkim/verkko-fillet/issues"
+

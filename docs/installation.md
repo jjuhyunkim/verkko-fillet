@@ -4,6 +4,13 @@ To use `verkko-fillet` from another project, install it using your favourite env
 
 ::::{tabs}
 
+## Dependencies
+```
+mamba env update --file environment.yaml 
+pip install verkkofillet==0.1.1
+
+```
+
 :::{group-tab} Hatch (recommended)
 Adding `verkko-fillet` to your dependencies is enough.
 :::
