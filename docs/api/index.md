@@ -3,7 +3,7 @@
 Import verkko-fillet as:
 
 ```
-import verkko-fillet as vf
+import verkkofillet as vf
 ```
 
 
