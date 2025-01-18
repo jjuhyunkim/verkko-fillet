@@ -1,6 +1,6 @@
-# Preprocessing : `pp`
+# Plotting : `pl`
 
-Extracting gap from path, preprocessing recipes. 
+Plot stats
 
 ## reading and writing
 ```
