@@ -85,10 +85,6 @@ nb_execution_mode = "off"  # Prevents notebook execution
 
 # The theme is sphinx-book-theme, with patches for readthedocs-sphinx-search
 
-html_theme_options = {
-    "repository_url": repository_url,
-    "use_repository_button": True,
-}
 html_static_path = ["_static"]
 html_show_sphinx = False
 html_logo = "_static/verkko-fillet_logo.png"
