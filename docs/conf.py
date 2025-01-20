@@ -52,8 +52,9 @@ extensions = [
 ]
 
 source_suffix = {
-     '.rst': 'restructuredtext',
-     '.md': 'markdown',
+    '.rst': 'restructuredtext',
+    '.txt': 'restructuredtext',
+    '.md': 'markdown',
 }
 
 # myst_commonmark_only = False
