@@ -35,7 +35,6 @@ copyright = f"{datetime.now():%Y}, the verkko-fillet development team"
 # -- General configuration ---------------------------------------------------
 extensions = [
     "myst_nb",
-    "myst_parser",
     "sphinx_copybutton",
     "sphinx.ext.autodoc",
     "sphinx.ext.intersphinx",
