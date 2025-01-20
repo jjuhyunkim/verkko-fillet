@@ -51,11 +51,11 @@ extensions = [
     "sphinx_tabs.tabs",
 ]
 
-source_suffix = {
-    '.rst': 'restructuredtext',
-    '.txt': 'restructuredtext',
-    '.md': 'markdown',
-}
+# source_suffix = {
+#     '.rst': 'restructuredtext',
+#     '.txt': 'restructuredtext',
+#     '.md': 'markdown',
+# }
 
 # myst_commonmark_only = False
 
