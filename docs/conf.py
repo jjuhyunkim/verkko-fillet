@@ -9,6 +9,18 @@ from typing import TYPE_CHECKING
 from docutils import nodes
 from packaging.version import Version
 
+import shutil
+
+def clean_sphinx_cache():
+    cache_dirs = ["_build", ".doctrees", ".cache"]
+    for cache_dir in cache_dirs:
+        cache_path = Path(cache_dir)
+        if cache_path.exists():
+            shutil.rmtree(cache_path)
+            print(f"Removed cached directory: {cache_dir}")
+
+clean_sphinx_cache()
+
 HERE = Path(__file__).parent.resolve()
 sys.path.insert(0, str(HERE))
 sys.path.insert(0, str(HERE.parent / "extensions"))
@@ -93,7 +105,7 @@ html_static_path = ["_static"]
 html_show_sphinx = False
 html_logo = "_static/verkko-fillet_logo.png"
 html_title = "verkko-fillet"
-html_theme = "sphinx_book_theme"
+# html_theme = "sphinx_book_theme"
 
 html_theme_options = {
     "repository_url": repository_url,
