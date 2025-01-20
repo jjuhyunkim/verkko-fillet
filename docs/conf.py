@@ -1,19 +1,17 @@
 from __future__ import annotations
 
 import sys
+import os
 from datetime import datetime
 from functools import partial
 from pathlib import Path, PurePosixPath
 from typing import TYPE_CHECKING
-
 from docutils import nodes
 from packaging.version import Version
 
-import os
-import sys
-sys.path.insert(0, os.path.abspath('.'))
-HERE = Path(__file__).parent
-sys.path[:0] = [str(HERE.parent), str(HERE / "extensions")]
+HERE = Path(__file__).parent.resolve()
+sys.path.insert(0, str(HERE))
+sys.path.insert(0, str(HERE.parent / "extensions"))
 
 # -- General configuration ------------------------------------------------
 
@@ -52,7 +50,10 @@ extensions = [
     "sphinx_tabs.tabs",
 ]
 
-source_suffix = ['.rst', '.md']  # Avoid redundant extensions
+source_suffix = {
+    '.rst': 'restructuredtext',
+    '.md': 'markdown',
+}
 
 
 def linkcode_resolve(domain, info):
@@ -68,17 +69,17 @@ bibtex_bibfiles = ["references.bib"]
 bibtex_reference_style = "author_year"
 
 # default settings
-# templates_path = ["_templates"]
+templates_path = ["_templates"]
 # master_doc = "index"
-# default_role = "literal"
-# exclude_patterns = [
-#     "_build",
-#     "Thumbs.db",
-#     ".DS_Store",
-#     "**.ipynb_checkpoints",
-#     # exclude all 0.x.y.md files, but not index.md
-#     "release-notes/[!i]*.md",
-# ]
+root_doc = "index"
+default_role = "literal"
+exclude_patterns = [
+    "_build",
+    "Thumbs.db",
+    ".DS_Store",
+    "**.ipynb_checkpoints",
+    "release-notes/[!i]*.md",
+]
 
 # -- Options for jupyter notebooks ----
 nb_execution_mode = "off"  # Prevents notebook execution
@@ -92,4 +93,9 @@ html_static_path = ["_static"]
 html_show_sphinx = False
 html_logo = "_static/verkko-fillet_logo.png"
 html_title = "verkko-fillet"
+html_theme = "sphinx_book_theme"
 
+html_theme_options = {
+    "repository_url": repository_url,
+    "use_repository_button": True,
+}
