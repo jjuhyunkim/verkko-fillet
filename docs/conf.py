@@ -88,7 +88,6 @@ exclude_patterns = [
 # -- Options for jupyter notebooks ----
 nb_execution_mode = "off"  # Prevents notebook execution
 
-
 # -- Options for HTML output ----------------------------------------------
 html_static_path = ["_static"]
 html_show_sphinx = False
