@@ -9,3 +9,4 @@ sphinx_tabs
 matplotlib
 sphinx_design
 docutils
+sphinx-book-theme

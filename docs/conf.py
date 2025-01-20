@@ -51,10 +51,10 @@ extensions = [
     "sphinx_tabs.tabs",
 ]
 
-# source_suffix = {
-#     '.rst': 'restructuredtext',
-#     '.md': 'markdown',
-# }
+source_suffix = {
+     '.rst': 'restructuredtext',
+     '.md': 'markdown',
+}
 
 # myst_commonmark_only = False
 
@@ -88,16 +88,8 @@ nb_execution_mode = "off"  # Prevents notebook execution
 
 
 # -- Options for HTML output ----------------------------------------------
-
-# The theme is sphinx-book-theme, with patches for readthedocs-sphinx-search
-
 html_static_path = ["_static"]
 html_show_sphinx = False
 html_logo = "_static/verkko-fillet_logo.png"
 html_title = "verkko-fillet"
-# html_theme = "sphinx_book_theme"
-
-html_theme_options = {
-    "repository_url": repository_url,
-    "use_repository_button": True,
-}
+html_theme = "sphinx_book_theme"
