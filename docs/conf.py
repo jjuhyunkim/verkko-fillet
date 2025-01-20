@@ -58,21 +58,13 @@ extensions = [
 
 # myst_commonmark_only = False
 
-def linkcode_resolve(domain, info):
-    if domain != 'py':
-        return None
-    if not info['module']:
-        return None
-    filename = info['module'].replace('.', '/')
-    return "https://github.com/jjuhyunkim/verkko-fillet/%s.py" % filename
-
 # Bibliography settings
 bibtex_bibfiles = ["references.bib"]
 bibtex_reference_style = "author_year"
 
 # default settings
 templates_path = ["_templates"]
-# master_doc = "index"
+master_doc = "index"
 root_doc = "index"
 default_role = "literal"
 exclude_patterns = [
@@ -85,7 +77,6 @@ exclude_patterns = [
 
 # -- Options for jupyter notebooks ----
 nb_execution_mode = "off"  # Prevents notebook execution
-
 
 # -- Options for HTML output ----------------------------------------------
 
