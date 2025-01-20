@@ -4,8 +4,8 @@ sphinx-rtd-theme
 myst-parser
 myst-nb
 sphinxcontrib-bibtex
-sphinx_autodoc_typehints
-sphinx_tabs
+sphinx-autodoc-typehints
+sphinx-tabs
 matplotlib
 sphinx_design
 docutils
