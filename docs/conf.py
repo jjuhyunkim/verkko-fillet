@@ -56,6 +56,7 @@ source_suffix = {
     '.md': 'markdown',
 }
 
+myst_commonmark_only = False
 
 def linkcode_resolve(domain, info):
     if domain != 'py':
