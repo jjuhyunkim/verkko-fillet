@@ -31,6 +31,15 @@ repository_url = "https://github.com/jjuhyunkim/verkko-fillet"
 copyright = f"{datetime.now():%Y}, the verkko-fillet development team"
 
 # -- General configuration ---------------------------------------------------
+def linkcode_resolve(domain, info):
+    if domain != 'py':
+        return None
+    if not info['module']:
+        return None
+    filename = info['module'].replace('.', '/')
+    return "https://github.com/jjuhyunkim/verkko-fillet/%s.py" % filename
+
+
 extensions = [
     #"myst_parser",
     "myst_nb",
@@ -58,14 +67,6 @@ extensions = [
 # }
 
 # myst_commonmark_only = False
-
-def linkcode_resolve(domain, info):
-    if domain != 'py':
-        return None
-    if not info['module']:
-        return None
-    filename = info['module'].replace('.', '/')
-    return "https://github.com/jjuhyunkim/verkko-fillet/%s.py" % filename
 
 # Bibliography settings
 bibtex_bibfiles = ["references.bib"]
