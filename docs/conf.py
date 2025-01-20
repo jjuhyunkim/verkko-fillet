@@ -52,6 +52,9 @@ extensions = [
     "sphinx_tabs.tabs",
 ]
 
+source_suffix = ['.rst', '.md']  # Avoid redundant extensions
+
+
 def linkcode_resolve(domain, info):
     if domain != 'py':
         return None
