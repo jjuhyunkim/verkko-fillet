@@ -51,12 +51,12 @@ extensions = [
     "sphinx_tabs.tabs",
 ]
 
-source_suffix = {
-    '.rst': 'restructuredtext',
-    '.md': 'markdown',
-}
+# source_suffix = {
+#     '.rst': 'restructuredtext',
+#     '.md': 'markdown',
+# }
 
-myst_commonmark_only = False
+# myst_commonmark_only = False
 
 def linkcode_resolve(domain, info):
     if domain != 'py':
