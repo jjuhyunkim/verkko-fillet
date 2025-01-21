@@ -3,7 +3,7 @@
 ```
 
 ```{toctree}
-:hidden:true
+:hidden: true
 :maxdepth: 1
 
 installation
