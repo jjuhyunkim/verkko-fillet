@@ -1,7 +1,21 @@
-# Preprocessing : `pp`
+## Preprocessing : `pp`
+
+```{eval-rst}
+.. module:: verkkofillet.pp
+```
+
+```{eval-rst}
+.. currentmodule:: verkkofillet
+```
 
 Extracting gap from path, preprocessing recipes. 
 
-## reading and writing
-```
-```
+### Reading and writing
+```{eval-rst}
+.. autosummary::
+   :nosignatures:
+   :toctree: generated/
+
+   pp.read_Verkko
+``` 
+### Generating verkko directory

@@ -1,7 +1,7 @@
-# Plotting : `pl`
+## Plotting : `pl`
 
 Plot stats
 
-## reading and writing
+### reading and writing
 ```
 ```
