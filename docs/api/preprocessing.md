@@ -22,7 +22,6 @@ Extracting gap from path, preprocessing recipes.
    pp.save_Verkko
    pp.load_Verkko
    pp.mkCNSdir
-   pp.update_mkCNSdir_missingEdge
 
 ``` 
 ### Preprocessing
