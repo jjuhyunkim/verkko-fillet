@@ -3,7 +3,7 @@
 
 <!-- marker: after prelude -->
 
-### `verkko-fillet` is now downloadable via `pip`! {small}`2025-01-21`
+### `verkko-fillet` is now downloadable via `pip`! `2025-01-21`
 
 `verkko-fillet` is now available via pip!
 
