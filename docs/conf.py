@@ -7,6 +7,7 @@ from functools import partial
 from pathlib import Path, PurePosixPath
 from typing import TYPE_CHECKING
 from docutils import nodes
+import verkkofillet
 from packaging.version import Version
 
 HERE = Path(__file__).parent.resolve()
