@@ -319,4 +319,8 @@ def updateCNSdir_missingEdges(obj, new_folder_path):
     except Exception as e:
         print(f"An unexpected error occurred: {e}")
 
-
+testDir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../data/'))
+def loadGiraffe():
+    fileName = f"{testDir}/test_giraffe/giraffe_before_gap_filling.pkl"
+    obj = load_Verkko(fileName)
+    return obj
