@@ -11,4 +11,5 @@ import verkkofillet as  vf
 ## Verkko-fillet object
 `verkko-fillet` is based on `verkko-fillet object`.
 
-At the most basic level, a `vfobj` stores a gap information `vfobj.gaps`, 
+
+At the most basic level, a `obj` stores a gap information `obj.gaps`, 

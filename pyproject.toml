@@ -22,4 +22,3 @@ license-files = ["LICEN[CS]E*"]
 [project.urls]
 Homepage = "https://github.com/jjuhyunkim/verkko-fillet"
 Issues = "https://github.com/jjuhyunkim/verkko-fillet/issues"
-
