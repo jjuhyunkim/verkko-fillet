@@ -7,6 +7,14 @@ from natsort import natsorted
 
 
 def qvPlot(obj):
+    """
+    Generates a bar plot showing QV stats by haplotype.
+
+    Parameters:
+    -----------
+    obj : verko-fillet object
+        An object that contains a `.stats` attribute, which should be a pandas DataFrame.
+    """
     # Create figure and axes
     qvTab=obj.qv
     
@@ -53,6 +61,18 @@ def qvPlot(obj):
     plt.show()
 
 def completePlot(obj):
+    """
+    Generates a bar plot showing contig completeness grouped by reference chromosome and haplotype. The completeness of each chromosome is calculated by comparing it to the reference length. A completeness value greater than 100 indicates that the contig length exceeds the original reference length.
+
+    Parameters:
+    -----------
+    obj : verko-fillet object
+        An object that contains a `.stats` attribute, which should be a pandas DataFrame 
+        with the following columns:
+        - `ref_chr` (str): Reference chromosome identifier.
+        - `hap` (str): Haplotype information.
+        - `contig_len` (int): Length of the contigs.
+    """
     stat_db = obj.stats
     plt.figure(figsize=(5, 4)) 
     sns.barplot(stat_db.groupby(['ref_chr','hap'])['completeness'].sum().reset_index(),
@@ -62,6 +82,14 @@ def completePlot(obj):
 
 
 def contigLenPlot(obj):
+    """
+    Generates a bar plot showing length of contig by haplotype.
+
+    Parameters:
+    -----------
+    obj : verko-fillet object
+        An object that contains a `.stats` attribute, which should be a pandas DataFrame.
+    """
     stat_db = obj.stats
     plt.figure(figsize=(5, 4)) 
     sns.barplot(stat_db.groupby(['ref_chr','hap'])['contig_len'].sum().reset_index(),
@@ -70,6 +98,14 @@ def contigLenPlot(obj):
     plt.xticks(rotation=45)
 
 def contigPlot(obj):
+    """
+    Generates a heatmap of statistics for each haplotype and contig. Brick color represents T2T contigs without gaps, salmon color indicates T2T contigs with gaps, and beige color denotes non-T2T contigs.
+
+    Parameters:
+    -----------
+    obj : verko-fillet object
+        An object that contains a `.stats` attribute, which should be a pandas DataFrame 
+    """
     stat_db = obj.stats.copy()
     stat_db.loc[stat_db['t2tStat'] == "not_t2t", "scf_ctg"] = 0
     stat_db.loc[stat_db['t2tStat'] == "scf", "scf_ctg"] = 1

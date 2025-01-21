@@ -7,6 +7,24 @@ script_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../bin
 
 
 def getT2T(obj, fasta="assembly.fasta", working_directory = "stats"):
+    """
+    Run the script to calculate assembly statistics, including contig presence, telomere regions, and gap locations.
+
+    Parameters:
+    -----------
+    obj (verko-fillet object):
+        An object that contains a .stats attribute, which should be a pandas DataFrame.
+    fasta (str):
+        verkko assembly. [default: `assembly.fasta`]
+    working_directory (str):
+        output directory [default : `./stats/`]
+
+    Return:
+    {working_directory}/assembly.gaps.bed
+    {working_directory}assembly.t2t_ctgs
+    {working_directory}assembly.t2t_scfs
+    {working_directory}assembly.telomere.bed
+    """
     script = os.path.abspath(os.path.join(script_path, "getT2T.sh"))  # Ensure absolute path
     working_dir = os.path.abspath(working_directory)  # Ensure absolute path for the working directory
     fasta = os.path.abspath(fasta)

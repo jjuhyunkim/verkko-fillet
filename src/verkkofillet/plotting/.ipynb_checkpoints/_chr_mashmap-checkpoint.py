@@ -5,6 +5,18 @@ from .._run_shell import run_shell
 import os
     
 def showMashmapOri(obj, mashmap_out = "assembly.mashmap.out.filtered.out", by = "chr_hap"):
+    """
+    Generates a bar plot showing the covered regions of the assembly for each reference.
+
+    Parameters:
+    -----------
+    obj (verko-fillet object):
+        An object that contains a .stats attribute, which should be a pandas DataFrame.
+    mashmap_out (str, optional):
+        The Mashmap output file, aligning the assembly to the reference. Default is assembly.mashmap.out.filtered.out.
+    by (str, optional):
+        Specifies the grouping method for the plot. Default is "chr_hap". Available options are ['contig', 'all', 'chr_hap'].
+    """
     working_dir = os.path.abspath(obj.verkko_fillet_dir)  # Ensure absolute path for the working directory
     
     mashmap = pd.read_csv(working_dir + "/" + mashmap_out , header = None, sep ='\t')

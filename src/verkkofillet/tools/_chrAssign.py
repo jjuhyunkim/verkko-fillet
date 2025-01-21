@@ -11,6 +11,35 @@ from .._run_shell import run_shell
 script_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../bin/'))
 
 def chrAssign(obj, ref, working_directory = "chromosome_assignment", fasta="assembly.fasta", chr_name="chr", idx=99, showOnly = False):
+    """
+    Run the script to align the assembly to the given reference using mashmap and obtain the chromosome assignment results.
+
+    Parameters:
+    -----------
+    obj (verko-fillet object):
+        An object that contains a .stats attribute, which should be a pandas DataFrame.
+    ref (str) :
+        Existing reference
+    fasta (str):
+        verkko assembly. [default: `assembly.fasta`]
+    working_directory (str):
+        output directory [default : `./stats/`]
+    chr_name (str):
+        prefix of the chromosome name in the previous reference. [default : "chr"]
+    idx (int):
+        Identity threshold to filter mashmap result [defualt : 99]
+    showOnly (bool): 
+        If set to True, the script will not be executed; it will only display the intended operations. [default : FALSE]
+
+    Return:
+    -----------
+    {working_directory}/assembly.mashmap.out
+    {working_directory}/assembly.mashmap.out.filtered.out
+    {working_directory}/chr_completeness_max_hap1
+    {working_directory}/chr_completeness_max_hap2
+    {working_directory}/translation_hap1
+    {working_directory}/translation_hap2
+    """
     # Ensure absolute paths
     working_dir = os.path.abspath(working_directory)
     script = os.path.abspath(os.path.join(script_path, "getChrNames.sh"))  # Assuming script_path is defined elsewhere
@@ -52,9 +81,27 @@ def chrAssign(obj, ref, working_directory = "chromosome_assignment", fasta="asse
     for output in output_files :
         shutil.move(output, f"{working_dir}/{output}")
 
-def convertRefName(ref_fasta, map_file, out_fasta=None, showOnly = False):
+def convertRefName(fasta, map_file, out_fasta=None, showOnly = False):
+    """
+    Replace the name in the given FASTA file.
+    
+    Parameters:
+    -----------    
+    fasta (str):
+        FASTA file in which the contig name is to be replaced
+    map_file (str):
+        A two-column file, delimited by tabs, containing the old and new contig names.
+    showOnly (bool): 
+        If set to True, the script will not be executed; it will only display the intended operations. [default : FALSE]
+        
+    Return:
+    -----------
+    out_fasta (str):
+        output fasta file [default : {prefix}.rename.fa]
+    
+    """
     # Default out_fasta if not provided
-    ref_fasta = os.path.abspath(ref_fasta)
+    ref_fasta = os.path.abspath(fasta)
     map_file = os.path.abspath(map_file)
 
     
