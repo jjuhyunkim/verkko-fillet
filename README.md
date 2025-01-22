@@ -8,7 +8,7 @@ This Python-based implementation streamlines the entire process, starting right 
 ### Installation
 
 dependencies : 
-* gfacpp
+* [gfacpp](https://github.com/snurk/gfacpp)
 
 Using `pip` is recommended. [link](https://pypi.org/project/verkkofillet/)
 
