@@ -1,4 +1,4 @@
 (release-notes)=
 
-# Release notes
+# Release Notes
 

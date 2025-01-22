@@ -2,7 +2,7 @@
 
 Import `verkko-fillet` as :
 ```python
-import verkkofillet as  vf
+import verkkofillet as vf
 ```
 
 ## How to use
