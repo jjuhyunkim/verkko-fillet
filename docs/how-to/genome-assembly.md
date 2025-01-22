@@ -1,4 +1,4 @@
-## genome assembly
+## Genome Assembly
 
 ### what is genome assembly
 Genome assembly is the process of reconstructing the complete sequence of an organism's DNA from smaller fragments obtained through sequencing technologies. This process involves piecing together millions to billions of short or long DNA reads to form a continuous representation of the genome.

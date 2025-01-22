@@ -1,4 +1,4 @@
-## Types of gap
+## Types of Gap
 ![gap_type](../../data/test_giraffe/fig/verkko_curation_decision_tree.png)
 Verkko is a very powerful tool for assembling long-read data to generate a complete diploid assembly, but it still has some limitations, such as generating gaps, tangles, missing telomeres, and more. These issues can occur due to sequencing errors, lower sample quality, or overly complex or homogeneous sequences, which are difficult to assemble. As a result, some manual inspection is needed. Below, we classify the scenarios that can lead to gaps in the assembly and their potential solutions.
 
