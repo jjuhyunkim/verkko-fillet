@@ -2,5 +2,3 @@
 
 # Release notes
 
-```{release-notes} .
-```
