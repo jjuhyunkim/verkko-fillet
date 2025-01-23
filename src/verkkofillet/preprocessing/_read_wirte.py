@@ -14,7 +14,7 @@ from datetime import datetime
 # --------------------------------------------------------------------------------
 
 # Function to check user input
-script_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../bin/'))
+script_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../bin/'))
 
 class FilletObj:
     def __init__(self):

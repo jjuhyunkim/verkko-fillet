@@ -27,11 +27,3 @@ def _get_version_from_vcs() -> str:  # pragma: no cover
     except UnknownPluginError:
         msg = "Unable to import hatch plugin."
         raise ImportError(msg)
-
-
-try:
-    __version__ = _get_version_from_vcs()
-except (ImportError, LookupError):
-    import importlib.metadata
-
-    __version__ = importlib.metadata.version("verkkofillet")
