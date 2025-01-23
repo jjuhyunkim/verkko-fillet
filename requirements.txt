@@ -15,6 +15,7 @@ appdirs
 argcomplete
 asttokens
 attrs
+hatchling
 backports.tarfile==1.2.0
 biopython
 Brotli

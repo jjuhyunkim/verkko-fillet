@@ -3,7 +3,7 @@ import shlex
 import subprocess
 import os
 
-script_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../bin/'))
+script_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../bin/'))
 
 def rmrDNA(obj):
     print("Starting removing rDNA nodes in the graph")

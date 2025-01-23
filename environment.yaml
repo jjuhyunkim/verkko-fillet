@@ -480,9 +480,13 @@ dependencies:
   - zstandard=0.23.0=py39h08a7858_1
   - zstd=1.5.6=ha6fb4c9_0
   - pip:
+      - alabaster==0.7.16
+      - babel==2.16.0
       - backports-tarfile==1.2.0
       - build==1.2.2.post1
       - cryptography==44.0.0
+      - hatchling==1.27.0
+      - imagesize==1.4.1
       - jaraco-classes==3.4.0
       - jaraco-context==6.0.1
       - jaraco-functools==4.1.0
@@ -492,7 +496,9 @@ dependencies:
       - mdurl==0.1.2
       - more-itertools==10.6.0
       - nh3==0.2.20
+      - pathspec==0.12.1
       - pkginfo==1.12.0
+      - pluggy==1.5.0
       - pyproject-hooks==1.2.0
       - readme-renderer==44.0
       - requests-toolbelt==1.0.0
@@ -500,5 +506,14 @@ dependencies:
       - rich==13.9.4
       - secretstorage==3.3.3
       - session-info==1.0.0
+      - snowballstemmer==2.2.0
+      - sphinx==7.4.7
+      - sphinxcontrib-applehelp==2.0.0
+      - sphinxcontrib-devhelp==2.0.0
+      - sphinxcontrib-htmlhelp==2.1.0
+      - sphinxcontrib-jsmath==1.0.1
+      - sphinxcontrib-qthelp==2.0.0
+      - sphinxcontrib-serializinghtml==2.0.0
       - stdlib-list==0.11.0
+      - trove-classifiers==2025.1.15.22
       - twine==6.0.1

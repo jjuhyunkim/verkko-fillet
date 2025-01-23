@@ -8,7 +8,7 @@ from IPython.display import Image, display
 from datetime import datetime
 from .._run_shell import run_shell
 
-script_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../bin/'))
+script_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../bin/'))
 
 def chrAssign(obj, ref, working_directory = "chromosome_assignment", fasta="assembly.fasta", chr_name="chr", idx=99, showOnly = False):
     """

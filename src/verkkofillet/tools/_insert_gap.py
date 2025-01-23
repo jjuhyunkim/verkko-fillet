@@ -4,7 +4,7 @@ import pandas as pd
 import subprocess
 import os
 
-script_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../bin/'))
+script_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../bin/'))
 
 def save_list_to_file(data_list, file_path="insertONTsupport.list"):
     """

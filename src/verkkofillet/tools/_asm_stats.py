@@ -3,7 +3,7 @@ import shlex
 import subprocess
 import os
 
-script_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../bin/'))
+script_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../bin/'))
 
 
 def getT2T(obj, fasta="assembly.fasta", working_directory = "stats"):

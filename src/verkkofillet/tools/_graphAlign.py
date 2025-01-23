@@ -59,8 +59,6 @@ def graphIdx(obj, threads=1,
             print(f"Command failed with error: {e.stderr.decode().strip()}")
 
 
-
-
 def graphAlign(obj, threads=1, GraphAligner_path="GraphAligner",
                prefix="verkko.graphAlign",
                graph = "assembly.homopolymer-compressed.gfa", 

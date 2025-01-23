@@ -9,7 +9,7 @@ from tqdm import tqdm
 
 from .._run_shell import run_shell
 
-script_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../bin/'))
+script_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../bin/'))
 
 def detect_internal_telomere(obj, 
                              working_directory = "internal_telomere",

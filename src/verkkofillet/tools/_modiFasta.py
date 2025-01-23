@@ -11,7 +11,7 @@ import shlex
 import shutil
 
 from .._run_shell import run_shell
-script_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../bin/'))
+script_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../bin/'))
 
 # Custom sort function that prioritizes base entries before random ones
 def sort_by_random_chr_hap(item, by="hap", type_list = ['mat', 'pat', 'hapUn']):

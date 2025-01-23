@@ -5,7 +5,7 @@ import os
 import pandas as pd
 
 
-script_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../bin/'))
+script_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../bin/'))
 
 def mkMeryl(obj, fofn, working_directory="kmer", prefix="assembly", fasta = "assembly.fasta", k = 31):
     """
