@@ -19,7 +19,7 @@ vf.tl.getT2T(obj, **tool_params)
 where obj is an verkko-fillet object.    
 
 ## Verkko-fillet object
-![verkkofilletobj](../data/test_giraffe/fig/giraffe_complete_verkko-verkko_filletObj.png)
+![verkkofilletobj](../../src/verkkofillet/data/test_giraffe/fig/giraffe_complete_verkko-verkko_filletObj.png)
 `verkko-fillet` is based on the verkko-fillet object, which collects relevant files and stores them within the object itself. Various sub-attributes, such as `.gaps`, `.stats`, and others, are stored as Pandas DataFrames, allowing users to flexibly analyze the data and save it separately to local storage if needed.
 
 The available attributes are as follows:
