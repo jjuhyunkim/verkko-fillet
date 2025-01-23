@@ -9,6 +9,8 @@ from typing import TYPE_CHECKING
 from docutils import nodes
 import verkkofillet
 from packaging.version import Version
+import plotly.io as pio
+pio.renderers.default = "json"
 
 HERE = Path(__file__).parent.resolve()
 sys.path.insert(0, str(HERE))
@@ -88,6 +90,9 @@ exclude_patterns = [
 
 # -- Options for jupyter notebooks ----
 nb_execution_mode = "off"  # Prevents notebook execution
+nb_output_mime_renderers = {
+    "application/vnd.plotly.v1+json": "json"
+}
 
 # -- Options for HTML output ----------------------------------------------
 html_static_path = ["_static"]
@@ -95,3 +100,4 @@ html_show_sphinx = False
 html_logo = "_static/verkko-fillet_logo.png"
 html_title = "verkko-fillet"
 html_theme = "sphinx_book_theme"
+
