@@ -5,7 +5,7 @@ import os
 
 script_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../bin/'))
 
-def rmrDNA(obj):
+def rmrDNA(obj, rDNA_sequences = None):
     print("Starting removing rDNA nodes in the graph")
 
     script = os.path.abspath(os.path.join(script_path, "removeRDNA.sh"))  # Ensure absolute path
@@ -31,8 +31,17 @@ def rmrDNA(obj):
     if not os.path.exists(working_dir):
         print(f"Working directory not found: {working_dir}")
         return
+    
+    if rDNA_sequence is None:
+        rDNA_sequence = os.path.abspath(os.path.join(os.path.dirname(__file__), '../data/dataset/rDNA_compressed.fasta'))
+    else:
+        rDNA_sequence = os.path.abspath(rDNA_sequence)
 
-    cmd = f"sh {shlex.quote(script)}"
+    if not os.path.exists(rDNA_sequences):
+        print(f"Working directory not found: {rDNA_sequences}")
+        return
+
+    cmd = f"sh {shlex.quote(script)} {shlex.quote(rDNA_sequences)}"
 
     try:
         subprocess.run(

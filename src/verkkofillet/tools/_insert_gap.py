@@ -14,12 +14,11 @@ def save_list_to_file(data_list, file_path="insertONTsupport.list"):
     - data_list: List of items to be saved.
     - file_path: Path to the file where the data will be saved.
     """
-    # Extract directory from the file path
-    directory = os.path.dirname(file_path)
-    
+    # Extract directory from the file path and handle empty cases
+    directory = os.path.dirname(file_path) if os.path.dirname(file_path) else '.'
+
     # Create the directory if it doesn't exist
-    if not os.path.exists(directory):
-        os.makedirs(directory)
+    os.makedirs(directory, exist_ok=True)
     
     # Open the file in append mode and write the data
     with open(file_path, 'a') as f:
@@ -27,90 +26,115 @@ def save_list_to_file(data_list, file_path="insertONTsupport.list"):
             f.write(f"{item}\n")
 
 
-def insertGap(obj,gapid, split_reads,
+def insertGap(obj, gapid, split_reads,
               outputDir="missing_edge",
               alignGAF="graphAlignment/verkko.graphAlign_allONT.gaf",
               graph="assembly.homopolymer-compressed.gfa"):
-    # Ensure absolute paths
-    outputDir=os.path.abspath(alignGAF)
-    alignGAF=os.path.abspath(alignGAF)
-    graph=os.path.abspath(graph)
+    """
+    Inserts a gap into the graph using split reads.
 
+    Parameters:
+    - obj: verkko fillet obj.
+    - gapid: Identifier for the gap.
+    - split_reads: Pandas DataFrame containing reads information.
+    - outputDir: Output directory (default: 'missing_edge').
+    - alignGAF: Path to alignment GAF file (default: 'graphAlignment/verkko.graphAlign_allONT.gaf').
+    - graph: Path to graph file (default: 'assembly.homopolymer-compressed.gfa').
+    """
+
+    # Ensure absolute paths
+    outputDir = os.path.abspath(outputDir)
+    alignGAF = os.path.abspath(alignGAF)
+    graph = os.path.abspath(graph)
     
-    script_path = subprocess.run(
-        "verkko -h | grep 'Verkko module path' | cut -d' ' -f 6",
-        shell=True,  # Enables shell commands
-        text=True,   # Ensures the output is in text format
-        capture_output=True,  # Captures stdout and stderr
-        check=True   # Raises an exception for non-zero exit codes
-    )
-    script_path = script_path.stdout.strip()
-    script = os.path.abspath(os.path.join(script_path, "scripts", "insert_aln_gaps.py"))
+    # Check if the working directory exists
+    os.makedirs(outputDir, exist_ok=True)
+
+    try:
+        # Extract Verkko script path
+        script_path_proc = subprocess.run(
+            ["verkko", "-h"], 
+            text=True, 
+            capture_output=True, 
+            check=True
+        )
+        script_path_output = script_path_proc.stdout
+        script_path_line = [line for line in script_path_output.splitlines() if "Verkko module path" in line]
+        
+        if not script_path_line:
+            raise ValueError("Verkko module path not found in output.")
+        
+        verkko_path = script_path_line[0].split()[-1]
+        script = os.path.abspath(os.path.join(verkko_path, "scripts", "insert_aln_gaps.py"))
+        
+
+        
+    except (subprocess.CalledProcessError, ValueError) as e:
+        script = os.path.join(script_path,"insert_aln_gaps.py")
+        
     
     # Check if the script exists
     if not os.path.exists(script):
         print(f"Script not found: {script}")
         return
-    
-    # Check if the working directory exists
-    if not os.path.exists(outputDir):
-        print(f"Working directory not found: {outputDir}")
-        return
-    
+
     print("Extracting reads...")
-    split_reads = split_reads
-    reads = list(set(list(split_reads['Qname'])))
-    file_path =  os.path.abspath(os.path.join(outputDir,gapid+".missing_edge.ont_list.txt"))
+
+    # Ensure the column exists in split_reads
+    if 'Qname' not in split_reads.columns:
+        print("Error: 'Qname' column not found in input data.")
+        return
+
+    reads = list(set(split_reads['Qname']))
+    file_path = os.path.abspath(os.path.join(outputDir, f"{gapid}.missing_edge.ont_list.txt"))
     
     save_list_to_file(reads, file_path)
-    print(f"The split reads for {gapid} was saved to {file_path}")
+    print(f"The split reads for {gapid} were saved to {file_path}")
 
-    subset_gaf = os.path.abspath(os.path.join(outputDir,gapid+".missing_edge.gaf"))
+    subset_gaf = os.path.abspath(os.path.join(outputDir, f"{gapid}.missing_edge.gaf"))
 
-    cmd=f"grep -w -f {file_path} {alignGAF} > {subset_gaf}"
-     # print(cmd)
+    # Grep reads from GAF file
+    cmd_grep = f"grep -w -f {shlex.quote(file_path)} {shlex.quote(alignGAF)} > {shlex.quote(subset_gaf)}"
     try:
-        # Run the command
         result = subprocess.run(
-            cmd,
-            stdout=subprocess.PIPE,  # Capture stdout
-            stderr=subprocess.PIPE,  # Capture stderr
-            shell=True,  # Allow shell-specific syntax
-            check=True,  # Raise an exception if the command fails
-            cwd=outputDir  # Set working directory
+            cmd_grep, 
+            stdout=subprocess.PIPE, 
+            stderr=subprocess.PIPE, 
+            shell=True, 
+            check=True, 
+            cwd=outputDir
         )
-        # Debugging output
-        
-        # print(f"The fill the edge was done for {gapid}!")
-        # print("Standard Output:", result.stdout.decode().strip())
     except subprocess.CalledProcessError as e:
-        # Handle errors
-        print(f"Command failed: {cmd}")
+        print(f"Command failed: {cmd_grep}")
         print(f"Error code: {e.returncode}")
         print(f"Error output: {e.stderr.decode().strip()}")
-        print(f"Standard output: {e.stdout.decode().strip()}")
+        return
+
+    # Run Verkko gap insertion script
+    patch_nogap = os.path.join(outputDir, f"patch.nogap.{gapid}.gaf")
+    patch_gaf = os.path.join(outputDir, f"patch.{gapid}.gaf")
+    patch_gfa = os.path.join(outputDir, f"patch.{gapid}.gfa")
+
+    cmd_insert = f"python { shlex.quote(script)} {shlex.quote(graph)} {shlex.quote(subset_gaf)} 1 50000 {shlex.quote(patch_nogap)} {shlex.quote(patch_gaf)} gapmanual y > {shlex.quote(patch_gfa)}"
     
-    cmd=f"{script} {graph} {subset_gaf} 1 50000 {outputDir}/patch.nogap.{gapid}.gaf {outputDir}/patch.{gapid}.gaf gapmanual y > {outputDir}/patch.{gapid}.gfa"
-    # print(cmd)
     try:
-        # Run the command
         result = subprocess.run(
-            cmd,
-            stdout=subprocess.PIPE,  # Capture stdout
-            stderr=subprocess.PIPE,  # Capture stderr
-            shell=True,  # Allow shell-specific syntax
-            check=True,  # Raise an exception if the command fails
-            cwd=outputDir  # Set working directory
+            cmd_insert, 
+            stdout=subprocess.PIPE, 
+            stderr=subprocess.PIPE, 
+            shell=True, 
+            check=True, 
+            cwd=outputDir
         )
-        # Debugging output
+
+        print(f"The gap filling was completed for {gapid}!")
         
-        print(f"The fill the edge was done for {gapid}!")
-        # print("Standard Output:", result.stdout.decode().strip())
+        # Display the final path contents
+        final_paths = set(pd.read_csv(patch_gaf, header=None, usecols=[5], sep='\t')[5])
         print("The final path looks like:")
-        print(set(list(pd.read_csv(f"{outputDir}/patch.{gapid}.gaf", header =None, usecols=[5], sep ='\t')[5])))
+        print(final_paths)
+        
     except subprocess.CalledProcessError as e:
-        # Handle errors
-        print(f"Command failed: {cmd}")
+        print(f"Command failed: {cmd_insert}")
         print(f"Error code: {e.returncode}")
         print(f"Error output: {e.stderr.decode().strip()}")
-        print(f"Standard output: {e.stdout.decode().strip()}")
