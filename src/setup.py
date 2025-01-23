@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="verkkofillet",                 # Your package name
-    version="0.1.5",                      # Version
+    version="0.1.6",                      # Version
     author="Juhyun Kim",                   # Author name
     author_email="kimj75@nih.gov", # Author email
     description="A toolkit for cleaning Verkko assemblies.",
@@ -14,7 +14,7 @@ setup(
     # package_dir={'': ''},
     include_package_data=True,
     # package_data={'verkkofillet.bin': ['*sh'], 'verkkofillet.bin.vgp-assembly' : ['*sh']},
-    package_data={"":["*.*"]},
+    package_data={"":["*"]},
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
