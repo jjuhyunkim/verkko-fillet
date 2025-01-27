@@ -1,5 +1,9 @@
 from __future__ import annotations
+import warnings
+from Bio import BiopythonWarning
 
+warnings.simplefilter('ignore', BiopythonWarning)
+warnings.filterwarnings("ignore", category=UserWarning, module="Bio")
 import sys
 import os
 from datetime import datetime

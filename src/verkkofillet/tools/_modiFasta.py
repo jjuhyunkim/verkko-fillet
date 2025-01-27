@@ -3,6 +3,10 @@ import subprocess
 import pandas as pd
 from tqdm import tqdm
 import sys
+import warnings
+from Bio import BiopythonWarning
+
+warnings.simplefilter('ignore', BiopythonWarning)
 from Bio import SeqIO
 import re
 import networkx as nx
