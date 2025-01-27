@@ -1,9 +1,3 @@
-import os
-import subprocess
-import pandas as pd
-from tqdm import tqdm
-import sys
-import warnings
 import warnings
 # Ensure Biopython is imported correctly
 try:
@@ -14,6 +8,12 @@ except ImportError:
 
 warnings.simplefilter('ignore', BiopythonWarning)
 warnings.filterwarnings("ignore", category=UserWarning, module="Bio")
+
+import os
+import subprocess
+import pandas as pd
+from tqdm import tqdm
+import sys
 from Bio import SeqIO
 import re
 import networkx as nx
