@@ -1,3 +1,14 @@
+# Ensure Biopython is imported correctly
+try:
+    from Bio import BiopythonWarning
+except ImportError:
+    print("Biopython is not installed. Please install it using 'pip install biopython'.")
+    sys.exit(1)
+
+warnings.simplefilter('ignore', BiopythonWarning)
+warnings.filterwarnings("ignore", category=UserWarning, module="Bio")
+
+
 from ._graphAlign import graphIdx,graphAlign
 from ._chrAssign import chrAssign,showPairwiseAlign,convertRefName
 from ._kmer import mkMeryl,calQV
