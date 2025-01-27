@@ -1,5 +1,17 @@
 from __future__ import annotations
 """Post-verkko cleaning and gap filling in Python."""
+import warnings
+# Ensure Biopython is imported correctly
+try:
+    from Bio import BiopythonWarning
+except ImportError:
+    print("Biopython is not installed. Please install it using 'pip install biopython'.")
+    sys.exit(1)
+
+warnings.simplefilter('ignore', BiopythonWarning)
+warnings.filterwarnings("ignore", category=UserWarning, module="Bio")
+warnings.filterwarnings('ignore')
+
 
 import sys 
 

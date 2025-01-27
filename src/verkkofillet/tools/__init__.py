@@ -8,7 +8,7 @@ except ImportError:
 
 warnings.simplefilter('ignore', BiopythonWarning)
 warnings.filterwarnings("ignore", category=UserWarning, module="Bio")
-
+warnings.filterwarnings('ignore')
 
 from ._graphAlign import graphIdx,graphAlign
 from ._chrAssign import chrAssign,showPairwiseAlign,convertRefName
