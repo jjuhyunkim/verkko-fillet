@@ -86,8 +86,8 @@ def convertRefName(fasta, map_file, out_fasta=None, showOnly=False):
     """
     Replace the name in the given FASTA file.
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
     fasta (str):
         FASTA file in which the contig name is to be replaced
     map_file (str):
@@ -95,8 +95,8 @@ def convertRefName(fasta, map_file, out_fasta=None, showOnly=False):
     showOnly (bool): 
         If set to True, the script will not be executed; it will only display the intended operations. [default : False]
 
-    Return:
-    -----------
+    Returns
+    -------
     out_fasta (str):
         Output fasta file [default : {prefix}.rename.fa]
     """
@@ -145,7 +145,7 @@ def showPairwiseAlign(obj,
     Generate a dot plot from the mashmap output.
 
     Parameters
-    -----------
+    ----------
     obj (verko-fillet object):
         An object that contains a .stats attribute, which should be a pandas DataFrame.
     size (str):
