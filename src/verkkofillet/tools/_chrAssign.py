@@ -45,7 +45,7 @@ def chrAssign(obj, ref, working_directory="chromosome_assignment", fasta="assemb
     script = os.path.abspath(os.path.join(script_path, "getChrNames.sh"))  # Assuming script_path is defined elsewhere
     fasta = os.path.abspath(fasta)
     ref = os.path.abspath(ref)
-    
+
     # Check if the script exists
     if not os.path.exists(script):
         print(f"Script not found: {script}")
@@ -67,12 +67,12 @@ def chrAssign(obj, ref, working_directory="chromosome_assignment", fasta="assemb
     if all(os.path.exists(os.path.join(working_dir, file)) for file in output_files):
         print("All output files already exist. Skipping chromosome assignment.")
         return
-    
+        
     if os.path.exists(f"{working_dir}/assembly.mashmap.out"):
-        print(f"The [assembly.mashmap.out] file is already exists")
-        print(f"If you want to re-run this job, please detete {working_directory}/[assembly.mashmap.out]")
+        print(f"The [assembly.mashmap.out] file already exists")
+        print(f"If you want to re-run this job, please delete {working_dir}/[assembly.mashmap.out]")
         return
-    
+        
     # Construct the shell command
     cmd = f"bash {shlex.quote(script)} {shlex.quote(ref)} {shlex.quote(str(idx))} {shlex.quote(fasta)} {shlex.quote(chr_name)}"
     
