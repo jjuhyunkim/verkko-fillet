@@ -1,9 +1,5 @@
 from __future__ import annotations
 import warnings
-from Bio import BiopythonWarning
-
-warnings.simplefilter('ignore', BiopythonWarning)
-warnings.filterwarnings("ignore", category=UserWarning, module="Bio")
 import sys
 import os
 from datetime import datetime
@@ -11,9 +7,23 @@ from functools import partial
 from pathlib import Path, PurePosixPath
 from typing import TYPE_CHECKING
 from docutils import nodes
+
+
+# Ensure Biopython is imported correctly
+try:
+    from Bio import BiopythonWarning
+except ImportError:
+    print("Biopython is not installed. Please install it using 'pip install biopython'.")
+    sys.exit(1)
+
+warnings.simplefilter('ignore', BiopythonWarning)
+warnings.filterwarnings("ignore", category=UserWarning, module="Bio")
+
 import verkkofillet
 from packaging.version import Version
 import plotly.io as pio
+
+
 pio.renderers.default = "json"
 
 HERE = Path(__file__).parent.resolve()
