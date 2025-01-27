@@ -4,9 +4,16 @@ import pandas as pd
 from tqdm import tqdm
 import sys
 import warnings
-from Bio import BiopythonWarning
+import warnings
+# Ensure Biopython is imported correctly
+try:
+    from Bio import BiopythonWarning
+except ImportError:
+    print("Biopython is not installed. Please install it using 'pip install biopython'.")
+    sys.exit(1)
 
 warnings.simplefilter('ignore', BiopythonWarning)
+warnings.filterwarnings("ignore", category=UserWarning, module="Bio")
 from Bio import SeqIO
 import re
 import networkx as nx

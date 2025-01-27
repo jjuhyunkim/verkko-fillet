@@ -1,3 +1,4 @@
+import warnings
 # Ensure Biopython is imported correctly
 try:
     from Bio import BiopythonWarning
