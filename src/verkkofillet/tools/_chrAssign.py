@@ -67,12 +67,12 @@ def chrAssign(obj, ref, working_directory="chromosome_assignment", fasta="assemb
     if all(os.path.exists(os.path.join(working_dir, file)) for file in output_files):
         print("All output files already exist. Skipping chromosome assignment.")
         return
-        
+    
     if os.path.exists(f"{working_dir}/assembly.mashmap.out"):
         print(f"The [assembly.mashmap.out] file is already exists")
         print(f"If you want to re-run this job, please detete {working_directory}/[assembly.mashmap.out]")
         return
-        
+    
     # Construct the shell command
     cmd = f"bash {shlex.quote(script)} {shlex.quote(ref)} {shlex.quote(str(idx))} {shlex.quote(fasta)} {shlex.quote(chr_name)}"
     
@@ -124,7 +124,7 @@ def convertRefName(fasta, map_file, out_fasta=None, showOnly=False):
     
     # Construct the awk command to replace headers
     cmd = f"awk 'NR==FNR {{map[$1]=$2; next}} /^>/ {{header=substr($1,2); if (header in map) $1=\">\" map[header];}} {{print}}' {shlex.quote(map_file)} {shlex.quote(ref_fasta)} > {shlex.quote(out_fasta)}"
-
+    
     if showOnly:
         # If showOnly is True, just display the command instead of executing it
         print(f"Command to be executed:\n{cmd}")
