@@ -53,10 +53,10 @@ def rmrDNA(
         print(f"Working directory not found: {working_dir}")
         return
     
-    if rDNA_sequences==None:
-        rDNA_sequence = os.path.abspath(os.path.join(os.path.dirname(__file__), '../data/dataset/rDNA_compressed.fasta'))
+    if rDNA_sequences is None:
+        rDNA_sequences = os.path.abspath(os.path.join(os.path.dirname(__file__), '../data/dataset/rDNA_compressed.fasta'))
     else:
-        rDNA_sequence = os.path.abspath(rDNA_sequence)
+        rDNA_sequences = os.path.abspath(rDNA_sequences)
 
     if not os.path.exists(rDNA_sequences):
         print(f"Working directory not found: {rDNA_sequences}")
