@@ -19,7 +19,11 @@ except ImportError:
 warnings.simplefilter('ignore', BiopythonWarning)
 warnings.filterwarnings("ignore", category=UserWarning, module="Bio")
 
-import verkkofillet
+with warnings.catch_warnings():
+    warnings.simplefilter("ignore")
+    # Code that generates warnings
+    import verkkofillet
+    
 from packaging.version import Version
 import plotly.io as pio
 
