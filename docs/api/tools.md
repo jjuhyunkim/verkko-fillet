@@ -28,6 +28,7 @@ Run execute scripts
 
    tl.mkMeryl
    tl.calQV
+
 ``` 
 
 ### Chromosome assignment and Contig QC
@@ -40,6 +41,7 @@ Run execute scripts
    tl.rmrDNA
    tl.chrAssign
    tl.showPairwiseAlign
+
 ``` 
 
 ### Insert gaps
@@ -49,6 +51,7 @@ Run execute scripts
    :toctree: generated/
 
    tl.insertGap
+
 ``` 
 
 ### Modifying assembly
@@ -63,5 +66,5 @@ Run execute scripts
    tl.runTrimming
    tl.flipContig
    tl.convertRefName
-``` 
 
+```

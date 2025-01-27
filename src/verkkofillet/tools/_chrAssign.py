@@ -85,7 +85,7 @@ def chrAssign(obj, ref, working_directory="chromosome_assignment", fasta="assemb
 def convertRefName(fasta, map_file, out_fasta=None, showOnly=False):
     """
     Replace the name in the given FASTA file.
-    
+
     Parameters:
     -----------
     fasta (str):
@@ -94,7 +94,7 @@ def convertRefName(fasta, map_file, out_fasta=None, showOnly=False):
         A two-column file, delimited by tabs, containing the old and new contig names.
     showOnly (bool): 
         If set to True, the script will not be executed; it will only display the intended operations. [default : False]
-        
+
     Return:
     -----------
     out_fasta (str):
