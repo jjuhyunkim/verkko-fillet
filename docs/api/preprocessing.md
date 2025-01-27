@@ -22,6 +22,7 @@ Extracting gap from path, preprocessing recipes.
    pp.save_Verkko
    pp.load_Verkko
    pp.mkCNSdir
+   pp.updateCNSdir_missingEdges
 
 ``` 
 ### Preprocessing
@@ -31,10 +32,14 @@ Extracting gap from path, preprocessing recipes.
    :toctree: generated/
 
    pp.find_intra_telo
+   pp.find_reads_intra_telo
    pp.findGaps
    pp.searchNodes
    pp.highlight_nodes
    pp.fillGaps
    pp.estLoops
    pp.checkGapFilling
+   pp.naming_contigs
+   pp.find_multi_used_node
+
 ``` 
