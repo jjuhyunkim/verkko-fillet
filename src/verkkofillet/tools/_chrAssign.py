@@ -81,23 +81,23 @@ def chrAssign(obj, ref, working_directory = "chromosome_assignment", fasta="asse
     for output in output_files :
         shutil.move(output, f"{working_dir}/{output}")
 
-def convertRefName(fasta, map_file, out_fasta=None, showOnly = False):
+def convertRefName(fasta, map_file, out_fasta=None, showOnly=False):
     """\
     Replace the name in the given FASTA file.
     
     Parameters:
-    -----------    
+    -----------
     fasta (str):
         FASTA file in which the contig name is to be replaced
     map_file (str):
         A two-column file, delimited by tabs, containing the old and new contig names.
     showOnly (bool): 
-        If set to True, the script will not be executed; it will only display the intended operations. [default : FALSE]
+        If set to True, the script will not be executed; it will only display the intended operations. [default : False]
         
     Return:
     -----------
     out_fasta (str):
-        output fasta file [default : {prefix}.rename.fa]
+        Output fasta file [default : {prefix}.rename.fa]
     """
     # Default out_fasta if not provided
     ref_fasta = os.path.abspath(fasta)
@@ -118,9 +118,16 @@ def convertRefName(fasta, map_file, out_fasta=None, showOnly = False):
     if os.path.exists(out_fasta):
         print(f"The renamed reference fasta already exists: {out_fasta}")
         return
+
     # Construct the awk command to replace headers
     cmd = f"awk 'NR==FNR {{map[$1]=$2; next}} /^>/ {{header=substr($1,2); if (header in map) $1=\">\" map[header];}} {{print}}' {shlex.quote(map_file)} {shlex.quote(ref_fasta)} > {shlex.quote(out_fasta)}"
-    run_shell(cmd, wkDir=working_dir, functionName = "convertRefName" ,longLog = False, showOnly = showOnly)
+
+    if showOnly:
+        # If showOnly is True, just display the command instead of executing it
+        print(f"Command to be executed:\n{cmd}")
+    else:
+        # Run the shell command to perform the operation
+        run_shell(cmd, wkDir=working_dir, functionName="convertRefName", longLog=False, showOnly=showOnly)
 
 def showPairwiseAlign(obj, 
                       size="large", 
