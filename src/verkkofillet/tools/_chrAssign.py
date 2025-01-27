@@ -82,11 +82,11 @@ def chrAssign(obj, ref, working_directory = "chromosome_assignment", fasta="asse
         shutil.move(output, f"{working_dir}/{output}")
 
 def convertRefName(fasta, map_file, out_fasta=None, showOnly=False):
-    """\
+    """
     Replace the name in the given FASTA file.
     
     Parameters:
-    -----------
+    -----------    
     fasta (str):
         FASTA file in which the contig name is to be replaced
     map_file (str):
@@ -108,9 +108,11 @@ def convertRefName(fasta, map_file, out_fasta=None, showOnly=False):
         # Extract the base name of the file and directory
         basename_fasta = os.path.basename(ref_fasta)
         dir_fasta = os.path.dirname(ref_fasta)
+        
         # Always remove the last extension (e.g., .gz, .fa, .fasta)
         if basename_fasta.endswith(".gz"):
             basename_fasta = os.path.splitext(basename_fasta)[0]  # Remove .gz
+        
         basename_fasta = os.path.splitext(basename_fasta)[0]  # Remove the actual file extension
         out_fasta = os.path.join(dir_fasta, f"{basename_fasta}.rename.fa")
 
@@ -118,7 +120,7 @@ def convertRefName(fasta, map_file, out_fasta=None, showOnly=False):
     if os.path.exists(out_fasta):
         print(f"The renamed reference fasta already exists: {out_fasta}")
         return
-
+    
     # Construct the awk command to replace headers
     cmd = f"awk 'NR==FNR {{map[$1]=$2; next}} /^>/ {{header=substr($1,2); if (header in map) $1=\">\" map[header];}} {{print}}' {shlex.quote(map_file)} {shlex.quote(ref_fasta)} > {shlex.quote(out_fasta)}"
 
@@ -128,6 +130,7 @@ def convertRefName(fasta, map_file, out_fasta=None, showOnly=False):
     else:
         # Run the shell command to perform the operation
         run_shell(cmd, wkDir=working_dir, functionName="convertRefName", longLog=False, showOnly=showOnly)
+
 
 def showPairwiseAlign(obj, 
                       size="large", 

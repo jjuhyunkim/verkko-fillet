@@ -5,7 +5,6 @@ import os
 
 script_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../bin/'))
 
-
 def getT2T(obj, fasta="assembly.fasta", working_directory = "stats"):
     """
     Run the script to calculate assembly statistics, including contig presence, telomere regions, and gap locations.
