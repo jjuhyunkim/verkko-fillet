@@ -11,7 +11,7 @@ from .._run_shell import run_shell
 script_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../bin/'))
 
 def chrAssign(obj, ref, working_directory = "chromosome_assignment", fasta="assembly.fasta", chr_name="chr", idx=99, showOnly = False):
-    """
+    """\
     Run the script to align the assembly to the given reference using mashmap and obtain the chromosome assignment results.
 
     Parameters:
@@ -82,7 +82,7 @@ def chrAssign(obj, ref, working_directory = "chromosome_assignment", fasta="asse
         shutil.move(output, f"{working_dir}/{output}")
 
 def convertRefName(fasta, map_file, out_fasta=None, showOnly = False):
-    """
+    """\
     Replace the name in the given FASTA file.
     
     Parameters:
@@ -98,7 +98,6 @@ def convertRefName(fasta, map_file, out_fasta=None, showOnly = False):
     -----------
     out_fasta (str):
         output fasta file [default : {prefix}.rename.fa]
-    
     """
     # Default out_fasta if not provided
     ref_fasta = os.path.abspath(fasta)
@@ -109,11 +108,9 @@ def convertRefName(fasta, map_file, out_fasta=None, showOnly = False):
         # Extract the base name of the file and directory
         basename_fasta = os.path.basename(ref_fasta)
         dir_fasta = os.path.dirname(ref_fasta)
-        
         # Always remove the last extension (e.g., .gz, .fa, .fasta)
         if basename_fasta.endswith(".gz"):
             basename_fasta = os.path.splitext(basename_fasta)[0]  # Remove .gz
-        
         basename_fasta = os.path.splitext(basename_fasta)[0]  # Remove the actual file extension
         out_fasta = os.path.join(dir_fasta, f"{basename_fasta}.rename.fa")
 
@@ -121,11 +118,9 @@ def convertRefName(fasta, map_file, out_fasta=None, showOnly = False):
     if os.path.exists(out_fasta):
         print(f"The renamed reference fasta already exists: {out_fasta}")
         return
-    
     # Construct the awk command to replace headers
     cmd = f"awk 'NR==FNR {{map[$1]=$2; next}} /^>/ {{header=substr($1,2); if (header in map) $1=\">\" map[header];}} {{print}}' {shlex.quote(map_file)} {shlex.quote(ref_fasta)} > {shlex.quote(out_fasta)}"
     run_shell(cmd, wkDir=working_dir, functionName = "convertRefName" ,longLog = False, showOnly = showOnly)
-
 
 def showPairwiseAlign(obj, 
                       size="large", 
@@ -135,6 +130,27 @@ def showPairwiseAlign(obj,
                       idx=0.99, 
                       minLen=50000, 
                       showOnly = False):
+    """\
+    Generate a dot plot from the mashmap output.
+
+    Parameters
+    -----------
+    obj (verko-fillet object):
+        An object that contains a .stats attribute, which should be a pandas DataFrame.
+    size (str):
+        size of the image [default: `large`]
+    mashmap_out (str):
+        path to the mashmap output file [default: `chromosome_assignment/assembly.mashmap.out`]
+    prefix (str):
+        prefix for the output files [default: `refAlign`]
+    idx (float):
+        identity threshold to filter mashmap result [default: 0.99]
+    minLen (int):
+        minimum length of the alignment to be considered [default: 50000]
+    showOnly (bool):
+        If set to True, the script will not be executed; it
+        will only display the intended operations. [default: FALSE]
+    """
     # Ensure paths are absolute
     working_dir = os.path.abspath(working_directory)
     script = os.path.abspath(os.path.join(script_path, "generateDotPlot"))
