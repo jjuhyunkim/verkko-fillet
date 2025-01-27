@@ -86,7 +86,6 @@ verkkofillet/preprocessing/_estLoop.py
 verkkofillet/preprocessing/_fill_gaps.py
 verkkofillet/preprocessing/_find_gaps.py
 verkkofillet/preprocessing/_find_intra_telo.py
-verkkofillet/preprocessing/_find_inv_chr.py
 verkkofillet/preprocessing/_getQV.py
 verkkofillet/preprocessing/_highlight_nodes.py
 verkkofillet/preprocessing/_read_chr.py

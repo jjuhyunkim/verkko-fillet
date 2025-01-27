@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="verkkofillet",                 # Your package name
-    version="0.1.8",                      # Version
+    version="0.1.9",                      # Version
     author="Juhyun Kim",                   # Author name
     author_email="kimj75@nih.gov", # Author email
     description="A toolkit for cleaning Verkko assemblies.",
