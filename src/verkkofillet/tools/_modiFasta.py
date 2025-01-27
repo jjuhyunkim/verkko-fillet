@@ -8,13 +8,20 @@ except ImportError:
 
 warnings.simplefilter('ignore', BiopythonWarning)
 warnings.filterwarnings("ignore", category=UserWarning, module="Bio")
+warnings.filterwarnings('ignore')
+
+with warnings.catch_warnings():
+    warnings.simplefilter('ignore')
+    # Code that might trigger warnings
+    from Bio import SeqIO
+    # Further operations
 
 import os
 import subprocess
 import pandas as pd
 from tqdm import tqdm
 import sys
-from Bio import SeqIO
+# from Bio import SeqIO
 import re
 import networkx as nx
 from collections import Counter
