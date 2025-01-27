@@ -10,7 +10,7 @@ def qvPlot(obj):
     """
     Generates a bar plot showing QV stats by haplotype.
 
-    Parameters:
+    Parameters
     -----------
     obj : verko-fillet object
         An object that contains a `.stats` attribute, which should be a pandas DataFrame.
@@ -64,9 +64,9 @@ def completePlot(obj):
     """
     Generates a bar plot showing contig completeness grouped by reference chromosome and haplotype. The completeness of each chromosome is calculated by comparing it to the reference length. A completeness value greater than 100 indicates that the contig length exceeds the original reference length.
 
-    Parameters:
+    Parameters
     -----------
-    obj : verko-fillet object
+    obj
         An object that contains a `.stats` attribute, which should be a pandas DataFrame 
         with the following columns:
         - `ref_chr` (str): Reference chromosome identifier.
@@ -85,9 +85,9 @@ def contigLenPlot(obj):
     """
     Generates a bar plot showing length of contig by haplotype.
 
-    Parameters:
+    Parameters
     -----------
-    obj : verko-fillet object
+    obj
         An object that contains a `.stats` attribute, which should be a pandas DataFrame.
     """
     stat_db = obj.stats

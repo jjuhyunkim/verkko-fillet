@@ -16,6 +16,29 @@ def detect_internal_telomere(obj,
                              fasta = 'assembly.fasta', 
                              showOnly = False, longLog = False,
                             name= None):
+    """\
+    Detect internal telomere in the assembly.fasta file.
+
+    Parameters
+    ----------
+    obj
+        The VerkkoFillet object to be used.
+    working_directory
+        The directory to store the output files. Default is "internal_telomere".
+    fasta  
+        The path to the assembly.fasta file. Default is "assembly.fasta".
+    showOnly
+        If True, the command will be printed but not executed. Default is False.
+    longLog
+        If True, the full output will be printed. Default is False.
+    name
+        The name of the output files. Default is None, which will be generated based on the input file name.
+
+    Returns
+    -------
+    output files
+        assembly.windows.0.5.bed
+    """
     print("Starting detecting internal telomere in the assembly.fasta")
 
     script = os.path.abspath(os.path.join(script_path, "vgp-assembly", "telomere","telomere_analysis.sh"))
@@ -51,6 +74,28 @@ def runTrimming(obj,
                 trim_bed="internal_telomere/assembly.fasta.trim.bed",
                 output_fasta=None, 
                 ):
+    """\
+    Trim the contigs based on the provided coordinates.
+
+    Parameters
+    ----------
+    obj
+        The VerkkoFillet object to be used.
+    trim_contig_dict
+        Dictionary containing contig names and their corresponding trim coordinates.
+    original_fasta
+        The path to the original assembly.fasta file. Default is "assembly.fasta".
+    trim_bed
+        The path to the BED file containing trim coordinates. Default is "internal_telomere/assembly.fasta.trim.bed".
+    output_fasta
+        The path to the output trimmed FASTA file. Default is None, which will generate a new file name based on the original FASTA file.
+
+    Returns
+    -------
+    output_fasta
+        The path to the trimmed FASTA file.
+
+    """
 
     # Save the bed file
     trim_df = pd.DataFrame(trim_contig_dict)

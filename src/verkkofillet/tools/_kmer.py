@@ -8,13 +8,17 @@ import pandas as pd
 script_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../bin/'))
 
 def mkMeryl(obj, fofn, working_directory="kmer", prefix="assembly", fasta = "assembly.fasta", k = 31):
-    """
+    """\
     Create meryl database for k-mer counting.
     
-    Args:
-        obj: Object containing the `verkkoDir` attribute.
-        fofn: Path to the file of filenames (FOFN).
-        prefix: Prefix for the meryl output.
+    Parameters
+    ----------
+    obj
+        Object containing the `verkkoDir` attribute.
+    fofn
+        Path to the file of filenames (FOFN).
+    prefix
+        Prefix for the meryl output.
     """
     # Define paths
     working_dir = os.path.abspath(working_directory)
@@ -56,9 +60,19 @@ def calQV(obj,
     """
     Perform quality evaluation using Merqury's qv.sh script.
 
-    Args:
-        obj: Object containing the `verkkoDir` attribute.
-        prefix: Prefix for the meryl output.
+    Parameters
+    ----------
+    obj
+        Object containing the `verkkoDir` attribute.
+    working_directory
+        The working directory for the analysis. Default is "kmer".
+    prefix
+        Prefix for the meryl output. Default is "assembly".
+
+    Returns
+    -------
+    output files
+        prefix.qv_cal.qv
     """
     # Define paths
     script = os.path.abspath(os.path.join(script_path, "qv.sh"))

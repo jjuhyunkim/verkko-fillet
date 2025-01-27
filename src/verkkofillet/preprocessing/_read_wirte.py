@@ -62,16 +62,25 @@ def read_Verkko(verkkoDir,
     Prepares the Verkko environment by creating necessary directories, locking the original directory, 
     and loading the paths file for further processing.
 
-    Parameters:
-    - verkkoDir (str): Base directory of Verkko data.
-    - verkko_fillet_dir (str, optional): Target directory for fillet data. Defaults to None.
-    - paths_path (str, optional): Path to 'assembly.paths.tsv' file. Defaults to 'assembly.paths.tsv'.
-    - version (str, optional): Version of the data. Defaults to None.
-    - species (str, optional): Species name. Defaults to None.
-    - lock_original_folder (bool, optional): Whether to lock the original directory. Defaults to True.
+    Parameters
+    ----------
+    verkkoDir
+        Base directory of Verkko data.
+    verkko_fillet_dir
+        Target directory for fillet data. Defaults to None.
+    paths_path 
+        Path to 'assembly.paths.tsv' file. Defaults to 'assembly.paths.tsv'.
+    version
+        Version of the data. Defaults to None.
+    species
+        Species name. Defaults to None.
+    lock_original_folder
+        Whether to lock the original directory. Defaults to True.
 
-    Returns:
-    - FilletObj: A FilletObj instance with the configured directories and loaded paths data.
+    Returns
+    -------
+    FilletObj
+        A FilletObj instance with the configured directories and loaded paths data.
     """
     # make filletObj
     obj = FilletObj()
@@ -152,12 +161,35 @@ def read_Verkko(verkkoDir,
 
 
 def save_Verkko(obj, fileName):
+    """\
+    Save the Verkko fillet object to a file using pickle.
+
+    Parameters
+    ----------
+    obj
+        The Verkko fillet object to be saved.
+    fileName
+        The name of the file to save the object to.
+    """
     print("save verkko fllet obj to -> " + fileName)
     obj = addHistory(obj,f"Writing verkko-fillet obj to {fileName}", 'save_Verkko')
     with open(fileName, "wb") as f:
         pickle.dump(obj, f)
 
 def load_Verkko(fileName):
+    """\
+    Load the Verkko fillet object from a file using pickle.
+
+    Parameters
+    ----------
+    fileName
+        The name of the file to load the object from.
+
+    Returns
+    -------
+    obj
+        The loaded Verkko fillet object.
+    """
     print("load verkko fllet obj from <- " + fileName)
     # Open the file in read-binary mode
     with open(fileName, "rb") as f:
@@ -171,9 +203,12 @@ def hard_copy_symlink(symlink_path, destination_path):
     """
     Creates a hard copy of the file pointed to by the symbolic link.
     
-    Parameters:
-    - symlink_path: Path to the symbolic link.
-    - destination_path: Path where the file should be copied.
+    Parameters
+    ----------
+    symlink_path : str
+        The path to the symbolic link.
+    destination_path : str
+        The path to the destination where the hard copy will be created.
     """
     if os.path.islink(symlink_path):
         # Get the target of the symbolic link
@@ -187,6 +222,22 @@ def hard_copy_symlink(symlink_path, destination_path):
         shutil.copy(symlink_path, destination_path)
 
 def mkCNSdir(obj, new_folder_path, final_gaf = "final_rukki_fixed.paths.gaf"):
+    """\
+    Creates a new CNS directory by creating symbolic links to the original verkko directory.
+
+    Parameters
+    ----------
+    obj
+        Object containing the original verkko directory path.
+    new_folder_path
+        Path to the new folder to be created.
+    final_gaf
+        Path to the final GAF file. Default is "final_rukki_fixed.paths.gaf".
+
+    Returns
+    -------
+    new folder with mendatory files and symbolic links
+    """
     newFolder = os.path.abspath(new_folder_path)
     verkkoDir = os.path.abspath(obj.verkkoDir)  # Define oriDir only once
     
@@ -241,9 +292,16 @@ def updateCNSdir_missingEdges(obj, new_folder_path):
     """
     Updates the CNS directory by handling missing edges and creating necessary symbolic links or files.
     
-    Parameters:
-    - obj: Object containing the original verkko directory path.
-    - new_folder_path: Path to the new folder to be created.
+    Parameters
+    ----------
+    obj
+        Object containing the original verkko directory path.
+    new_folder_path
+        Path to the new folder to be updated.
+
+    Returns
+    -------
+    new folder with updated files and symbolic links for missing edges
     """
     newFolder = os.path.abspath(new_folder_path)
     filletDir = os.path.abspath(obj.verkko_fillet_dir)  # Define oriDir only once
@@ -321,6 +379,14 @@ def updateCNSdir_missingEdges(obj, new_folder_path):
 
 testDir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../data/'))
 def loadGiraffe():
+    """\
+    Load the object of Giraffe genome from a file using pickle.
+
+    Returns
+    -------
+    obj
+        The loaded Giraffe genome object.
+    """
     fileName = f"{testDir}/test_giraffe/giraffe_before_gap_filling.pkl"
     obj = load_Verkko(fileName)
     return obj

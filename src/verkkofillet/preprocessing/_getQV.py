@@ -5,12 +5,17 @@ def getQV(obj, qvFile="kmer/assembly.qv_cal.qv"):
     """
     Reads a QV (Quality Value) file, parses it, and attaches the resulting DataFrame to the provided object.
     
-    Parameters:
-        obj: An object with an attribute `verkkoDir` specifying the directory of the QV file.
-        qvFile (str): Relative path to the QV file from `obj.verkkoDir`. Defaults to "10-qc/assembly.qv_cal.qv".
+    Parameters
+    ----------
+    obj
+        The object to which the DataFrame will be attached.
+    qvFile
+        The path to the QV file. Default is "kmer/assembly.qv_cal.qv".
     
-    Returns:
-        obj: The input object with a new attribute `qv` containing the parsed QV DataFrame.
+    Returns
+    -------
+    obj
+        The object with the QV DataFrame attached
     """
     # Construct the full path to the QV file
     qvFilePath = os.path.abspath(qvFile)

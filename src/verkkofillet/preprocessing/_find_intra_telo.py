@@ -4,6 +4,25 @@ import re
 
 def find_intra_telo(obj, file="internal_telomere/assembly_1/assembly.windows.0.5.bed", 
                     fai_file = "assembly.fasta.fai" , loc_from_end=15000):
+    """\
+    Find the telomere sequences inside the contig.
+
+    Parameters
+    ----------
+    obj
+        The VerkkoFillet object to be used.
+    file
+        The path to the bed file containing the telomere sequences. Default is "internal_telomere/assembly_1/assembly.windows.0.5.bed".
+    fai_file
+        The path to the fasta index file. Default is "assembly.fasta.fai".
+    loc_from_end
+        The distance from the end of the contig to consider. Default is 15000.
+    
+    Returns
+    -------
+    DataFrame
+        The DataFrame containing the contig, old_chr, ref_chr, hap, start, end, and len_fai columns.
+    """
     
     working_dir = os.getcwd()
     file = os.path.abspath(file)
@@ -36,6 +55,25 @@ def find_intra_telo(obj, file="internal_telomere/assembly_1/assembly.windows.0.5
 
 
 def find_reads_intra_telo(intra_telo, pos,scfmap = "assembly.scfmap",layout = "6-layoutContigs/unitig-popped.layout"):
+    """\
+    Find the reads support for the additional artifical sequences outside of the telomere.
+
+    Parameters
+    ----------
+    intra_telo
+        The DataFrame containing the contig, old_chr, ref_chr, hap, start, end, and len_fai columns.
+    pos
+        The position to consider. Either "start" or "end".
+    scfmap 
+        The path to the scfmap file. Default is "assembly.scfmap".
+    layout
+        The path to the layout file. Default is "6-layoutContigs/unitig-popped.layout".
+    
+    Returns
+    -------
+    DataFrame
+        The DataFrame containing the readName, 5prime, 3prime, start, end, and type columns.
+    """
     print("Finding the reads support for the additional artifical sequences outside of the telomere...")
     contig = str(intra_telo['contig'][0])
     if pos == 'start':

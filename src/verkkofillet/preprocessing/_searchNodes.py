@@ -10,12 +10,17 @@ def readGaf(obj, gaf="graphAlignment/verkko.graphAlign_allONT.gaf"):
     """
     Reads a GAF file and stores it as a pandas DataFrame in the provided object.
 
-    Args:
-        obj: An object where the parsed GAF data will be stored (as `obj.gaf`).
-        gaf (str): Path to the GAF file to be loaded.
+    Parameters
+    ----------
+    obj
+        An object where the parsed GAF data will be stored (as `obj.gaf`).
+    gaf
+        Path to the GAF file to be loaded.
 
-    Returns:
-        obj: The updated object with the `gaf` attribute containing the DataFrame.
+    Returns
+    -------
+    obj
+        The updated object with the `gaf` attribute containing the DataFrame.
     """
     # Check if obj.gaf already exists and stop if it does
     if obj.gaf is not None:
@@ -54,11 +59,14 @@ def searchNodes(obj, node_list_input):
     """
     Extracts and filters paths containing specific nodes from the graph alignment file (GAF).
     
-    Args:
-        obj: An object containing graph alignment data (obj.gaf) and path frequency data (obj.paths_freq).
-        node_list_input: A list of node identifiers to search for.
+    Parameters:
+    obj
+        An object containing graph alignment data (obj.gaf) and path frequency data (obj.paths_freq).
+    node_list_input
+        A list of node identifiers to search for.
 
-    Returns:
+    Returns
+    -------
         A styled pandas DataFrame with paths containing the specified nodes and associated frequencies.
     """
     # Prepare node markers
@@ -126,6 +134,25 @@ def searchNodes(obj, node_list_input):
     return styled_df
 
 def searchSplit(obj, node_list_input, min_mapq=0, min_len=50000):
+    """\
+    Searches for paths containing all specified nodes with a minimum mapping quality and length.
+
+    Parameters
+    ----------
+    obj
+        The VerkkoFillet object containing the GAF data.
+    node_list_input
+        A list of node identifiers to search for.
+    min_mapq
+        The minimum mapping quality required for a path to be considered. Default is 0.
+    min_len
+        The minimum length required for a path to be considered. Default is 50000.
+
+    Returns
+    -------
+    DataFrame
+        A DataFrame containing the Qname and path_modi columns of paths that meet the criteria.
+    """
     node_list = node_list_input
     # Create the regex pattern from the node list
     node_pattern = '|'.join(node_list)  # Creates 'utig4-2329|utig4-2651'
@@ -143,6 +170,19 @@ def searchSplit(obj, node_list_input, min_mapq=0, min_len=50000):
 # Use subprocess to run the grep command
 
 def read_Scfmap(scfmap_file = "assembly.scfmap"):
+    """\
+    Read the scfmap file and return a DataFrame with the 'fasta_name' and 'path_name' columns.
+
+    Parameters
+    ----------
+    scfmap_file
+        The path to the scfmap file. Default is "assembly.scfmap".
+
+    Returns
+    -------
+    DataFrame
+        A DataFrame containing the 'fasta_name' and 'path_name' columns
+    """
     command = f'grep "^path" {scfmap_file} | cut -d" " -f 2,3'
     result = subprocess.run(command, shell=True, capture_output=True, text=True)
     
@@ -155,6 +195,9 @@ def read_Scfmap(scfmap_file = "assembly.scfmap"):
     return scf
 
 def get_NodeChr(obj): 
+    """\
+    Get the node and chromosome mapping from the VerkkoFillet object.
+    """
     df = obj.paths[['name','path']]
     df['path'] = df['path'].str.split(',')
     df = df.explode('path')
@@ -167,6 +210,28 @@ def find_hic_support(obj, node,
                      max_print = 20, 
                      scfmap_file = "assembly.scfmap", 
                      exclude_chr = None):
+    """\
+    Find HiC support for a specific node.
+
+    Parameters
+    ----------
+    obj
+        The VerkkoFillet object to be used.
+    node
+        The node for which to find HiC support.
+    hic_support_file
+        The path to the HiC support file. Default is "8-hicPipeline/hic.byread.compressed".
+    max_print
+        The maximum number of results to display. Default is 20.
+    scfmap_file
+        The path to the scfmap file. Default is "assembly.scfmap".
+    exclude_chr
+        A list of chromosomes to exclude from the results. Default is None.
+
+    Returns
+    -------
+    dot plot of HiC support for the specified node.
+    """
     # read data
     stat = obj.stats[['contig','ref_chr','hap']]
     scf = read_Scfmap(scfmap_file)

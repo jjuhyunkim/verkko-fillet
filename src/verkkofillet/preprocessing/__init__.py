@@ -7,7 +7,6 @@ from ._estLoop import estLoops
 from ._getQV import getQV
 from ._find_intra_telo import find_intra_telo,find_reads_intra_telo
 from ._highlight_nodes import highlight_nodes
-from ._find_inv_chr import findRevChr
 from ._chrNaming import find_multi_used_node, naming_contigs
 
 __all__ = [
@@ -36,7 +35,6 @@ __all__ = [
     'highlight_nodes',
     'updateCNSdir_missingEdges',
     'find_reads_intra_telo',
-    'findRevChr',
     'find_multi_used_node',
     'naming_contigs', 
 ]

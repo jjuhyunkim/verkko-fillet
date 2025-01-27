@@ -41,5 +41,19 @@ def display_highlighted_words(df, keywords):
     display(HTML(head))
 
 def highlight_nodes(obj, node):
+    """\
+    Highlight the nodes in the obj.paths DataFrame.
+
+    Parameters
+    ----------
+    obj
+        The VerkkoFillet object.
+    node
+        The node to be highlighted.
+
+    Returns
+    -------
+    The all paths containing the node.
+    """
     df = obj.paths.loc[obj.paths['path'].str.contains(node), ['name','path']]
     return display_highlighted_words(df, [node])

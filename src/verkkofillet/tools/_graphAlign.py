@@ -11,6 +11,28 @@ def graphIdx(obj, threads=1,
              working_directory = "graphAlignment", 
              prefix="verkko.graphAlign", 
              graph = "assembly.homopolymer-compressed.gfa"):
+    """\
+    Index the graph for graph alignment.
+
+    Parameters
+    ----------
+    obj
+        The VerkkoFillet object to be used.
+    threads
+        The number of threads to use. Default is 1.
+    GraphAligner_path
+        The path to the GraphAligner executable. Default is "GraphAligner".
+    working_directory
+        The directory to store the index files. Default is "graphAlignment".
+    prefix
+        The prefix for the index files. Default is "verkko.graphAlign".
+    graph
+        The path to the graph file. Default is "assembly.homopolymer-compressed.gfa".
+    
+    Returns
+    -------
+    index files
+    """
     
     folder_path = os.path.abspath(obj.verkko_fillet_dir)
     working_directory = os.path.abspath(working_directory)
@@ -64,6 +86,31 @@ def graphAlign(obj, threads=1, GraphAligner_path="GraphAligner",
                graph = "assembly.homopolymer-compressed.gfa", 
                ontReadList = None,
                working_directory = "graphAlignment"):
+    """\
+    Align ONT reads to the graph.
+
+    Parameters
+    ----------
+    obj
+        The VerkkoFillet object to be used.
+    threads
+        The number of threads to use. Default is 1.
+    GraphAligner_path
+        The path to the GraphAligner executable. Default is "GraphAligner".
+    prefix
+        The prefix for the output files. Default is "verkko.graphAlign".
+    graph
+        The path to the graph file. Default is "assembly.homopolymer-compressed.gfa".
+    ontReadList
+        The path to the ONT read list. Default is None.
+    working_directory
+        The directory to store the alignment files. Default is "graphAlignment".
+    
+    Returns
+    -------
+    alignment files
+
+    """
     
     # Construct the graph path within the function
     working_directory = os.path.abspath(working_directory)

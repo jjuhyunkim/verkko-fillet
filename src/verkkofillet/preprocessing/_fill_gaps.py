@@ -21,8 +21,10 @@ def checkGapFilling(obj):
     This function checks and prints the number of filled gaps in the 'gap' DataFrame
     and shows the progress bar for gap filling.
 
-    Args:
-        obj: An object that contains the 'gap' DataFrame in obj.gaps.
+    Parameters
+    ----------
+    obj
+        An verkko fillet object that contains the 'gap' DataFrame in obj.gaps.
     """
     total = obj.gaps.shape[0]  # Total number of gaps
     gap = obj.gaps  # Assuming gap is the DataFrame containing gap information
@@ -43,10 +45,16 @@ def checkGapFilling(obj):
 def transform_path(elements):
     """
     Transforms elements of the path for gap filling.
-    Args:
-        elements (list): List of path elements.
-    Returns:
-        list: Transformed path elements.
+
+    Parameters
+    ----------
+    elements
+        A list of elements in the path.
+    
+    Returns
+    -------
+    list
+        A list of transformed elements.
     """
     return [
         (">" + elem[:-1] if elem.endswith("+") else "<" + elem[:-1]) if not elem.startswith("[") else elem
@@ -69,10 +77,19 @@ def fillGaps(obj, gapId, final_path):
     """
     Fills gaps for a specific gapId, updates the 'fixedPath', 'startMatch', 'endMatch', and 'finalGaf' columns.
     
-    Args:
-        obj: The object containing gap data.
-        gapId: The specific gap ID to fill.
-        final_path: The path for gap filling. If empty, the relevant columns are filled with 'NA'.
+    Parameters
+    ----------
+    obj
+        An verkko fillet object that contains the 'gap' DataFrame in obj.gaps.
+    gapId
+        The identifier for the gap.
+    final_path
+        The final path to fill the gap.
+
+    Returns
+    -------
+    obj
+        The updated verkko fillet object.
     """
     gap = obj.gaps  # The DataFrame containing gap data
 
@@ -126,11 +143,24 @@ def fillGaps(obj, gapId, final_path):
     
     return obj
 
-
-
-
 # Reset the index of the 'gap' DataFrame
 def writeFixedGaf(obj, rukki = "8-hicPipeline/rukki.paths.gaf", save = "final_rukki_fixed.paths.gaf"):
+    """\
+    Write the fixed GAF path to a new file.
+
+    Parameters
+    ----------
+    obj
+        The VerkkoFillet object to be used.
+    rukki
+        The path to the original rukki file. Default is "8-hicPipeline/rukki.paths.gaf".
+    save
+        The path to save the fixed rukki file. Default is "final_rukki_fixed.paths.gaf".
+
+    Returns
+    -------
+    fixed_rukki file.
+    """
     print("Reading original rukki path from "+rukki)
     ori_rukki = pd.read_csv(rukki, sep ='\t', header = 0)
     

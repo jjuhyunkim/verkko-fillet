@@ -9,6 +9,28 @@ def readChr(obj,mapFile,
             chromosome_assignment_directory = "chromosome_assignment", 
             stat_directory = "stats",
             sire = "sire", dam = "dam"):
+    """\
+    Read the chromosome assignment results and store them in the object.
+
+    Parameters
+    ----------
+    obj
+        The VerkkoFillet object to be used.
+    mapFile
+        The path to the map file.
+    chromosome_assignment_directory
+        The directory containing the chromosome assignment results. Default is "chromosome_assignment".
+    stat_directory
+        The directory containing the statistics. Default is "stats".
+    sire
+        The name of the sire. Default is "sire".
+    dam
+        The name of the dam. Default is "dam".
+    
+    Returns
+    -------
+    obj with stats attribute containing the chromosome assignment results.
+    """
     chromosome_assignment_directory = os.path.abspath(chromosome_assignment_directory)
     stat_directory = os.path.abspath(stat_directory)
     mapFile = os.path.abspath(mapFile)
@@ -85,5 +107,18 @@ def readChr(obj,mapFile,
     return obj
 
 def find_multiContig_chr(obj):
+    """\
+    Find contigs that assigned same chromosome and haplotype.
+
+    Parameters
+    ----------
+    obj
+        The VerkkoFillet object to be used.
+
+    Returns
+    -------
+    DataFrame
+        The DataFrame containing the duplicated contigs with different contig names.
+    """
     df = obj.stats[obj.stats.duplicated(subset=['hap', 'chr'], keep=False)]
     return df

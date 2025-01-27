@@ -5,7 +5,28 @@ import os
 
 script_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../bin/'))
 
-def rmrDNA(obj, rDNA_sequences = None):
+def rmrDNA(
+        obj,
+        rDNA_sequences = None):
+    """\
+    Generate a GFA file with rDNA sequences removed from the graph. The human rDNA sequences are used by default.
+    
+    Parameters
+    ----------
+    obj
+        The VerkkoFillet object to be used.
+    rDNA_sequences
+        The path to the rDNA sequences to be removed from the graph.
+        Default is None, which will use the default rDNA sequences provided with the package. (Human rDNA sequences)
+
+    Returns
+    -------
+    output files
+        target.screennodes.out
+        assembly.homopolymer-compressed.noseq.telo_rdna.gfa
+        assembly.colors.telo_rdna.csv
+
+    """
     print("Starting removing rDNA nodes in the graph")
 
     script = os.path.abspath(os.path.join(script_path, "removeRDNA.sh"))  # Ensure absolute path
@@ -32,7 +53,7 @@ def rmrDNA(obj, rDNA_sequences = None):
         print(f"Working directory not found: {working_dir}")
         return
     
-    if rDNA_sequence is None:
+    if rDNA_sequences==None:
         rDNA_sequence = os.path.abspath(os.path.join(os.path.dirname(__file__), '../data/dataset/rDNA_compressed.fasta'))
     else:
         rDNA_sequence = os.path.abspath(rDNA_sequence)

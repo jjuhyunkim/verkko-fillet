@@ -4,6 +4,18 @@ import plotly.graph_objects as go
 import os
 
 def estLoops(obj, nodeList, gaf="graphAlignment/verkko.graphAlign_allONT.gaf"):
+    """\
+    Estimate the number of loops between two nodes in the graph.
+
+    Parameters
+    ----------
+    obj
+        The VerkkoFillet object to be used.
+    nodeList
+        A list of two nodes to be compared.
+    gaf
+        Path to the GAF file containing the graph alignment information. Default is "graphAlignment/verkko.graphAlign_allONT.gaf".
+    """
     if obj is None:
         raise ValueError("The 'obj' parameter is required.")
     if nodeList is None or len(nodeList) < 2:

@@ -33,6 +33,18 @@ def remove_ignore_nodes(lst, ignore_lst):
     return [item for item in lst if item not in ignore_lst]
 
 def find_multi_used_node(obj):
+    """\
+    Find nodes that are used in more than one path.
+
+    Parameters
+    ----------
+    obj
+        The VerkkoFillet object to be used.
+    
+    Returns
+    -------
+    list of duplicated nodes
+    """
     path = obj.paths.copy()
     scfmap = obj.scfmap.copy()
     stats = obj.stats.copy()
@@ -68,7 +80,34 @@ def find_multi_used_node(obj):
     return duplicates, path_grouped
 
 def naming_contigs(obj, node_database, duplicate_nodes , 
-                   gfa = "assembly.homopolymer-compressed.noseq.gfa", dam = "mat", sire = "pat", fai = "assembly.fasta.fai"):
+                   gfa = "assembly.homopolymer-compressed.noseq.gfa", 
+                   dam = "mat", sire = "pat", fai = "assembly.fasta.fai"):
+    """\
+    Rename the contigs based on the provided chromosome map file.
+
+    Parameters
+    ----------
+    obj
+        The VerkkoFillet object to be used.
+    node_database
+        The DataFrame containing the mapping of nodes to chromosomes.
+    duplicate_nodes
+        List of duplicated nodes.
+    gfa
+        The path to the GFA file. Default is "assembly.homopolymer-compressed.noseq.gfa".
+    dam
+        The name of the dam. Default is "mat".
+    sire
+        The name of the sire. Default is "pat".
+    fai
+        The path to the FASTA index file. Default is "assembly.fasta.fai".
+    
+    Returns
+    -------
+    DataFrame
+        The DataFrame containing the nodes and their corresponding assigned contig names.
+
+    """
     stats = obj.stats.copy()
     path = obj.paths.copy()
     scfmap = obj.scfmap.copy()

@@ -7,8 +7,22 @@ def find_elements_with_brackets(input_list):
     indices = [idx for idx, element in enumerate(input_list) if element.startswith("[") and element.endswith("]")]
     return indices
 
-def findGaps(ob_ori):
-    obj = copy.deepcopy(ob_ori)
+def findGaps(obj):
+    """\
+    Find gaps in the 'path' column of the DataFrame and store the result in the 'gaps' column.
+
+    Parameters
+    ----------
+    obj
+        The VerkkoFillet object to be used.
+
+    Returns
+    -------
+    obj
+        The updated VerkkoFillet object with the 'gaps' column.
+
+    """
+    obj = copy.deepcopy(obj)
     
     gapDb = pd.DataFrame()
     if 'gaps' not in obj.paths.columns:

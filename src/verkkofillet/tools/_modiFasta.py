@@ -15,6 +15,18 @@ script_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../bin/')
 
 # Custom sort function that prioritizes base entries before random ones
 def sort_by_random_chr_hap(item, by="hap", type_list = ['mat', 'pat', 'hapUn']):
+    """/
+    Sorts chromosome names based on a custom sorting criterion.
+
+    Parameters
+    ----------
+    item
+        The chromosome name to be sorted.
+    by
+        The sorting criterion. Default is 'hap'.
+    type_list
+        The list of chromosome types to be used for sorting. Default is ['mat', 'pat', 'hapUn'].
+    """
     # Check if 'random' is in the item
     is_random = '_random_' in item
 
@@ -55,10 +67,14 @@ def sortContig(ori_fasta, sorted_fasta=None, sort_by="hap"):
     """
     Sorts sequences in a FASTA file based on a custom sorting criterion (e.g., 'hap', 'chr').
     
-    :param obj: An object needed for the sort function (e.g., used in sort_by_random_chr_hap).
-    :param ori_fasta: Path to the original FASTA file.
-    :param sorted_fasta: Path to save the sorted FASTA file. If None, it will be generated with surfix of "_sorted.fasta"
-    :param sort_by: Sorting criteria (default is "hap").
+    Parameters
+    ----------
+    ori_fasta
+        Path to the original FASTA file.
+    sorted_fasta
+        Path to save the sorted FASTA file. If None, it will be generated with surfix of "_sorted.fasta"
+    sort_by
+        Sorting criteria (default is "hap"). ['hap','chr']
     """
     
     # Check if the input FASTA file exists
@@ -96,7 +112,33 @@ def sortContig(ori_fasta, sorted_fasta=None, sort_by="hap"):
 
 
 
-def renameContig(obj, chrMap, out_mapFile = "assembly.final.mapNaming.txt", original_fasta= "assembly.fasta", output_fasta = None, showOnly = False):
+def renameContig(obj, 
+                 chrMap, 
+                 out_mapFile = "assembly.final.mapNaming.txt", 
+                 original_fasta= "assembly.fasta", 
+                 output_fasta = None, showOnly = False):
+    """\
+    Rename the contigs in the FASTA file based on the provided chromosome map file.
+
+    Parameters
+    ----------
+    obj
+        The VerkkoFillet object to be used.
+    chrMap
+        The DataFrame containing the mapping of old chromosome names to new chromosome names.
+    out_mapFile
+        The output file to save the chromosome map. Default is "assembly.final.mapNaming.txt".
+    original_fasta
+        The path to the original FASTA file. Default is "assembly.fasta".
+    output_fasta
+        The path to save the renamed FASTA file. If None, it will be generated with a suffix of "_rename.fasta".
+    showOnly
+        If True, the command will be printed but not executed. Default is False.
+    
+    Returns
+    -------
+    output_fasta
+    """
     working_dir = os.path.abspath(obj.verkko_fillet_dir)
     script = os.path.abspath(os.path.join(script_path, "changeChrName.sh"))  # Assuming script_path is defined elsewhere
     chrMap.to_csv(out_mapFile, sep ='\t', header = None, index=False)
@@ -128,6 +170,22 @@ def renameContig(obj, chrMap, out_mapFile = "assembly.final.mapNaming.txt", orig
 
 
 def flipContig(filp_contig_list, ori_fasta="assembly.fasta", final_fasta=None):
+    """\
+    Flip the sequences in a FASTA file based on the provided list of contigs.
+
+    Parameters
+    ----------
+    filp_contig_list
+        The list of contigs to be flipped.
+    ori_fasta
+        The path to the original FASTA file. Default is "assembly.fasta".
+    final_fasta
+        The path to save the flipped FASTA file. If None, it will be generated with a suffix of "_flip.fasta".
+    
+    Returns
+    -------
+    final_fasta
+    """
     
     # Check if "assembly_trimmed.fasta" exists and update file names
     # Check if the final output file already exists

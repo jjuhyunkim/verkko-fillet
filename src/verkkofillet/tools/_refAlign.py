@@ -6,6 +6,26 @@ import os
 script_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../bin/'))
 
 def findRevChr(obj, size = "large", mashmap_out = "assembly.mashmap.out"):
+    """\
+    Generate a dot plot of the chromosome alignment using the mashmap output file and the `generateDotPlot` script. 
+
+    Parameters
+    ----------
+    obj
+        The VerkkoFillet object to be used.
+    size
+        The size of the output image. Default is "large".
+    mashmap_out
+        The path to the mashmap output file. Default is "assembly.mashmap.out".
+    
+    Returns
+    -------
+    output files
+        out.fplot
+        out.rplot
+        out.gp
+        out.png
+    """    
     working_dir = os.path.abspath(obj.verkkoDir)
     script = os.path.abspath(os.path.join(script_path, "generateDotPlot"))
 

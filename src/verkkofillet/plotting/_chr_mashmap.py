@@ -8,7 +8,7 @@ def showMashmapOri(obj, mashmap_out = "assembly.mashmap.out.filtered.out", by = 
     """
     Generates a bar plot showing the covered regions of the assembly for each reference.
 
-    Parameters:
+    Parameters
     -----------
     obj (verko-fillet object):
         An object that contains a .stats attribute, which should be a pandas DataFrame.

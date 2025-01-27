@@ -10,9 +10,12 @@ def save_list_to_file(data_list, file_path="insertONTsupport.list"):
     """
     Saves a list to a file with one column. If the folder does not exist, it creates it.
 
-    Parameters:
-    - data_list: List of items to be saved.
-    - file_path: Path to the file where the data will be saved.
+    Parameters
+    ----------
+    data_list
+        List of data to be saved.
+    file_path
+        Path to the file where the data will be saved.
     """
     # Extract directory from the file path and handle empty cases
     directory = os.path.dirname(file_path) if os.path.dirname(file_path) else '.'
@@ -31,15 +34,21 @@ def insertGap(obj, gapid, split_reads,
               alignGAF="graphAlignment/verkko.graphAlign_allONT.gaf",
               graph="assembly.homopolymer-compressed.gfa"):
     """
-    Inserts a gap into the graph using split reads.
+    Find ONT support for Inserts a gap into the graph using split reads.
 
-    Parameters:
-    - obj: verkko fillet obj.
-    - gapid: Identifier for the gap.
-    - split_reads: Pandas DataFrame containing reads information.
-    - outputDir: Output directory (default: 'missing_edge').
-    - alignGAF: Path to alignment GAF file (default: 'graphAlignment/verkko.graphAlign_allONT.gaf').
-    - graph: Path to graph file (default: 'assembly.homopolymer-compressed.gfa').
+    Parameters
+    obj
+        verkko fillet obj.
+    gapid
+        Identifier for the gap.
+    split_reads
+        Pandas DataFrame containing reads information.
+    outputDir
+        Output directory (default: 'missing_edge').
+    alignGAF
+        Path to alignment GAF file (default: 'graphAlignment/verkko.graphAlign_allONT.gaf').
+    graph
+        Path to graph file (default: 'assembly.homopolymer-compressed.gfa').
     """
 
     # Ensure absolute paths
