@@ -1,5 +1,6 @@
 from __future__ import annotations
 import warnings
+warnings.filterwarnings('ignore')
 import sys
 import os
 from datetime import datetime
@@ -23,7 +24,7 @@ with warnings.catch_warnings():
     warnings.simplefilter("ignore")
     # Code that generates warnings
     import verkkofillet
-    
+
 from packaging.version import Version
 import plotly.io as pio
 
