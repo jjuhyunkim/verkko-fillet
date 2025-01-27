@@ -24,6 +24,7 @@ verkkofillet/bin/insert_aln_gaps.py
 verkkofillet/bin/lock_folder.sh
 verkkofillet/bin/make_verkko_fillet_dir.sh
 verkkofillet/bin/meryl.sh
+verkkofillet/bin/path_to_gaf.py
 verkkofillet/bin/qv.sh
 verkkofillet/bin/removeRDNA.sh
 verkkofillet/bin/svbyeye.r

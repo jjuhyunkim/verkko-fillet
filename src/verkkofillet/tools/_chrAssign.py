@@ -103,7 +103,7 @@ def convertRefName(fasta, map_file, out_fasta=None, showOnly = False):
     # Default out_fasta if not provided
     ref_fasta = os.path.abspath(fasta)
     map_file = os.path.abspath(map_file)
-
+    working_dir = os.path.dirname(ref_fasta)
     
     if out_fasta is None:
         # Extract the base name of the file and directory
