@@ -124,7 +124,7 @@ def convertRefName(fasta, map_file, out_fasta=None, showOnly=False):
     
     # Construct the awk command to replace headers
     cmd = f"awk 'NR==FNR {{map[$1]=$2; next}} /^>/ {{header=substr($1,2); if (header in map) $1=\">\" map[header];}} {{print}}' {shlex.quote(map_file)} {shlex.quote(ref_fasta)} > {shlex.quote(out_fasta)}"
-    
+
     if showOnly:
         # If showOnly is True, just display the command instead of executing it
         print(f"Command to be executed:\n{cmd}")
@@ -135,13 +135,13 @@ def convertRefName(fasta, map_file, out_fasta=None, showOnly=False):
 
 def showPairwiseAlign(obj, 
                       size="large", 
-                      working_directory = "chromosome_assignment",
+                      working_directory="chromosome_assignment",
                       mashmap_out="chromosome_assignment/assembly.mashmap.out", 
                       prefix="refAlign", 
                       idx=0.99, 
                       minLen=50000, 
-                      showOnly = False):
-    """\
+                      showOnly=False):
+    """
     Generate a dot plot from the mashmap output.
 
     Parameters
@@ -149,18 +149,17 @@ def showPairwiseAlign(obj,
     obj (verko-fillet object):
         An object that contains a .stats attribute, which should be a pandas DataFrame.
     size (str):
-        size of the image [default: `large`]
+        Size of the image [default: `large`]
     mashmap_out (str):
-        path to the mashmap output file [default: `chromosome_assignment/assembly.mashmap.out`]
+        Path to the mashmap output file [default: `chromosome_assignment/assembly.mashmap.out`]
     prefix (str):
-        prefix for the output files [default: `refAlign`]
+        Prefix for the output files [default: `refAlign`]
     idx (float):
-        identity threshold to filter mashmap result [default: 0.99]
+        Identity threshold for filtering alignments [default: 0.99]
     minLen (int):
-        minimum length of the alignment to be considered [default: 50000]
+        Minimum length of alignments to be considered [default: 50000]
     showOnly (bool):
-        If set to True, the script will not be executed; it
-        will only display the intended operations. [default: FALSE]
+        If set to True, the script will not be executed; it will only display the intended operations. [default: False]
     """
     # Ensure paths are absolute
     working_dir = os.path.abspath(working_directory)
@@ -180,11 +179,11 @@ def showPairwiseAlign(obj,
         f"if ((arr[3] > {idx}) && ($4 - $3 > {minLen})) print }}' "
         f"{shlex.quote(mashmap_out)} > {shlex.quote(mashmap_out)}.filtered.out"
     )
-    run_shell(cmd1, wkDir=working_dir, functionName = "showPairwiseAlign_1" ,longLog = False, showOnly = showOnly)
+    run_shell(cmd1, wkDir=working_dir, functionName="showPairwiseAlign_1", longLog=False, showOnly=showOnly)
 
     # Generate plot command
     cmd2 = f"perl {shlex.quote(script)} png {shlex.quote(size)} {shlex.quote(mashmap_out)}.filtered.out"
-    run_shell(cmd2, wkDir=working_dir, functionName = "showPairwiseAlign_2" ,longLog = False, showOnly = showOnly)
+    run_shell(cmd2, wkDir=working_dir, functionName="showPairwiseAlign_2", longLog=False, showOnly=showOnly)
 
     # Rename output files
     output_files = ['out.fplot', 'out.rplot', 'out.gp', 'out.png']
@@ -193,7 +192,7 @@ def showPairwiseAlign(obj,
         new_path = os.path.join(working_dir, f"{prefix}.{file.split('.')[1]}")
         if os.path.exists(old_path):
             os.rename(old_path, new_path)
-
+    
     # Display the PNG image
     image_path = os.path.join(working_dir, f"{prefix}.png")
     if os.path.exists(image_path):
