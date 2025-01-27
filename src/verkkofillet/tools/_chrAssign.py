@@ -10,7 +10,7 @@ from .._run_shell import run_shell
 
 script_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../bin/'))
 
-def chrAssign(obj, ref, working_directory = "chromosome_assignment", fasta="assembly.fasta", chr_name="chr", idx=99, showOnly = False):
+def chrAssign(obj, ref, working_directory="chromosome_assignment", fasta="assembly.fasta", chr_name="chr", idx=99, showOnly=False):
     """\
     Run the script to align the assembly to the given reference using mashmap and obtain the chromosome assignment results.
 
@@ -76,17 +76,18 @@ def chrAssign(obj, ref, working_directory = "chromosome_assignment", fasta="asse
     # Construct the shell command
     cmd = f"bash {shlex.quote(script)} {shlex.quote(ref)} {shlex.quote(str(idx))} {shlex.quote(fasta)} {shlex.quote(chr_name)}"
     
-    run_shell(cmd, wkDir=os.getcwd(), functionName = "chrAssign" ,longLog = False, showOnly = showOnly)
+    run_shell(cmd, wkDir=os.getcwd(), functionName="chrAssign", longLog=False, showOnly=showOnly)
 
-    for output in output_files :
+    for output in output_files:
         shutil.move(output, f"{working_dir}/{output}")
+
 
 def convertRefName(fasta, map_file, out_fasta=None, showOnly=False):
     """
     Replace the name in the given FASTA file.
     
     Parameters:
-    -----------    
+    -----------
     fasta (str):
         FASTA file in which the contig name is to be replaced
     map_file (str):
