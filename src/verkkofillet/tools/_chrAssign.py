@@ -10,7 +10,7 @@ from .._run_shell import run_shell
 
 script_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../bin/'))
 
-def chrAssign(obj, ref, working_directory="chromosome_assignment", fasta="assembly.fasta", chr_name="chr", idx=99, showOnly=False):
+def chrAssign(obj, ref, working_directory="chromosome_assignment", fasta="assembly.fasta", chr_name="chr", idx=99, showOnly=False, force = False):
     """\
     Run the script to align the assembly to the given reference using mashmap and obtain the chromosome assignment results.
 
@@ -30,6 +30,8 @@ def chrAssign(obj, ref, working_directory="chromosome_assignment", fasta="assemb
         Identity threshold to filter mashmap result [defualt : 99]
     showOnly (bool): 
         If set to True, the script will not be executed; it will only display the intended operations. [default : FALSE]
+    force (bool):
+        If set to True, the script will overwrite the existing files. [default : FALSE]
 
     Return:
     -----------
@@ -45,16 +47,8 @@ def chrAssign(obj, ref, working_directory="chromosome_assignment", fasta="assemb
     script = os.path.abspath(os.path.join(script_path, "getChrNames.sh"))  # Assuming script_path is defined elsewhere
     fasta = os.path.abspath(fasta)
     ref = os.path.abspath(ref)
+    cwd = os.getcwd()
 
-    # Check if the script exists
-    if not os.path.exists(script):
-        print(f"Script not found: {script}")
-        return
-    
-    # Check if the working directory exists
-    if not os.path.exists(working_dir):
-        os.mkdir(working_dir)
-    
     output_files = [
         "translation_hap1",
         "translation_hap2",
@@ -67,12 +61,30 @@ def chrAssign(obj, ref, working_directory="chromosome_assignment", fasta="assemb
     if all(os.path.exists(os.path.join(working_dir, file)) for file in output_files):
         print("All output files already exist. Skipping chromosome assignment.")
         return
-        
-    if os.path.exists(f"{working_dir}/assembly.mashmap.out"):
-        print(f"The [assembly.mashmap.out] file already exists")
-        print(f"If you want to re-run this job, please delete {working_dir}/[assembly.mashmap.out]")
+
+    # Check if the script exists
+    if not os.path.exists(script):
+        print(f"Script not found: {script}")
         return
-        
+    
+    # Check if the working directory exists
+    if not os.path.exists(working_dir):
+        print(f"Creating the working directory: {working_dir}")
+        os.mkdir(working_dir)
+
+        # remove all results if force is True
+    if force:
+        print("Force is set to True. Removing all existing results.")
+        print(f"Rerun the job to get the new results.")
+        if os.path.exists(working_directory):
+            shutil.rmtree(working_directory)
+    else:
+        if os.path.exists(f"{working_directory}/assembly.mashmap.out"):
+            print(f"The mashmap file {working_directory}/assembly.mashmap.out already exists.")
+            print(f"If you want to re-run this job, please delete {working_directory}/assembly.mashmap.out or set force=True")
+            print(f"Reusing the existing results for this time.")
+            shutil.copy(f"{working_directory}/assembly.mashmap.out", f"{cwd}/assembly.mashmap.out")
+         
     # Construct the shell command
     cmd = f"bash {shlex.quote(script)} {shlex.quote(ref)} {shlex.quote(str(idx))} {shlex.quote(fasta)} {shlex.quote(chr_name)}"
     
