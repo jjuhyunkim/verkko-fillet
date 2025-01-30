@@ -2,9 +2,6 @@ import pandas as pd
 import os
 from natsort import natsorted
 
-
-# def runChrAssign(verkkoDir):  
-
 def readChr(obj,mapFile, 
             chromosome_assignment_directory = "chromosome_assignment", 
             stat_directory = "stats",
@@ -23,10 +20,9 @@ def readChr(obj,mapFile,
     stat_directory
         The directory containing the statistics. Default is "stats".
     sire
-        The name of the sire. Default is "sire".
+        The name of the sire. Default is "sire". Will ignore this if the haplotype is not starting with "sire", especially for not trio mode.
     dam
-        The name of the dam. Default is "dam".
-    
+        The name of the dam. Default is "dam". Will ignore this if the haplotype is not starting with "dam", especially for not trio mode.
     Returns
     -------
     obj with stats attribute containing the chromosome assignment results.
@@ -34,7 +30,7 @@ def readChr(obj,mapFile,
     chromosome_assignment_directory = os.path.abspath(chromosome_assignment_directory)
     stat_directory = os.path.abspath(stat_directory)
     mapFile = os.path.abspath(mapFile)
-        
+    
     # read translation
     translation_hap1 = pd.read_csv(f"{chromosome_assignment_directory}/translation_hap1", header = None, sep = '\t')
     translation_hap1.columns = ['contig','ref_chr','contig_len','ref_chr_len']

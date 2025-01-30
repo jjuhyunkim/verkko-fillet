@@ -34,8 +34,8 @@ import os
 gaf_file=os.path.realpath(sys.argv[1])
 path_file=os.path.realpath(sys.argv[2])
 
-print("input GAF file : " + gaf_file)
-print("output path.tsv file : " + path_file)
+print("ouput GAF file : " + gaf_file)
+print("input path.tsv file : " + path_file)
 
 
 if os.path.exists(gaf_file):

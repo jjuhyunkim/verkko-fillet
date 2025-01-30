@@ -246,3 +246,96 @@ def flipContig(filp_contig_list, ori_fasta="assembly.fasta", final_fasta=None):
     
     print("The chromosome flipping was completed successfully!")
     print(f"Output FASTA: {final_fasta}")
+
+def filterContigs(mapfile, assembly, out_prefix=None, filter_chr_list=None, showOnly = False):
+    """
+    Filter the contigs in the FASTA file based on the provided list of contigs. For chromosome assignment, we recommend using the reference genome that contains only the chromosomes to which the contigs should be assigned.
+
+    Parameters
+    ----------
+    mapfile
+        The path to the map file. The map file should contain the list of contigs to be filtered.
+    assembly
+        The path to the original FASTA file.
+    out_prefix
+        The prefix for the output file. If None, it will be generated based on the input file name with surfixed "_filtered.fa".
+    filter_chr_list
+        The list of contigs to be filtered.
+    showOnly
+        If True, the command will be printed but not executed. Default is False.
+    
+    Returns
+    -------
+    out_prefix + ".fasta"
+    """
+    # check if samtools is installed
+    try:
+        subprocess.run("samtools --version", shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    except subprocess.CalledProcessError as e:
+        print(f"Error checking samtools installation: {e}")
+        sys.exit(1)
+
+    # Check if the map file exists
+    if not os.path.exists(mapfile):
+        print(f"Map file not found: {mapfile}")
+        return
+    
+    # Check if the assembly file exists
+    if not os.path.exists(assembly):
+        print(f"Assembly file not found: {assembly}")
+        return
+
+    if not os.path.exists(f"{assembly}.fai"):
+        print(f"FAI for Assembly file not found: {assembly}.fai")
+        return
+
+    fai = pd.read_csv(f"{assembly}.fai", sep='\t', header=None, usecols=[0])
+    faichrList = list(fai[0])
+
+    if out_prefix is None:
+        out_basename = os.path.splitext(os.path.basename(assembly))[0] + "_filtered"
+        out_dir = os.path.dirname(assembly)
+        out_prefix = os.path.join(out_dir, out_basename) 
+    
+    if filter_chr_list is None:
+        cmd=f"cut -f1 {mapfile}"
+        col1 = subprocess.check_output(cmd, shell=True, text=True).splitlines()
+
+        cmd=f"cut -f2 {mapfile}"
+        col2 = subprocess.check_output(cmd, shell=True, text=True).splitlines()
+
+        filter_chr_list = list(set(col1 + col2))
+        filter_chr_list_len = int(len(filter_chr_list)/2)
+        print("No filter chromosome list provided. The contigs in the map file will be used.")
+        print(f"total chromosomes will be filtered in : {len(filter_chr_list)/2}")
+    else:
+        filter_chr_list_len = len(filter_chr_list)
+        print("Filtering contigs based on the provided list.")
+        print(f"total chromosomes will be filtered in : {len(filter_chr_list)}")
+
+    # Check if the output file already exists
+    if os.path.exists(f"{out_prefix}.fa"):
+        print(f"Output file already exists: {out_prefix}.fa")
+        return
+
+    # intersect the filter_chr_list with the chrList
+    intersect_contig = list(set(filter_chr_list) & set(faichrList))
+    if len(intersect_contig) == 0:
+        print("No contigs to filter. Theres no contigs are interected with the assembly.fai and given list.")
+        return
+    if filter_chr_list_len - len(intersect_contig) > 0:
+        print(f"{len(filter_chr_list) - len(intersect_contig)} contigs are not found in the assembly.fai file.")
+        print(f"Please check the contig names in the map file and the assembly file.")
+    
+    filter_chr_list = intersect_contig
+
+    print(f"Filtering contigs based on {len(filter_chr_list)} chromosomes.")
+    print(f"total chromosomes will be filtered in : {len(filter_chr_list)}")
+    filter_chr_list = " ".join(filter_chr_list)
+
+    # Construct the shell command
+    cmd = f"samtools faidx {shlex.quote(assembly)} {filter_chr_list}> {shlex.quote(out_prefix)}.fa"
+    
+    run_shell(cmd, functionName = "filterContigs", wkDir = os.getcwd() ,longLog = False, showOnly = showOnly)
+    
+    print(f"Filtered FASTA: {out_prefix}.fa")
