@@ -4,7 +4,7 @@ import numpy as np
 from .._run_shell import run_shell
 import os
     
-def showMashmapOri(obj, mashmap_out = "assembly.mashmap.out.filtered.out", by = "chr_hap"):
+def showMashmapOri(obj, mashmap_out = "chromosome_assignment/assembly.mashmap.out.filtered.out", by = "chr_hap", plot_height = 10, plot_width = 5):
     """
     Generates a bar plot showing the covered regions of the assembly for each reference.
 
@@ -61,7 +61,7 @@ def showMashmapOri(obj, mashmap_out = "assembly.mashmap.out.filtered.out", by = 
     data = data.sort_values(by = "qcover_perc", ascending = False)
     
     # Prepare the plot
-    fig, ax = plt.subplots(figsize=(5, 5))
+    fig, ax = plt.subplots(figsize=(plot_width, plot_height))
     
     # Add horizontal bars for positive and negative values
     ax.barh(data['by'], data['positive_qcover'], color='purple', label='Positive Strand')
