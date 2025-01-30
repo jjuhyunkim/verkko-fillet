@@ -49,6 +49,19 @@ def chrAssign(obj, ref, working_directory="chromosome_assignment", fasta="assemb
     ref = os.path.abspath(ref)
     cwd = os.getcwd()
 
+    # remove all results if force is True
+    if force:
+        print("Force is set to True. Removing all existing results.")
+        print(f"Rerun the job to get the new results.")
+        if os.path.exists(working_directory):
+            shutil.rmtree(working_directory)
+    else:
+        if os.path.exists(f"{working_directory}/assembly.mashmap.out"):
+            print(f"The mashmap file {working_directory}/assembly.mashmap.out already exists.")
+            print(f"If you want to re-run this job, please delete {working_directory}/assembly.mashmap.out or set force=True")
+            print(f"Reusing the existing results for this time.")
+            shutil.copy(f"{working_directory}/assembly.mashmap.out", f"{cwd}/assembly.mashmap.out")
+         
     output_files = [
         "translation_hap1",
         "translation_hap2",
@@ -72,19 +85,7 @@ def chrAssign(obj, ref, working_directory="chromosome_assignment", fasta="assemb
         print(f"Creating the working directory: {working_dir}")
         os.mkdir(working_dir)
 
-        # remove all results if force is True
-    if force:
-        print("Force is set to True. Removing all existing results.")
-        print(f"Rerun the job to get the new results.")
-        if os.path.exists(working_directory):
-            shutil.rmtree(working_directory)
-    else:
-        if os.path.exists(f"{working_directory}/assembly.mashmap.out"):
-            print(f"The mashmap file {working_directory}/assembly.mashmap.out already exists.")
-            print(f"If you want to re-run this job, please delete {working_directory}/assembly.mashmap.out or set force=True")
-            print(f"Reusing the existing results for this time.")
-            shutil.copy(f"{working_directory}/assembly.mashmap.out", f"{cwd}/assembly.mashmap.out")
-         
+
     # Construct the shell command
     cmd = f"bash {shlex.quote(script)} {shlex.quote(ref)} {shlex.quote(str(idx))} {shlex.quote(fasta)} {shlex.quote(chr_name)}"
     

@@ -5,7 +5,7 @@ from natsort import natsorted
 def readChr(obj,mapFile, 
             chromosome_assignment_directory = "chromosome_assignment", 
             stat_directory = "stats",
-            sire = "sire", dam = "dam"):
+            sire = None, dam = None):
     """\
     Read the chromosome assignment results and store them in the object.
 
@@ -34,11 +34,14 @@ def readChr(obj,mapFile,
     # read translation
     translation_hap1 = pd.read_csv(f"{chromosome_assignment_directory}/translation_hap1", header = None, sep = '\t')
     translation_hap1.columns = ['contig','ref_chr','contig_len','ref_chr_len']
-    translation_hap1['hap'] = translation_hap1['contig'].str.split('_', expand=True)[0]
+    translation_hap1['hap'] = translation_hap1['contig'].str.split('-', expand=True)[0]
+    translation_hap1['hap'] = translation_hap1['hap'].str.split('_', expand=True)[0]
     hap1 = translation_hap1['hap'][0]
+    
     translation_hap2 = pd.read_csv(f"{chromosome_assignment_directory}/translation_hap2", header = None, sep = '\t')
     translation_hap2.columns = ['contig','ref_chr','contig_len','ref_chr_len']
-    translation_hap2['hap'] = translation_hap2['contig'].str.split('_', expand=True)[0]
+    translation_hap2['hap'] = translation_hap2['contig'].str.split('-', expand=True)[0]
+    translation_hap2['hap'] = translation_hap2['hap'].str.split('_', expand=True)[0]
     hap2 = translation_hap2['hap'][0]
     translation = pd.concat([translation_hap1,translation_hap2])
     
@@ -57,7 +60,8 @@ def readChr(obj,mapFile,
     chr_completeness_max_hap2.columns = ['ref_chr','completeness']
     chr_completeness_max_hap2['hap']=hap2
     chr_completeness_max = pd.concat([chr_completeness_max_hap1,chr_completeness_max_hap2])
-    translation['hap'] = translation['contig'].str.split('_', expand=True)[0]
+    translation['hap'] = translation['contig'].str.split('-', expand=True)[0]
+    translation['hap'] = translation['hap'].str.split('_', expand=True)[0]
     
     del chr_completeness_max_hap2
     del chr_completeness_max_hap1
@@ -88,10 +92,11 @@ def readChr(obj,mapFile,
     
     stat_db['ref_chr'] = pd.Categorical(stat_db['ref_chr'], categories=chrom_map['ref_chr'],ordered=True)
     
-    # Assuming `sire` and `dam` are defined variables
-    stat_db['hap_verkko'] = stat_db['hap']
-    stat_db.loc[stat_db['hap_verkko'] == "sire", "hap"] = sire
-    stat_db.loc[stat_db['hap_verkko'] == "dam", "hap"] = dam
+    # Assuming `sire` and `dam` are defined variables    
+    if sire!=None and dam!=None:
+        stat_db['hap_verkko'] = stat_db['hap']
+        stat_db.loc[stat_db['hap_verkko'] == "sire", "hap"] = sire
+        stat_db.loc[stat_db['hap_verkko'] == "dam", "hap"] = dam
     
     stat_db.loc[stat_db['scf_ctg'] == 0, "t2tStat"] = "not_t2t"
     stat_db.loc[stat_db['scf_ctg'] == 1, "t2tStat"] = "scf"
