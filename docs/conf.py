@@ -123,4 +123,7 @@ html_title = "verkko-fillet"
 html_theme = "sphinx_book_theme"
 
 
-nitpick_ignore = [('py:class', 'type')]
+nitpick_ignore = [
+    ('py:class', 'type'),
+    ('py:class', 'typing.Type')  # If 'Type' in 'typing' is causing warnings
+]
