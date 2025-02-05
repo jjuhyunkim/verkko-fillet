@@ -3,10 +3,10 @@ import os
 from natsort import natsorted
 
 def readChr(obj,mapFile, 
-            chromosome_assignment_directory: str = "chromosome_assignment", 
-            stat_directory: str = "stats",
-            sire: str | None = None, 
-            dam: str | None = None):
+            chromosome_assignment_directory="chromosome_assignment", 
+            stat_directory="stats",
+            sire=None, 
+            dam=None):
     """\
     Read the chromosome assignment results and store them in the object.
 
