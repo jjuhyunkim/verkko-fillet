@@ -18,7 +18,7 @@ def findGaps(obj):
 
     Returns
     -------
-    obj
+    obj : object
         The updated VerkkoFillet object with the 'gaps' column.
 
     """

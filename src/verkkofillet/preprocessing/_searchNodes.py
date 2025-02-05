@@ -19,7 +19,7 @@ def readGaf(obj, gaf="graphAlignment/verkko.graphAlign_allONT.gaf"):
 
     Returns
     -------
-    obj
+    obj: object
         The updated object with the `gaf` attribute containing the DataFrame.
     """
     # Check if obj.gaf already exists and stop if it does
@@ -234,7 +234,7 @@ def find_hic_support(obj, node,
 
     Returns
     -------
-    dot plot of HiC support for the specified node.
+        dot plot of HiC support for the specified node.
     """
     # read data
     stat = obj.stats[['contig','ref_chr','hap']]

@@ -28,7 +28,7 @@ def checkGapFilling(obj):
     
     Returns
     ----------
-    gap
+    gap : DataFrame
         The updated 'gap' DataFrame.
     """
     total = obj.gaps.shape[0]  # Total number of gaps

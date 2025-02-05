@@ -187,7 +187,7 @@ def load_Verkko(fileName):
 
     Returns
     -------
-    obj
+    obj: object
         The loaded Verkko fillet object.
     """
     print("load verkko fllet obj from <- " + fileName)
@@ -236,7 +236,7 @@ def mkCNSdir(obj, new_folder_path, final_gaf = "final_rukki_fixed.paths.gaf"):
 
     Returns
     -------
-    new folder with mendatory files and symbolic links
+        new folder with mendatory files and symbolic links
     """
     newFolder = os.path.abspath(new_folder_path)
     verkkoDir = os.path.abspath(obj.verkkoDir)  # Define oriDir only once
@@ -301,7 +301,7 @@ def updateCNSdir_missingEdges(obj, new_folder_path):
 
     Returns
     -------
-    new folder with updated files and symbolic links for missing edges
+        new folder with updated files and symbolic links for missing edges
     """
     newFolder = os.path.abspath(new_folder_path)
     filletDir = os.path.abspath(obj.verkko_fillet_dir)  # Define oriDir only once
