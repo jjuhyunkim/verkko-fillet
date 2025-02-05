@@ -84,6 +84,11 @@ extensions = [
     "sphinx_tabs.tabs",
 ]
 
+intersphinx_mapping = {
+    'python': ('https://docs.python.org/3', None),
+    'pandas': ('https://pandas.pydata.org/pandas-docs/stable/', None),
+}
+
 # source_suffix = {
 #     '.rst': 'restructuredtext',
 #     '.txt': 'restructuredtext',
