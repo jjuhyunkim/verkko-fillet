@@ -48,7 +48,12 @@ def chrAssign(obj, ref, working_directory="chromosome_assignment", fasta="assemb
     fasta = os.path.abspath(fasta)
     ref = os.path.abspath(ref)
     cwd = os.getcwd()
+    hcp_ref = f"{os.path.splitext(ref)[0]}.hpc.fasta"
 
+    if not os.path.exists(ref):
+        print(f"Reference file not found: {ref}")
+        return
+        
     # remove all results if force is True
     if force:
         print("Force is set to True. Removing all existing results.")
@@ -67,13 +72,24 @@ def chrAssign(obj, ref, working_directory="chromosome_assignment", fasta="assemb
         "translation_hap2",
         "chr_completeness_max_hap1",
         "chr_completeness_max_hap2",
-        "assembly.mashmap.out"
+        "assembly.mashmap.out",
+        "assembly.homopolymer-compressed.chr.csv",
     ]
 
     # Check if all output files already exist
     if all(os.path.exists(os.path.join(working_dir, file)) for file in output_files):
         print("All output files already exist. Skipping chromosome assignment.")
         return
+
+    cleanupFiles = [
+        "/8-hicPipeline/unitigs.hpc.mashmap.out",
+        "unitigs.hpc.mashmap.out",
+        hcp_ref,
+    ] + output_files
+
+    for file in cleanupFiles:
+        if os.path.exists(file):
+            os.remove(file)
 
     # Check if the script exists
     if not os.path.exists(script):
@@ -85,7 +101,6 @@ def chrAssign(obj, ref, working_directory="chromosome_assignment", fasta="assemb
         print(f"Creating the working directory: {working_dir}")
         os.mkdir(working_dir)
 
-
     # Construct the shell command
     cmd = f"bash {shlex.quote(script)} {shlex.quote(ref)} {shlex.quote(str(idx))} {shlex.quote(fasta)} {shlex.quote(chr_name)}"
     
@@ -93,6 +108,12 @@ def chrAssign(obj, ref, working_directory="chromosome_assignment", fasta="assemb
 
     for output in output_files:
         shutil.move(output, f"{working_dir}/{output}")
+
+    # cleanup
+    for file in cleanupFiles:
+        if os.path.exists(file):
+            os.remove(file)
+
 
 
 def convertRefName(fasta, map_file, out_fasta=None, showOnly=False):

@@ -153,18 +153,21 @@ def searchSplit(obj, node_list_input, min_mapq=0, min_len=50000):
     DataFrame
         A DataFrame containing the Qname and path_modi columns of paths that meet the criteria.
     """
-    node_list = node_list_input
     # Create the regex pattern from the node list
-    node_pattern = '|'.join(node_list)  # Creates 'utig4-2329|utig4-2651'
+    node_pattern = '|'.join(node_list_input)  # Creates 'utig4-2329|utig4-2651'
     contains_nodes = (
     obj.gaf['path_modi'].str.contains(node_pattern, na=False) &
-    (obj.gaf['mapQ'] > 0) &
-    (obj.gaf['len'] > 50000)
+    (obj.gaf['mapQ'] > min_mapq ) &
+    (obj.gaf['len'] > min_len)
     )
     filtered_gaf = obj.gaf.loc[contains_nodes, :]
     result = filtered_gaf.groupby("Qname")['path_modi'].agg(set).reset_index()
     target_elements = set([f"@{node}@" for node in node_list_input])
-    rows_with_both = result[result['path_modi'].apply(lambda x: target_elements.issubset(x))]
+    rows_with_both = result[result['path_modi'].apply(lambda x: target_elements.issubset(x))].reset_index(drop=True)
+
+    num_rows = rows_with_both.shape[0]
+    print(f"{num_rows} reads were found that contain both nodes {node_list_input}")
+
     return rows_with_both
 
 # Use subprocess to run the grep command

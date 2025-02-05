@@ -5,6 +5,8 @@ if [ -z $1 ]; then
 	exit -1
 fi
 
+modulepath=$(realpth $0)
+
 file=$1
 file_name=`basename $file`
 
@@ -17,12 +19,12 @@ prefix=`echo $file | sed 's/.fasta$//g' | sed 's/.fa$//g'`
 
 module load minimap2	# For sdust
 
-$VGP_PIPELINE/telomere/find_telomere $file | awk '{print $1"\t"$(NF-4)"\t"$(NF-3)"\t"$(NF-2)"\t"$(NF-1)"\t"$NF}' - > $prefix.telomere
+$modulepath/telomere/find_telomere $file | awk '{print $1"\t"$(NF-4)"\t"$(NF-3)"\t"$(NF-2)"\t"$(NF-1)"\t"$NF}' - > $prefix.telomere
 sdust $file > $prefix.sdust
-java -cp $VGP_PIPELINE/telomere/telomere.jar SizeFasta $file > $prefix.lens
+java -cp $modulepath/telomere/telomere.jar SizeFasta $file > $prefix.lens
 
 # Lowering threshold to 0.10 (10%) from the initial 0.40 (40%)
-java -cp $VGP_PIPELINE/telomere/telomere.jar FindTelomereWindows $prefix.telomere 99.9 0.1 > $prefix.windows
-java -cp $VGP_PIPELINE/telomere/telomere.jar FindTelomereBreaks $prefix.lens $prefix.sdust $prefix.telomere > $prefix.breaks
+java -cp $modulepath/telomere/telomere.jar FindTelomereWindows $prefix.telomere 99.9 0.1 > $prefix.windows
+java -cp $modulepath/telomere/telomere.jar FindTelomereBreaks $prefix.lens $prefix.sdust $prefix.telomere > $prefix.breaks
 
 
