@@ -29,7 +29,9 @@ def save_list_to_file(data_list, file_path="insertONTsupport.list"):
             f.write(f"{item}\n")
 
 
-def insertGap(obj, gapid, split_reads,
+def insertGap(obj, 
+              gapid,
+              split_reads,
               outputDir="missing_edge",
               alignGAF="graphAlignment/verkko.graphAlign_allONT.gaf",
               graph="assembly.homopolymer-compressed.gfa"):
@@ -37,6 +39,7 @@ def insertGap(obj, gapid, split_reads,
     Find ONT support for Inserts a gap into the graph using split reads.
 
     Parameters
+    ----------
     obj
         verkko fillet obj.
     gapid
@@ -44,11 +47,11 @@ def insertGap(obj, gapid, split_reads,
     split_reads
         Pandas DataFrame containing reads information.
     outputDir
-        Output directory (default: 'missing_edge').
+        Output directory for the results.
     alignGAF
-        Path to alignment GAF file (default: 'graphAlignment/verkko.graphAlign_allONT.gaf').
+        Path to alignment GAF file.
     graph
-        Path to graph file (default: 'assembly.homopolymer-compressed.gfa').
+        Path to graph file.
     """
 
     # Ensure absolute paths

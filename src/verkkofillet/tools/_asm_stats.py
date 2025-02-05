@@ -9,7 +9,7 @@ def getT2T(obj, fasta="assembly.fasta", working_directory = "stats"):
     """
     Run the script to calculate assembly statistics, including contig presence, telomere regions, and gap locations.
 
-    Parameters:
+    Parameters
     -----------
     obj (verko-fillet object):
         An object that contains a .stats attribute, which should be a pandas DataFrame.
@@ -18,7 +18,7 @@ def getT2T(obj, fasta="assembly.fasta", working_directory = "stats"):
     working_directory (str):
         output directory [default : `./stats/`]
 
-    Return:
+    Return
     {working_directory}/assembly.gaps.bed
     {working_directory}assembly.t2t_ctgs
     {working_directory}assembly.t2t_scfs

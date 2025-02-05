@@ -59,7 +59,8 @@ def searchNodes(obj, node_list_input):
     """
     Extracts and filters paths containing specific nodes from the graph alignment file (GAF).
     
-    Parameters:
+    Parameters
+    ----------
     obj
         An object containing graph alignment data (obj.gaf) and path frequency data (obj.paths_freq).
     node_list_input
