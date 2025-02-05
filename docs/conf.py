@@ -9,7 +9,8 @@ from pathlib import Path, PurePosixPath
 from typing import TYPE_CHECKING
 from docutils import nodes
 
-script_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../src/'))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../src/')))
+
 
 # Ensure Biopython is imported correctly
 try:
