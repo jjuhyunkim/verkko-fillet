@@ -160,7 +160,7 @@ def read_Verkko(verkkoDir,
     return obj
 
 
-def save_Verkko(obj: FilletObj,
+def save_Verkko(obj,
                 fileName: str):
     """\
     Save the Verkko fillet object to a file using pickle.
