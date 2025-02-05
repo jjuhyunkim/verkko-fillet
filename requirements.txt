@@ -150,7 +150,6 @@ typing_extensions
 tzdata
 unicodedata2
 urllib3
-verkkofillet==0.1.2
 wcwidth
 whatshap==1.7
 wrapt

@@ -69,11 +69,15 @@ def transform_path(elements):
 def check_match(gap_value, element, position):
     """
     Checks if a specific gap matches the given element.
-    Args:
+    
+    Parameters
+    ----------
         gap_value (str): The gap value from the DataFrame.
         element (str): The element to match.
         position (int): The position in the gap (0 for start, 2 for end).
-    Returns:
+    
+    Returns
+    -------
         str: "match" if matches, else "notMatch".
     """
     return "match" if gap_value[position] == element else "notMatch"

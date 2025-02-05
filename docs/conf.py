@@ -9,6 +9,7 @@ from pathlib import Path, PurePosixPath
 from typing import TYPE_CHECKING
 from docutils import nodes
 
+sys.path.append('verkko-fillet/src')
 
 # Ensure Biopython is imported correctly
 try:
