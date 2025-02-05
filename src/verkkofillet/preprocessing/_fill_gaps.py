@@ -7,7 +7,9 @@ logging.basicConfig(level=logging.INFO)
 def progress_bar(current, total):
     """
     Displays a progress bar in the console.
-    Args:
+    
+    Parameters
+    ----------
         current (int): Current progress.
         total (int): Total progress.
     """
@@ -28,7 +30,7 @@ def checkGapFilling(obj):
     
     Returns
     ----------
-    gap : DataFrame
+    gap : dataframe
         The updated 'gap' DataFrame.
     """
     total = obj.gaps.shape[0]  # Total number of gaps

@@ -105,7 +105,6 @@ def naming_contigs(obj, node_database, duplicate_nodes ,
     
     Returns
     -------
-    DataFrame
         The DataFrame containing the nodes and their corresponding assigned contig names.
 
     """
