@@ -122,17 +122,17 @@ def convertRefName(fasta, map_file, out_fasta=None, showOnly=False):
 
     Parameters
     ----------
-    fasta (str):
+    fasta
         FASTA file in which the contig name is to be replaced
-    map_file (str):
+    map_file
         A two-column file, delimited by tabs, containing the old and new contig names.
-    showOnly (bool): 
+    showOnly
         If set to True, the script will not be executed; it will only display the intended operations. [default : False]
 
     Returns
     -------
-    out_fasta (str):
-        Output fasta file [default : {prefix}.rename.fa]
+    out_fasta : file
+        Output fasta file with the new contig names.
     """
     # Default out_fasta if not provided
     ref_fasta = os.path.abspath(fasta)
