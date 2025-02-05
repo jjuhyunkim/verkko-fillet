@@ -1,4 +1,4 @@
-from ._read_wirte import read_Verkko, save_Verkko, load_Verkko, mkCNSdir, updateCNSdir_missingEdges, loadGiraffe
+from ._read_wirte import read_Verkko, save_Verkko, load_Verkko, mkCNSdir, updateCNSdir_missingEdges, loadGiraffe, FilletObj
 from ._read_chr import readChr, find_multiContig_chr
 from ._find_gaps import findGaps, find_elements_with_brackets
 from ._searchNodes import searchNodes, searchSplit, readGaf, find_hic_support, get_NodeChr,read_Scfmap
@@ -11,6 +11,7 @@ from ._chrNaming import find_multi_used_node, naming_contigs
 
 __all__ = [
     "read_Verkko",
+    "FilletObj",
     "loadGiraffe",
     "get_NodeChr",
     "find_multiContig_chr",
