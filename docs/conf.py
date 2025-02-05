@@ -130,6 +130,6 @@ html_theme = "sphinx_book_theme"
 
 nitpick_ignore = [
     ('py:class', 'type'),
-    ('py:class', 'typing.Type')  # If 'Type' in 'typing' is causing warnings
+    ('py:class', 'typing.Type'), # If 'Type' in 'typing' is causing warnings
     ('py:class', 'FilletObj')  # If 'Any' in 'typing' is causing warnings
 ]
