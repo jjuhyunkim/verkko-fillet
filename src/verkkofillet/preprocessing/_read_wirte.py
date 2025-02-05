@@ -79,7 +79,7 @@ def read_Verkko(verkkoDir,
 
     Returns
     -------
-    obj : FilletObj
+    obj
         A FilletObj instance with the configured directories and loaded paths data.
     """
     # make filletObj
