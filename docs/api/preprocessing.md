@@ -23,6 +23,9 @@ Extracting gap from path, preprocessing recipes.
    pp.load_Verkko
    pp.mkCNSdir
    pp.updateCNSdir_missingEdges
+   pp.loadGiraffe
+   pp.readGaf
+   pp.getQV
 
 ``` 
 
@@ -35,6 +38,7 @@ Extracting gap from path, preprocessing recipes.
    pp.find_intra_telo
    pp.find_reads_intra_telo
    pp.findGaps
+   pp.searchSplit
    pp.searchNodes
    pp.highlight_nodes
    pp.fillGaps
@@ -42,5 +46,18 @@ Extracting gap from path, preprocessing recipes.
    pp.checkGapFilling
    pp.naming_contigs
    pp.find_multi_used_node
+   pp.find_hic_support
 
+```
+
+### Last touch
+```{eval-rst}
+.. autosummary::
+   :nosignatures:
+   :toctree: generated/
+
+   pp.get_NodeChr
+   pp.find_multiContig_chr
+
+   
 ```

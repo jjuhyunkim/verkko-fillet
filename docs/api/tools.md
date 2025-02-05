@@ -65,5 +65,7 @@ Run execute scripts
    tl.detect_internal_telomere
    tl.runTrimming
    tl.flipContig
+   tl.convertRefName
+   tl.filterContigs
 
 ```

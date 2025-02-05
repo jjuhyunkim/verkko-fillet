@@ -152,10 +152,10 @@ def renameContig(obj,
         The path to save the renamed FASTA file. If None, it will be generated with a suffix of "_rename.fasta".
     showOnly
         If True, the command will be printed but not executed. Default is False.
-    
+
     Returns
     -------
-    output_fasta
+        output_fasta
     """
     working_dir = os.path.abspath(obj.verkko_fillet_dir)
     script = os.path.abspath(os.path.join(script_path, "changeChrName.sh"))  # Assuming script_path is defined elsewhere
