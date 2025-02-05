@@ -14,7 +14,7 @@ def estLoops(obj, nodeList, gaf="graphAlignment/verkko.graphAlign_allONT.gaf"):
     nodeList
         A list of two nodes to be compared.
     gaf
-        Path to the GAF file containing the graph alignment information. Default is "graphAlignment/verkko.graphAlign_allONT.gaf".
+        Path to the GAF file containing the graph alignment information. Default is "graphAlignment/verkko.graphAlign_allONT.gaf".   
     """
     if obj is None:
         raise ValueError("The 'obj' parameter is required.")

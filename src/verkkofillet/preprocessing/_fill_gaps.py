@@ -171,7 +171,7 @@ def writeFixedGaf(obj, rukki = "8-hicPipeline/rukki.paths.gaf", save = "final_ru
 
     Returns
     -------
-    fixed_rukki file.
+        fixed_rukki file.
     """
     print("Reading original rukki path from "+rukki)
     ori_rukki = pd.read_csv(rukki, sep ='\t', header = 0)

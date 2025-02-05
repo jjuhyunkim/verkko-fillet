@@ -151,7 +151,6 @@ def searchSplit(obj, node_list_input, min_mapq=0, min_len=50000):
 
     Returns
     -------
-    DataFrame
         A DataFrame containing the Qname and path_modi columns of paths that meet the criteria.
     """
     # Create the regex pattern from the node list
@@ -184,7 +183,6 @@ def read_Scfmap(scfmap_file = "assembly.scfmap"):
 
     Returns
     -------
-    DataFrame
         A DataFrame containing the 'fasta_name' and 'path_name' columns
     """
     command = f'grep "^path" {scfmap_file} | cut -d" " -f 2,3'

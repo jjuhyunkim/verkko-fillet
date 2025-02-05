@@ -160,7 +160,8 @@ def read_Verkko(verkkoDir,
     return obj
 
 
-def save_Verkko(obj, fileName):
+def save_Verkko(obj: FilletObj,
+                fileName: str):
     """\
     Save the Verkko fillet object to a file using pickle.
 
@@ -384,7 +385,7 @@ def loadGiraffe():
 
     Returns
     -------
-    obj
+    obj : object
         The loaded Giraffe genome object.
     """
     fileName = f"{testDir}/test_giraffe/giraffe_before_gap_filling.pkl"

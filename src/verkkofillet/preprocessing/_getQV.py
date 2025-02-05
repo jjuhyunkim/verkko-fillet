@@ -14,7 +14,7 @@ def getQV(obj, qvFile="kmer/assembly.qv_cal.qv"):
     
     Returns
     -------
-    obj
+    obj : object
         The object with the QV DataFrame attached
     """
     # Construct the full path to the QV file

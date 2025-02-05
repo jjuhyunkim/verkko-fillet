@@ -23,9 +23,10 @@ def readChr(obj,mapFile,
         The name of the sire. Default is "sire". Will ignore this if the haplotype is not starting with "sire", especially for not trio mode.
     dam
         The name of the dam. Default is "dam". Will ignore this if the haplotype is not starting with "dam", especially for not trio mode.
+    
     Returns
     -------
-    obj with stats attribute containing the chromosome assignment results.
+        obj with stats attribute containing the chromosome assignment results.
     """
     chromosome_assignment_directory = os.path.abspath(chromosome_assignment_directory)
     stat_directory = os.path.abspath(stat_directory)
@@ -118,7 +119,6 @@ def find_multiContig_chr(obj):
 
     Returns
     -------
-    DataFrame
         The DataFrame containing the duplicated contigs with different contig names.
     """
     df = obj.stats[obj.stats.duplicated(subset=['hap', 'chr'], keep=False)]

@@ -2,6 +2,20 @@ import re
 from IPython.display import display, HTML
 
 def display_highlighted_words(df, keywords):
+    """\
+    Display a DataFrame with highlighted keywords.
+
+    Parameters
+    ----------
+    df
+        The DataFrame to be displayed.
+    keywords
+        The list of keywords to be highlighted.
+
+    Returns
+    -------
+        The displayed DataFrame with highlighted keywords.
+    """
     # Build the table header
     head = """
     <table>
@@ -53,7 +67,7 @@ def highlight_nodes(obj, node):
 
     Returns
     -------
-    The all paths containing the node.
+        The all paths containing the node.
     """
     df = obj.paths.loc[obj.paths['path'].str.contains(node), ['name','path']]
     return display_highlighted_words(df, [node])

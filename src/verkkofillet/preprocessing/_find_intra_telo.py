@@ -20,7 +20,6 @@ def find_intra_telo(obj, file="internal_telomere/assembly_1/assembly.windows.0.5
     
     Returns
     -------
-    DataFrame
         The DataFrame containing the contig, old_chr, ref_chr, hap, start, end, and len_fai columns.
     """
     
@@ -71,7 +70,6 @@ def find_reads_intra_telo(intra_telo, pos,scfmap = "assembly.scfmap",layout = "6
     
     Returns
     -------
-    DataFrame
         The DataFrame containing the readName, 5prime, 3prime, start, end, and type columns.
     """
     print("Finding the reads support for the additional artifical sequences outside of the telomere...")

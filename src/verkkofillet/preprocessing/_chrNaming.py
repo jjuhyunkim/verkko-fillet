@@ -43,7 +43,8 @@ def find_multi_used_node(obj):
     
     Returns
     -------
-    list of duplicated nodes
+    duplication reads : list 
+        list of duplicated nodes
     """
     path = obj.paths.copy()
     scfmap = obj.scfmap.copy()
