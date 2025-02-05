@@ -31,7 +31,7 @@ def graphIdx(obj, threads=1,
     
     Returns
     -------
-    index files
+        index files
     """
     
     folder_path = os.path.abspath(obj.verkko_fillet_dir)
@@ -108,7 +108,7 @@ def graphAlign(obj, threads=1, GraphAligner_path="GraphAligner",
     
     Returns
     -------
-    alignment files
+        alignment files
 
     """
     

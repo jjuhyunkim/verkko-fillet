@@ -36,7 +36,6 @@ def detect_internal_telomere(obj,
 
     Returns
     -------
-    output files
         assembly.windows.0.5.bed
     """
     print("Starting detecting internal telomere in the assembly.fasta")
@@ -92,7 +91,6 @@ def runTrimming(obj,
 
     Returns
     -------
-    output_fasta
         The path to the trimmed FASTA file.
 
     """

@@ -71,8 +71,7 @@ def calQV(obj,
 
     Returns
     -------
-    output files
-        prefix.qv_cal.qv
+        {prefix}.qv_cal.qv
     """
     # Define paths
     script = os.path.abspath(os.path.join(script_path, "qv.sh"))

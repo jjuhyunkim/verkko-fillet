@@ -11,19 +11,19 @@ def getT2T(obj, fasta="assembly.fasta", working_directory = "stats"):
 
     Parameters
     ----------
-    obj (verko-fillet object):
+    obj
         An object that contains a .stats attribute, which should be a pandas DataFrame.
-    fasta (str):
-        verkko assembly. [default: `assembly.fasta`]
-    working_directory (str):
-        output directory [default : `./stats/`]
+    fasta
+        verkko assembly.
+    working_directory
+        output directory
 
     Return
     ------
-    {working_directory}/assembly.gaps.bed
-    {working_directory}assembly.t2t_ctgs
-    {working_directory}assembly.t2t_scfs
-    {working_directory}assembly.telomere.bed
+        {working_directory}/assembly.gaps.bed
+        {working_directory}assembly.t2t_ctgs
+        {working_directory}assembly.t2t_scfs
+        {working_directory}assembly.telomere.bed
     """
     script = os.path.abspath(os.path.join(script_path, "getT2T.sh"))  # Ensure absolute path
     working_dir = os.path.abspath(working_directory)  # Ensure absolute path for the working directory

@@ -168,32 +168,32 @@ def convertRefName(fasta, map_file, out_fasta=None, showOnly=False):
 
 
 def showPairwiseAlign(obj, 
-                      size="large", 
-                      working_directory="chromosome_assignment",
-                      mashmap_out="chromosome_assignment/assembly.mashmap.out", 
-                      prefix="refAlign", 
-                      idx=0.99, 
-                      minLen=50000, 
-                      showOnly=False):
+                      size: str ="large", 
+                      working_directory: str ="chromosome_assignment",
+                      mashmap_out: str ="chromosome_assignment/assembly.mashmap.out", 
+                      prefix: str ="refAlign", 
+                      idx: float =0.99, 
+                      minLen: int =50000, 
+                      showOnly: bool =False):
     """
     Generate a dot plot from the mashmap output.
 
     Parameters
     ----------
-    obj (verko-fillet object):
+    obj
         An object that contains a .stats attribute, which should be a pandas DataFrame.
-    size (str):
-        Size of the image [default: `large`]
-    mashmap_out (str):
-        Path to the mashmap output file [default: `chromosome_assignment/assembly.mashmap.out`]
-    prefix (str):
-        Prefix for the output files [default: `refAlign`]
-    idx (float):
-        Identity threshold for filtering alignments [default: 0.99]
-    minLen (int):
-        Minimum length of alignments to be considered [default: 50000]
-    showOnly (bool):
-        If set to True, the script will not be executed; it will only display the intended operations. [default: False]
+    size
+        Size of the image.
+    mashmap_out
+        Path to the mashmap output file.
+    prefix
+        Prefix for the output files.
+    idx
+        Identity threshold for filtering alignments.
+    minLen
+        Minimum length of alignments to be considered.
+    showOnly
+        If set to True, the script will not be executed; it will only display the intended operations.
     """
     # Ensure paths are absolute
     working_dir = os.path.abspath(working_directory)

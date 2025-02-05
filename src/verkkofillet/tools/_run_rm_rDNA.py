@@ -21,7 +21,6 @@ def rmrDNA(
 
     Returns
     -------
-    output files
         target.screennodes.out
         assembly.homopolymer-compressed.noseq.telo_rdna.gfa
         assembly.colors.telo_rdna.csv

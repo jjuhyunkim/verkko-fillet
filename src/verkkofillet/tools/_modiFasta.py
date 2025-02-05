@@ -202,7 +202,7 @@ def flipContig(filp_contig_list, ori_fasta="assembly.fasta", final_fasta=None):
     
     Returns
     -------
-    final_fasta
+        final_fasta
     """
     
     # Check if "assembly_trimmed.fasta" exists and update file names
