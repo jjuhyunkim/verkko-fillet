@@ -20,8 +20,7 @@ def find_intra_telo(obj, file="internal_telomere/assembly_1/assembly.windows.0.5
     
     Returns
     -------
-    DataFrame
-        The DataFrame containing the contig, old_chr, ref_chr, hap, start, end, and len_fai columns.
+    The DataFrame containing the contig, old_chr, ref_chr, hap, start, end, and len_fai columns.
     """
     
     working_dir = os.getcwd()

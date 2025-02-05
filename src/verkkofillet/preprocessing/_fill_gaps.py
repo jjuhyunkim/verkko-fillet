@@ -72,13 +72,16 @@ def check_match(gap_value, element, position):
     
     Parameters
     ----------
-        gap_value (str): The gap value from the DataFrame.
-        element (str): The element to match.
-        position (int): The position in the gap (0 for start, 2 for end).
+    gap_value
+        The gap value from the DataFrame.
+    element
+        The element to match.
+    position
+        The position in the gap (0 for start, 2 for end).
     
     Returns
     -------
-        str: "match" if matches, else "notMatch".
+        "match" if matches, else "notMatch".
     """
     return "match" if gap_value[position] == element else "notMatch"
 

@@ -10,11 +10,11 @@ def showMashmapOri(obj, mashmap_out = "chromosome_assignment/assembly.mashmap.ou
 
     Parameters
     -----------
-    obj (verko-fillet object):
+    obj
         An object that contains a .stats attribute, which should be a pandas DataFrame.
-    mashmap_out (str, optional):
+    mashmap_out
         The Mashmap output file, aligning the assembly to the reference. Default is assembly.mashmap.out.filtered.out.
-    by (str, optional):
+    by
         Specifies the grouping method for the plot. Default is "chr_hap". Available options are ['contig', 'all', 'chr_hap'].
     """
     working_dir = os.path.abspath(obj.verkko_fillet_dir)  # Ensure absolute path for the working directory

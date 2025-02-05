@@ -12,7 +12,7 @@ def qvPlot(obj):
 
     Parameters
     -----------
-    obj : verko-fillet object
+    obj
         An object that contains a `.stats` attribute, which should be a pandas DataFrame.
     """
     # Create figure and axes
@@ -101,9 +101,9 @@ def contigPlot(obj,plot_height = 10 , plot_width = 5):
     """
     Generates a heatmap of statistics for each haplotype and contig. Brick color represents T2T contigs without gaps, salmon color indicates T2T contigs with gaps, and beige color denotes non-T2T contigs.
 
-    Parameters:
+    Parameters
     -----------
-    obj : verko-fillet object
+    obj
         An object that contains a `.stats` attribute, which should be a pandas DataFrame 
     """
     stat_db = obj.stats.copy()
