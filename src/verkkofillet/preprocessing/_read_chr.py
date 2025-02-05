@@ -5,7 +5,7 @@ from natsort import natsorted
 def readChr(obj,mapFile, 
             chromosome_assignment_directory:str = "chromosome_assignment", 
             stat_directory:str = "stats",
-            sire:bool | str = None, dam:bool | str = None):
+            sire: None | str = None, dam: None | str = None):
     """\
     Read the chromosome assignment results and store them in the object.
 
