@@ -85,7 +85,7 @@ def check_match(gap_value, element, position):
     """
     return "match" if gap_value[position] == element else "notMatch"
 
-def fillGaps(obj, gapId, final_path):
+def fillGaps(obj, *, gapId, final_path):
     """
     Fills gaps for a specific gapId, updates the 'fixedPath', 'startMatch', 'endMatch', and 'finalGaf' columns.
     
