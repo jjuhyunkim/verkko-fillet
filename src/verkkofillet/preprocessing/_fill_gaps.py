@@ -100,7 +100,7 @@ def fillGaps(obj, *, gapId, final_path):
 
     Returns
     -------
-    obj
+    obj : object
         The updated verkko fillet object.
     """
     gap = obj.gaps  # The DataFrame containing gap data
