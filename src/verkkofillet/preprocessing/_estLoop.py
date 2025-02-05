@@ -4,7 +4,7 @@ import plotly.graph_objects as go
 import os
 
 def estLoops(obj, nodeList, gaf="graphAlignment/verkko.graphAlign_allONT.gaf"):
-    """\
+    """
     Estimate the number of loops between two nodes in the graph.
 
     Parameters

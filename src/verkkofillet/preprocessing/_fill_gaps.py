@@ -25,6 +25,11 @@ def checkGapFilling(obj):
     ----------
     obj
         An verkko fillet object that contains the 'gap' DataFrame in obj.gaps.
+    
+    Returns
+    ----------
+    gap
+        The updated 'gap' DataFrame.
     """
     total = obj.gaps.shape[0]  # Total number of gaps
     gap = obj.gaps  # Assuming gap is the DataFrame containing gap information
