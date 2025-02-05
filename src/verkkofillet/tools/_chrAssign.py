@@ -131,7 +131,6 @@ def convertRefName(fasta, map_file, out_fasta=None, showOnly=False):
 
     Returns
     -------
-    out_fasta : file
         Output fasta file with the new contig names.
     """
     # Default out_fasta if not provided

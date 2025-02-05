@@ -266,7 +266,7 @@ def filterContigs(mapfile, assembly, out_prefix=None, filter_chr_list=None, show
     
     Returns
     -------
-    fasta file with filtered contigs : file
+        fasta file with filtered contigs
     """
     # check if samtools is installed
     try:
