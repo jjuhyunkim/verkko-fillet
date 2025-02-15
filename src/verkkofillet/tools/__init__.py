@@ -18,6 +18,7 @@ from ._run_rm_rDNA import rmrDNA
 from ._insert_gap import insertGap
 from ._modiFasta import flipContig,renameContig,sortContig,filterContigs
 from ._detect_internal_telomere import detect_internal_telomere,runTrimming
+from ._cov_unphc_phc_space import build_sparse_compression_map,lift_seqs, addPadding_to_bed, make_bandage_csv
 
 __all__ = [
     'graphIdx',
@@ -36,4 +37,8 @@ __all__ = [
     'renameContig',
     'sortContig',
     'filterContigs',
+    'build_sparse_compression_map',
+    'lift_seqs',
+    'addPadding_to_bed',
+    'make_bandage_csv',
 ]

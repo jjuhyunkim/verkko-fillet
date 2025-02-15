@@ -13,6 +13,7 @@ verkkofillet.egg-info/top_level.txt
 verkkofillet/bin/__init__.py
 verkkofillet/bin/_slurm_telomere_analysis.sh
 verkkofillet/bin/_sumit_meryl.sh
+verkkofillet/bin/build_sparse_compression_map.py
 verkkofillet/bin/changeChrName.sh
 verkkofillet/bin/detectTelo.sh
 verkkofillet/bin/find_telomere.sh
@@ -21,6 +22,7 @@ verkkofillet/bin/getChrNames.sh
 verkkofillet/bin/getT2T.sh
 verkkofillet/bin/graph_functions.py
 verkkofillet/bin/insert_aln_gaps.py
+verkkofillet/bin/lift_seqs.py
 verkkofillet/bin/lock_folder.sh
 verkkofillet/bin/make_verkko_fillet_dir.sh
 verkkofillet/bin/meryl.sh
@@ -85,6 +87,7 @@ verkkofillet/preprocessing/__init__.py
 verkkofillet/preprocessing/_chrNaming.py
 verkkofillet/preprocessing/_estLoop.py
 verkkofillet/preprocessing/_fill_gaps.py
+verkkofillet/preprocessing/_findNode_from_region.py
 verkkofillet/preprocessing/_find_gaps.py
 verkkofillet/preprocessing/_find_intra_telo.py
 verkkofillet/preprocessing/_getQV.py
@@ -95,6 +98,7 @@ verkkofillet/preprocessing/_searchNodes.py
 verkkofillet/tools/__init__.py
 verkkofillet/tools/_asm_stats.py
 verkkofillet/tools/_chrAssign.py
+verkkofillet/tools/_cov_unphc_phc_space.py
 verkkofillet/tools/_detect_internal_telomere.py
 verkkofillet/tools/_graphAlign.py
 verkkofillet/tools/_insert_gap.py

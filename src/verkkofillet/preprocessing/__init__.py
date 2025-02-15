@@ -8,6 +8,7 @@ from ._getQV import getQV
 from ._find_intra_telo import find_intra_telo,find_reads_intra_telo
 from ._highlight_nodes import highlight_nodes
 from ._chrNaming import find_multi_used_node, naming_contigs
+from ._findNode_from_region import getNodes_from_unHPCregion,bed_to_regionsList
 
 __all__ = [
     "read_Verkko",
@@ -38,4 +39,5 @@ __all__ = [
     'find_reads_intra_telo',
     'find_multi_used_node',
     'naming_contigs', 
-]
+    'getNodes_from_unHPCregion',
+    'bed_to_regionsList']
