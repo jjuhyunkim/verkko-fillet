@@ -39,7 +39,7 @@ def query_to_target_position(query_pos, query_start, target_start, cigar):
 
 # READ inputs 
 # READ GAF 
-def readGAF(gaf_file, region):
+def readGAF_extractRegion(gaf_file, region):
     # print("read gaf file...")
     gaf = pd.read_csv(gaf_file, sep="\t", header=None)
     gaf.columns = ["qname", "qlen", "qstart", "qend", "strand", "path", "path_len", "path_start", "path_end", 
@@ -110,6 +110,14 @@ def finding_nodes(gaf_chr_db, start, end,segment, link):
         
         elif len(gaf_chr['path_split']) == 1:
             final_nodes.append(gaf_chr['path_split'][0])
+            print(f"final_nodes: {final_nodes}")
+            print(gaf_chr)
+            # Create a DataFrame for node space
+            node_space = pd.concat([
+                node_space,
+                pd.DataFrame({'node': gaf_chr_db['path_split'].values[0], 
+                              'start_coor': 1, 'end_coor': gaf_chr['path_len']})
+            ], ignore_index=True)
         
         else:
             # Create a DataFrame for node space
@@ -166,7 +174,7 @@ def getNodes_from_unHPCregion(gaf_file, graph_file, regions_list):
     graph_file : str
         The path to the graph file.
     regions_list : list
-        A list of regions in the format "chr:start-end".
+        A list of regions in the format "chr:start-end". compressed coordinates
     
     Returns
     -------
@@ -174,14 +182,38 @@ def getNodes_from_unHPCregion(gaf_file, graph_file, regions_list):
         A DataFrame with the regions and the nodes that overlap with them.
     """
     regions_node_db = pd.DataFrame()
+    regions_node_coor = pd.DataFrame()
+   
     for i in tqdm(range(len(regions_list)), desc="Finding nodes for regions"): 
         region = regions_list[i]
         # print(f"Finding nodes for {region}")
-        gaf_chr_db, chr, start, end = readGAF(gaf_file, region)
+        gaf_chr_db, chr, start, end = readGAF_extractRegion(gaf_file, region)
+        
         segment, link = readGraph(graph_file)
+        
         final_nodes, total_bed_start, total_bed_end, node_space = finding_nodes(gaf_chr_db, start, end,segment, link)
+        # print(f"final_nodes: {final_nodes}")
+        # print(f"total_bed_start: {total_bed_start}")
+        # print(f"total_bed_end: {total_bed_end}")    
+        # print(f"node_space: {node_space}")
+        # get the node bed
+        # sub_db = node_space.loc[(node_space['start_coor'].between(total_bed_start, total_bed_end) | (node_space['end_coor'].between(total_bed_start,total_bed_end))),]
+        sub_db = node_space[(node_space['end_coor'] >=total_bed_start) & (node_space['start_coor'] <= total_bed_end)]
+        sub_db['len_node'] = sub_db['end_coor'] - sub_db['start_coor']
+        sub_db['start_coor_on_node'] = total_bed_start - sub_db['start_coor']
+        sub_db.loc[sub_db['start_coor_on_node'] < 0, 'start_coor_on_node'] = 0
+
+        sub_db['end_coor_on_node'] = total_bed_end - sub_db['end_coor']
+        idx = sub_db['end_coor_on_node'] < 0
+        sub_db.loc[idx, 'end_coor_on_node'] = sub_db.loc[idx, 'len_node']
+
+
+        sub_db['region'] = region
+        sub_db.columns= ['node', 'start_coor_path_comp', 'end_coor_path_comp', 'len_node', 'start_coor_on_node','end_coor_on_node','region']
+        regions_node_coor = pd.concat([regions_node_coor, sub_db], ignore_index=True)
         regions_node_db = pd.concat([regions_node_db, pd.DataFrame({"region": [region], "nodes": [final_nodes]})], ignore_index=True)
-    return regions_node_db
+    
+    return regions_node_db, regions_node_coor
 
 def bed_to_regionsList(bed_file):
     """
@@ -201,3 +233,162 @@ def bed_to_regionsList(bed_file):
     bed.columns = ["chrom", "start", "end"]
     regions_list = list(bed['chrom'] + ":" + bed['start'].astype(str) + "-" + bed['end'].astype(str))
     return regions_list
+
+
+def read_untig_Scfmap(file_path = "6-layoutContigs/unitig-popped.layout.scfmap"):
+    """
+    read_untig_Scfmap reads a unitig scfmap file and returns a DataFrame with the contig, unitig, and piece information.
+
+    Parameters
+    ----------
+    file_path : str
+        The path to the unitig scfmap file.
+
+    Returns
+    -------
+    scfmap : DataFrame
+        A DataFrame with the contig, unitig, and piece information.
+    """
+
+    data = []
+    with open(file_path, "r") as f:
+        lines = f.readlines()
+        
+        for i in range(0, len(lines), 3):  # Process every 3 lines as a block
+            path_line = lines[i].strip().split()  # Extract path details
+            piece_line = lines[i+1].strip()  # Extract piece
+            # Extract contig and utig values
+            contig = path_line[1]
+            utig = path_line[2]
+            piece = piece_line
+            
+            data.append([contig, utig, piece])
+
+    # Create DataFrame
+    scfmap = pd.DataFrame(data, columns=["contig", "node", "piece"])
+
+    # Display result
+    return scfmap
+
+
+def read_hapAssignRead(file):
+
+    hapmer = pd.read_csv(file, header=None, sep ='\t')
+    hapmer.columns = ['read','len_read','hap1_total_kmer','hap1_found_kmer','hap2_total_kmer','hap2_found_kmer','hap_read']
+    hapmer.drop_duplicates(inplace=True)
+    return hapmer
+
+
+def readNodeInfo(csv = 'assembly.colors.csv',
+                 graph = 'assembly.homopolymer-compressed.noseq.gfa',
+                 scfamp_node = "6-layoutContigs/unitig-popped.layout.scfmap",
+                 layout_node = '6-layoutContigs/unitig-popped.layout'):
+    """
+    readNodeInfo reads a CSV file, a graph file, and a scfmap file, and returns a DataFrame with the node information.
+
+    Parameters
+    ----------
+    csv : str
+        The path to the CSV file.
+    graph : str
+        The path to the graph file.
+    scfamp_node : str
+        The path to the scfmap file.
+
+    Returns
+    -------
+    nodeinfo : DataFrame
+        A DataFrame with the node information.
+    """
+    
+    scfmap = read_untig_Scfmap(file_path = scfamp_node)
+    del scfmap['contig']
+
+    nodeinfo = pd.read_csv(csv, header = 0, sep = '\t')
+    color_dict = dict({'#8888FF' : 'pat',
+                    '#AAAAAA' : 'lowcov',
+                    '#FFFF00' : 'ambiguous',
+                    '#FF8888' : 'mat'
+                    })
+    nodeinfo['hap_node'] = nodeinfo['color'].map(color_dict)
+
+    segment, link = readGraph(graph)
+
+    del color_dict
+    del segment['s']
+
+    nodeinfo = nodeinfo.merge(segment, on = 'node', how = 'outer')
+    nodeinfo = nodeinfo.merge(scfmap, on = 'node', how = 'outer')
+
+    # read node layout 
+    node_layout = pd.read_csv(layout_node, header=None)
+    node_layout.columns = ['layout_info']
+    node_layout_idx = node_layout.loc[node_layout['layout_info'].fillna('').str.startswith('tig'), 'layout_info'].str.split(r'\s+', expand=True)
+
+    node_layout_idx.columns = ['tig','piece']
+    del node_layout_idx['tig']
+    node_layout_idx = node_layout_idx.reset_index()
+    # del node_layout['index']
+
+    return nodeinfo, node_layout, node_layout_idx
+
+
+def get_hap_ratio(obj, node, hifi_read, node_layout, node_layout_idx, nodeinfo, regions_node_coor):
+    color = nodeinfo.copy()
+    contigName = obj.paths[obj.paths['path'].str.contains(node+'+') | obj.paths['path'].str.contains(node+'-')]['name'].values[0]
+    # len_node = regions_node_coor.loc[regions_node_coor['node'] == node, 'len_node'].values[0]
+    start_coor = regions_node_coor.loc[regions_node_coor['node'] == node, 'start_coor_on_node'].values[0]
+    end_coor = regions_node_coor.loc[regions_node_coor['node'] == node, 'end_coor_on_node'].values[0]
+
+    hap_ratio = color.loc[color['node'] == node,]['mat:pat'].values[0]
+
+    hap = color.loc[color['node'] == node,]['hap_node'].values[0]
+
+    piece = nodeinfo.loc[nodeinfo['node'] == node,]['piece'].values[0]
+    idx = node_layout_idx.loc[node_layout_idx['piece'] == piece,'index'].values[0] + 4
+    idx_next = node_layout_idx.loc[node_layout_idx['piece'] == piece].index[0] + 1
+    idx_next = node_layout_idx.loc[idx_next,'index'] - 2
+
+    layout_sub = node_layout.loc[idx:idx_next,:]['layout_info'].str.split(r'\t', expand=True)
+    layout_sub.columns = ['read','start_on_node','end_on_node']
+
+    mergedb = hifi_read.merge(layout_sub, on='read', how='right')
+    # mergedb.loc[mergedb['hap'].isna(), 'hap'] = 'unassigned'
+
+    mergedb['platform']='ont'
+    mergedb.loc[mergedb['read'].str.endswith('ccs'), 'platform'] = 'ccs'
+
+    mergedb['start_on_node'] = mergedb['start_on_node'].astype(int)
+    mergedb = mergedb.sort_values(by=['start_on_node']).reset_index(drop=True)
+
+    # print(f"Node: {node}")
+    # print(f"hap: {hap}")
+    # print(f"Piece: {piece}")
+    # print(f"Start on utig: {start_coor}")
+    # print(f"ENd on utig: {end_coor}")
+
+    return mergedb, hap, contigName, start_coor, end_coor, hap_ratio
+
+
+def getNodeCoor(obj, regions_node_db, hifi_read, node_layout, node_layout_idx, nodeinfo, regions_node_coor):
+    loc_on_node = pd.DataFrame()
+    mergedb_all = pd.DataFrame()
+
+    for i in tqdm(range(len(regions_node_db)), desc="regions of interest"):
+        region = regions_node_db['region'].values[i]
+        for node_num in range(len(regions_node_db.loc[i, 'nodes'])):
+            node = regions_node_db.loc[i, 'nodes'][node_num]
+            mergedb, hap, contigName, start_coor, end_coor, hap_ratio = get_hap_ratio(obj, node, hifi_read, node_layout, node_layout_idx, nodeinfo, regions_node_coor)
+            mergedb['node'] = node
+            mergedb['contig'] = contigName
+            mergedb['hap_node'] = hap
+            loc_on_node = pd.concat([loc_on_node, pd.DataFrame(dict(node=[node], region = [region], contig=[contigName], start=[start_coor], end=[end_coor], hap_node=[hap]))])
+            mergedb_all = pd.concat([mergedb_all, mergedb])
+
+            
+    mergedb_all['start_on_node'] = mergedb_all['start_on_node'].astype(int)
+    mergedb_all['end_on_node'] = mergedb_all['end_on_node'].astype(int)
+    mergedb_all['mid_on_node'] = (mergedb_all['end_on_node'].astype(int) - mergedb_all['start_on_node'].astype(int))/2 + mergedb_all['start_on_node'].astype(int)
+    mergedb_all['mid_on_node'] = mergedb_all['mid_on_node'].astype(int)
+
+    return loc_on_node, mergedb_all

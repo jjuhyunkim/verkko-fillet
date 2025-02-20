@@ -50,6 +50,7 @@ class FilletObj:
         
         return repr_str
 
+
 def read_Verkko(verkkoDir, 
                 verkko_fillet_dir=None, 
                 paths_path=None,

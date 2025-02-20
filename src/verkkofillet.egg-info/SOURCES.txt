@@ -81,6 +81,7 @@ verkkofillet/data/test_giraffe/fig/verkko_curation_decision_tree.png
 verkkofillet/plotting/__init__.py
 verkkofillet/plotting/_baseQC.py
 verkkofillet/plotting/_chr_mashmap.py
+verkkofillet/plotting/_plotReadHap.py
 verkkofillet/plotting/svbyeye.ipynb
 verkkofillet/plotting/syntenic.png
 verkkofillet/preprocessing/__init__.py
