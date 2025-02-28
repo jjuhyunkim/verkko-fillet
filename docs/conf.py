@@ -11,7 +11,6 @@ from docutils import nodes
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../src/')))
 
-
 # Ensure Biopython is imported correctly
 try:
     from Bio import BiopythonWarning
@@ -126,6 +125,10 @@ html_show_sphinx = False
 html_logo = "_static/verkko-fillet_logo.png"
 html_title = "verkko-fillet"
 html_theme = "sphinx_book_theme"
+html_theme_options = {
+    "body_max_width": "100%"  # Adjust this value (default is 800px or 60%)
+}
+
 
 
 nitpick_ignore = [
