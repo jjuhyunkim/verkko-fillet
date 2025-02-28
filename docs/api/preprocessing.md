@@ -57,7 +57,7 @@ Extracting gap from path, preprocessing recipes.
    :toctree: generated/
 
    pp.get_NodeChr
-   pp.find_multiContig_chr
+   
 
    
 ```
