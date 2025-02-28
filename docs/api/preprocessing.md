@@ -18,7 +18,7 @@ Extracting gap from path, preprocessing recipes.
 
    pp.read_Verkko
    pp.readChr
-   pp.writeFixedGaf
+   pp.writeFixedPaths
    pp.save_Verkko
    pp.load_Verkko
    pp.mkCNSdir
