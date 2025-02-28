@@ -69,5 +69,8 @@ def highlight_nodes(obj, node):
     -------
         The all paths containing the node.
     """
-    df = obj.paths.loc[obj.paths['path'].str.contains(node), ['name','path']]
+    # df = obj.paths.loc[obj.paths['path'].str.contains(node), ['name','path']]
+    df = obj.paths.loc[obj.paths['path'].str.contains(node, na=False , regex=False), ['name', 'path']]
+
+
     return display_highlighted_words(df, [node])

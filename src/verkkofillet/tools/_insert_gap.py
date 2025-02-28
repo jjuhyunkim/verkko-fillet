@@ -93,11 +93,11 @@ def insertGap(obj,
     print("Extracting reads...")
 
     # Ensure the column exists in split_reads
-    if 'Qname' not in split_reads.columns:
-        print("Error: 'Qname' column not found in input data.")
+    if 'qname' not in split_reads.columns:
+        print("Error: 'qname' column not found in input data.")
         return
 
-    reads = list(set(split_reads['Qname']))
+    reads = list(set(split_reads['qname']))
     file_path = os.path.abspath(os.path.join(outputDir, f"{gapid}.missing_edge.ont_list.txt"))
     
     save_list_to_file(reads, file_path)

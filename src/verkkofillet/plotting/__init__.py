@@ -1,13 +1,17 @@
 
-from ._baseQC import completePlot,contigLenPlot,contigPlot,qvPlot
-from ._chr_mashmap import showMashmapOri
+from ._baseQC import completePlot,contigLenPlot,contigPlot,qvPlot,n50Plot
+from ._chr_mashmap import showMashmapOri,nodeMashmapBlockSize
 from ._plotReadHap import plotHist_readOnNode
+from ._tel import percTel
 
 __all__ = [
     "completePlot",
     "contigLenPlot",
+    "n50Plot",
+    'nodeMashmapBlockSize',
     "contigPlot",
     "qvPlot",
     "showMashmapOri",
+    "percTel",
     "plotHist_readOnNode",
 ]

@@ -1,12 +1,14 @@
 import pandas as pd
 import re
+import copy
 import os
 import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
 import subprocess
 
-def readGaf(obj, gaf="graphAlignment/verkko.graphAlign_allONT.gaf"):
+
+def readGaf(obj, gaf="graphAlignment/verkko.graphAlign_allONT.gaf", force = False):
     """
     Reads a GAF file and stores it as a pandas DataFrame in the provided object.
 
@@ -23,26 +25,55 @@ def readGaf(obj, gaf="graphAlignment/verkko.graphAlign_allONT.gaf"):
         The updated object with the `gaf` attribute containing the DataFrame.
     """
     # Check if obj.gaf already exists and stop if it does
-    if obj.gaf is not None:
+    obj = copy.deepcopy(obj)
+    
+    if not hasattr(obj, 'gaf'):
+        obj.gaf = None
+    
+    if obj.gaf is not None and not force:
         print("GAF data already loaded, skipping loading process.")
         return obj
+    
+    if force : 
+        print("Force is set to True, regenerating `obj.gaf`.")
+
     
     gaf_path = os.path.abspath(gaf)  # Ensure absolute path for compatibility
     print(f"Looking for GAF file at: {gaf_path}")
     
+
     if os.path.exists(gaf_path):
         print("Loading ONT alignment GAF file...")
         try:
             # Load the GAF file into a pandas DataFrame
-            gaf = pd.read_csv(gaf_path,
-                              header=None, usecols=[0, 1, 5, 11, 15], sep='\t', low_memory=False, index_col=None,
-                              names=['Qname', 'len','path', 'mapQ', 'identity'])
+            gaf = pd.read_csv(gaf,
+                    header=None, sep='\t', low_memory=False, index_col=None)
+            names=['qname', 'qlen', 'qstart', 'qend', 'strand',
+                    'pname', 'plen', 'pstart', 'pend', 'nmatch', 'blocksize',
+                    'mapq', 'nm','as','dv','id']
+            if gaf.shape[1] == 17:
+                names.append('cg')
+            
+            gaf.columns = names
+
             # Step 1: Modify 'path_modi' column to replace special characters
-            gaf['path_modi'] = gaf['path'].str.replace(r'[><\[\]\$]', '@', regex=True).str.replace(r'$', '@', regex=True)
+            gaf['path_modi'] = gaf['pname'].str.replace(r'[><\[\]\$]', '@', regex=True).str.replace(r'$', '@', regex=True)
             
             # Step 2: Clean 'identity' column by removing "id:f:" prefix and convert to float
-            gaf['identity'] = gaf['identity'].str.replace(r'^id:f:', '', regex=True)
-            gaf['identity'] = pd.to_numeric(gaf['identity'], errors='coerce')  # Handle non-numeric values gracefully
+            gaf['nm'] = gaf['nm'].str.replace(r'^NM:i:', '', regex=True)
+            gaf['nm'] = pd.to_numeric(gaf['nm'], errors='coerce')  # Handle non-numeric values gracefully
+            
+            # Step 2: Clean 'identity' column by removing "id:f:" prefix and convert to float
+            gaf['as'] = gaf['as'].str.replace(r'^AS:f:', '', regex=True)
+            gaf['as'] = pd.to_numeric(gaf['as'], errors='coerce')  # Handle non-numeric values gracefully
+            
+            # Step 2: Clean 'identity' column by removing "id:f:" prefix and convert to float
+            gaf['id'] = gaf['id'].str.replace(r'^id:f:', '', regex=True)
+            gaf['id'] = pd.to_numeric(gaf['id'], errors='coerce')  # Handle non-numeric values gracefully
+
+            # Step 2: Clean 'identity' column by removing "id:f:" prefix and convert to float
+            gaf['dv'] = gaf['dv'].str.replace(r'^dv:f:', '', regex=True)
+            gaf['dv'] = pd.to_numeric(gaf['dv'], errors='coerce')  # Handle non-numeric values gracefully
             
             # Attach the DataFrame to the object
             obj.gaf = gaf
@@ -50,12 +81,12 @@ def readGaf(obj, gaf="graphAlignment/verkko.graphAlign_allONT.gaf"):
             return obj
         except Exception as e:
             print(f"Error loading GAF file: {e}")
-            return None
+            return obj
     else:
         print(f"GAF file not found at: {gaf_path}")
-        return None
+        return obj
 
-def searchNodes(obj, node_list_input):
+def searchNodes(obj, node_list_input, multimap_filter = 'mapq', force = False):
     """
     Extracts and filters paths containing specific nodes from the graph alignment file (GAF).
     
@@ -71,24 +102,39 @@ def searchNodes(obj, node_list_input):
         A styled pandas DataFrame with paths containing the specified nodes and associated frequencies.
     """
     # Prepare node markers
+    # obj = copy.deepcopy(obj)
     node_list = [f"@{node}@" for node in node_list_input]
     
+    if force:
+        print(f"Force is set to True, regenerating `obj.paths_freq`.")
+
+    if obj.paths_freq is not None and not force:
+        print(f"`obj.paths_freq` already exists.")
+        print(f"skip generating `obj.paths_freq`.")
     # Check if path frequency data exists, otherwise generate it
-    if obj.paths_freq is None:
-        print("Path frequency is empty, generating `obj.paths_freq`.")
+    elif obj.paths_freq is None or force:
+        print(f"Path frequency is empty, generating `obj.paths_freq`.")
+        print(f"Filter by best {multimap_filter}")
         
-        gaf = obj.gaf  # Assume obj.gaf is a DataFrame
-        gaf_size = pd.DataFrame(gaf.groupby('path').size().reset_index())
-        gaf_size.columns = ['path', 'size']
+        gaf = obj.gaf.copy()  # Assume obj.gaf is a DataFrame
+        gaf.head()
+        # group by 'qname' and pick max of 'mapq' for each group
+        gaf = gaf.loc[gaf.groupby('qname')[multimap_filter].idxmax()]
+        gaf = gaf.reset_index(drop=True)
+
+       
+        gaf_size = pd.DataFrame(gaf.groupby('pname').size().reset_index())
+        gaf_size.columns = ['pname', 'nsupport']
         
         # Modify path column by adding '@' around key graph elements
         gaf_size['path_modi'] = (
-            gaf_size['path']
+            gaf_size['pname']
             .str.replace(r'[><]', '@', regex=True)  # Replace '>' and '<' with '@'
             .str.replace(r'(?<=\[)', '@', regex=True)  # Add '@' after '['
             .str.replace(r'(?=\])', '@', regex=True)   # Add '@' before ']'
             .str.replace(r'($)', '@', regex=True)      # Add '@' at the start and end
         )
+        gaf_size['path_modi'] = ["@".join(list(set(x)) + ['']) for x in gaf_size['path_modi'].str.split("@")]    
         
         obj.paths_freq = gaf_size
     else:
@@ -99,42 +145,60 @@ def searchNodes(obj, node_list_input):
     
     # Build regex pattern for filtering
     pattern = '|'.join(map(re.escape, node_list))  # Escape special characters
-    
+
     # Filter rows based on presence of nodes in path
     filtered_df = obj.paths_freq[obj.paths_freq['path_modi'].str.contains(pattern, regex=True)]
-    
+
     # Add presence columns for each node
     for node in node_list:
         filtered_df.loc[:, node] = filtered_df['path_modi'].str.contains(node).map({True: 'Y', False: ''})
-    
+
     # Sorting logic
-    filtered_df['sort_index'] = filtered_df[node_list].sum(axis=1)
-    filtered_df = filtered_df.sort_values(['sort_index', 'size'], ascending=False)
-    
-    # Drop intermediate columns
-    filtered_df.drop(columns=['path_modi', 'sort_index'], inplace=True)
-    
-    # Escape special HTML characters in the path for better visualization
-    filtered_df['path'] = filtered_df['path'].str.replace('<', '&lt;').str.replace('>', '&gt;')
+    # filtered_df['sort_index'] = filtered_df[node_list].sum(axis=1)
+    filtered_df = filtered_df.sort_values(['nsupport'], ascending=False)
+
     filtered_df=filtered_df.reset_index()
     del filtered_df['index']
-    
+
+    # make flat db
+    grouped = filtered_df.groupby(['path_modi'])['nsupport'].apply(list)
+    df_result = grouped.apply(lambda x: x[:2] + [None] * (2 - len(x))).apply(pd.Series)
+    df_result.columns = ["fw", "rv"]
+    df_result = df_result.reset_index()
+    df_result['fw'] = df_result['fw'].fillna(0).astype(int)
+    df_result['rv'] = df_result['rv'].fillna(0).astype(int)
+
+    filtered_fullinfo = filtered_df.loc[filtered_df.groupby('path_modi')['nsupport'].idxmax()].drop(columns=['nsupport'], inplace = False)
+
+    cleaned = filtered_fullinfo.merge(df_result, on='path_modi')
+    cleaned.columns = ['path', 'path_modi'] + node_list_input + ['fw', 'rv']
+    cleaned['total_support'] = cleaned['fw'] + cleaned['rv']
+    cleaned['sort_index'] = cleaned[node_list_input].sum(axis=1)
+
+    cleaned = cleaned.sort_values(by=['sort_index', 'total_support'], ascending=False)
+    cleaned.drop(columns=['sort_index','path_modi'], inplace=True)
+
+    # Escape special HTML characters in the path for better visualization
+    cleaned['path'] = cleaned['path'].str.replace('<', '&lt;').str.replace('>', '&gt;')
+    cleaned.reset_index(drop=True, inplace=True)
+
     # Styling for display
     headers = {
         'selector': 'th.col_heading',
         'props': 'background-color: #5E17EB; color: white;'
     }
     styled_df = (
-        filtered_df.style
+        cleaned.style
         .set_table_styles([headers])
-        .bar(color='#FFCFC9', subset=['size'])
+        .bar(color='#FFCFC9', subset=['total_support'])
         .set_properties(subset=['path'], **{'width': '500px'})
-        .set_properties(subset=['size'], **{'width': '50px'})
+        .set_properties(subset=node_list_input, **{'width': '30'})
+        .set_properties(subset=['total_support'], **{'width': '50px'})
     )
     
     return styled_df
 
-def searchSplit(obj, node_list_input, min_mapq=0, min_len=50000):
+def searchSplit(obj, node_list_input, min_mapq = 0 , min_qlen=5000, min_mapStart = 5000):
     """\
     Searches for paths containing all specified nodes with a minimum mapping quality and length.
 
@@ -146,28 +210,35 @@ def searchSplit(obj, node_list_input, min_mapq=0, min_len=50000):
         A list of node identifiers to search for.
     min_mapq
         The minimum mapping quality required for a path to be considered. Default is 0.
-    min_len
-        The minimum length required for a path to be considered. Default is 50000.
+    min_qlen
+        The minimum query length required for a path to be considered. Default is 5000.
+    min_mapStart
+        The minimum distance from the start of the query or path for a path to be considered. Default is 5000.
 
     Returns
     -------
         A DataFrame containing the Qname and path_modi columns of paths that meet the criteria.
     """
     # Create the regex pattern from the node list
+    obj = copy.deepcopy(obj)
+    gaf = obj.gaf.copy()
+
     node_pattern = '|'.join(node_list_input)  # Creates 'utig4-2329|utig4-2651'
     contains_nodes = (
-    obj.gaf['path_modi'].str.contains(node_pattern, na=False) &
-    (obj.gaf['mapQ'] > min_mapq ) &
-    (obj.gaf['len'] > min_len)
+    gaf['path_modi'].str.contains(node_pattern, na=False) &
+    (gaf['mapq'] > min_mapq ) &
+    (gaf['qlen'] > min_qlen) &
+    ((gaf['qstart'] < min_mapStart) | (gaf['qlen'] - gaf['qend'] < min_mapStart)) & 
+    ((gaf['pstart'] < min_mapStart) | (gaf['plen'] - gaf['pend'] < min_mapStart))
     )
     filtered_gaf = obj.gaf.loc[contains_nodes, :]
-    result = filtered_gaf.groupby("Qname")['path_modi'].agg(set).reset_index()
+    result = filtered_gaf.groupby("qname")['path_modi'].agg(set).reset_index()
     target_elements = set([f"@{node}@" for node in node_list_input])
     rows_with_both = result[result['path_modi'].apply(lambda x: target_elements.issubset(x))].reset_index(drop=True)
 
     num_rows = rows_with_both.shape[0]
     print(f"{num_rows} reads were found that contain both nodes {node_list_input}")
-
+    
     return rows_with_both
 
 # Use subprocess to run the grep command

@@ -1,87 +1,158 @@
 import pandas as pd
 import os
 import re
+import copy
 
-def find_intra_telo(obj, file="internal_telomere/assembly_1/assembly.windows.0.5.bed", 
-                    fai_file = "assembly.fasta.fai" , loc_from_end=15000):
+
+def find_intra_telo(obj, telo_file="internal_telomere/assembly_1/assembly.windows", out_prefix = None, telolen=0, loc_from_end=15000, teloPerct = 0.5):
     """\
-    Find the telomere sequences inside the contig.
+    Find the internal telomeres in the assembly.
 
     Parameters
     ----------
     obj
-        The VerkkoFillet object to be used.
-    file
-        The path to the bed file containing the telomere sequences. Default is "internal_telomere/assembly_1/assembly.windows.0.5.bed".
-    fai_file
-        The path to the fasta index file. Default is "assembly.fasta.fai".
+        The object containing the stats database. 
+    telo_file
+        The path to the telomere file. Default is "internal_telomere/assembly_1/assembly.windows". 
+    out_prefix
+        The prefix for the output file. Default is None. 
+    telolen
+        The minimum length of the telomere. Default is 0. 
     loc_from_end
-        The distance from the end of the contig to consider. Default is 15000.
-    
+        The minimum distance from the end of the contig. Default is 15000.  
+    teloPerct
+        The minimum telomere percentage. Default is 0.5. 
+
     Returns
     -------
-        The DataFrame containing the contig, old_chr, ref_chr, hap, start, end, and len_fai columns.
+        The DataFrame containing the contig, internal-left, internal-right, non-internal-left, non-internal-right, and problem columns.
     """
-    
-    working_dir = os.getcwd()
-    file = os.path.abspath(file)
-    fai_file = os.path.abspath(fai_file)
-    
-    tel = pd.read_csv(file, sep='\t', header=None)
-    tel.columns = ['contig', 'start', 'end']
-    
-    # Check if the fai file exists, if not, run the command to generate it
-    if not os.path.exists(fai_file):  # Corrected the file existence check
-        cmd = f"samtools faidx {fai_file}"
-        os.system(cmd)  # This will run the command to create the fai file
-    
-    fai = pd.read_csv(fai_file, sep='\t', header=None, usecols=[0, 1])
-    fai.columns = ['contig', 'len_fai']
-    
-    tel = tel.loc[tel['contig'].str.startswith(('dam', 'sire'))]
-    tel = tel.groupby('contig', as_index=False).agg({
-        'start': 'min',  # Take the minimum start value
-        'end': 'max',    # Take the maximum end value
-    })
-    
-    tel_merged = pd.merge(tel, fai, on='contig', how='inner')
-    
-    # Filter for regions where the start and end conditions are met
-    int_telo = tel_merged[~((tel_merged['len_fai'] - tel_merged['end'] > loc_from_end) |
-                            (tel_merged['start'] < loc_from_end))]
-    int_telo = pd.merge(obj.stats, int_telo, how = 'inner',on='contig').loc[:,['contig','old_chr','ref_chr','hap','start','end','len_fai']]
-    return int_telo
+    print("Finding the internal telomeres in the assembly...")
+
+    obj = copy.deepcopy(obj)
+    # Check if the stats database is available
+    if not isinstance(obj.stats, pd.DataFrame):
+        raise ValueError("The stats database is not available. Please run the readChr function first.")
+
+    statsdb = obj.stats
+
+    telo_file = os.path.abspath(telo_file)
+    if not os.path.exists(telo_file):
+        raise FileNotFoundError(f"File not found: {telo_file}")
+    print(f"Reading file: {telo_file}")
+    tel = pd.read_csv(telo_file, sep='\t', header=None, usecols=[1, 2, 3, 4, 5])
+    tel.columns = ['contig', 'totalLen', 'start', 'end', 'teloPerct']
+    tel['contig'] = tel['contig'].str.replace('^>', '', regex=True)
+    tel['start'] = tel['start'].astype(int)
+    tel['end'] = tel['end'].astype(int)
+    tel['totalLen'] = tel['totalLen'].astype(int)
+    # Filter based on teloPerct
+    tel = tel[tel['teloPerct'] > teloPerct]
+    tel.reset_index(drop=True, inplace=True)
+
+    # Iterate over rows to merge them
+    rows_to_remove = []  # To keep track of rows to be dropped after merging
+    for i in range(len(tel) - 1, 0, -1):  # Iterate backward to avoid index issues
+        if (tel.loc[i, 'start'] < tel.loc[i - 1, 'end']) and \
+        (tel.loc[i, 'contig'] == tel.loc[i - 1, 'contig']):
+            
+            # Merge the rows by combining the 'start', 'end', and other columns
+            tel.loc[i - 1, 'end'] = tel.loc[i, 'end']  # Update 'end' to the next row's 'end'
+            
+            # Mark the current row for removal (row i)
+            rows_to_remove.append(i)
+    # Drop the rows that have been merged
+    tel = tel.drop(rows_to_remove).reset_index(drop=True)
 
 
-def find_reads_intra_telo(intra_telo, pos,scfmap = "assembly.scfmap",layout = "6-layoutContigs/unitig-popped.layout"):
+    tel['telomere'] = 'non-internal'
+    tel['contig_start_len'] = tel['start']
+    tel['contig_end_len'] = tel['totalLen'] - tel['end']
+    tel['lenmin'] = tel[['contig_start_len', 'contig_end_len']].min(axis=1)
+    tel.loc[tel['lenmin'] > loc_from_end, 'telomere'] = 'internal'
+    intTelCount = tel[tel['telomere'] == 'internal'].shape[0]
+    print(f"Number of internal telomeres: {intTelCount}")
+
+    tel['arm'] = ""
+    tel.loc[tel['start'] < tel['totalLen'] / 2, 'arm'] = "left"
+    tel.loc[tel['start'] > tel['totalLen'] / 2, 'arm'] = "right"
+
+    # Filter based on length (if needed)
+    tel['len'] = tel['end'] - tel['start']
+    tel = tel.loc[tel['len'] >= telolen]
+    
+    # Filter contigs that are not in the stats database
+    tel = tel[tel['contig'].isin(obj.stats['contig'])]
+    # drop coullmns
+    tel.drop(columns = ['lenmin', 'contig_start_len','contig_end_len'], inplace=True)
+
+    tel['tel-arm'] = tel['telomere'] + "-" + tel['arm']
+    result = tel.groupby(['contig','tel-arm'])['teloPerct'].max().unstack(fill_value=0)
+    result['problem'] = "OK/OK"
+    # check if columns are in the result
+    check_columns = ['internal-left', 'internal-right', 'non-internal-left', 'non-internal-right']
+    for col in check_columns:
+        if col not in result.columns:
+            result[col] = 0
+
+    missingTel = (result['non-internal-left']==0) | (result['non-internal-right']==0) 
+    INTEL = (result['internal-left']==0) | (result['internal-right']==0)
+
+    result.loc[missingTel & INTEL, 'problem'] = "MissingTel/INTEL"
+    result.loc[missingTel & ~INTEL, 'problem'] = "MissingTel/OK"
+    result.loc[~missingTel & INTEL, 'problem'] = "OK/INTEL"
+
+    result_merged = pd.merge(result, statsdb, left_on='contig', right_on='contig', how='right')
+    
+    # result_merged
+    if out_prefix is None:
+        out_prefix = f"{telo_file}.loc_from_end_{loc_from_end}.teloPerct_{teloPerct}.telolen_{telolen}.stats"
+    wirte_to = out_prefix + ".tsv"
+    result_merged.to_csv(wirte_to, sep='\t', index=False)
+    print(f"File saved: {wirte_to}")
+    
+    return result_merged, tel
+
+
+def find_reads_intra_telo(tel, lineNum ,scfmap = "assembly.scfmap",layout = "6-layoutContigs/unitig-popped.layout"):
     """\
     Find the reads support for the additional artifical sequences outside of the telomere.
 
     Parameters
     ----------
-    intra_telo
-        The DataFrame containing the contig, old_chr, ref_chr, hap, start, end, and len_fai columns.
-    pos
-        The position to consider. Either "start" or "end".
-    scfmap 
-        The path to the scfmap file. Default is "assembly.scfmap".
+    tel
+        The DataFrame containing the telomere information. This is the output of the find_intra_telo function.
+    lineNum
+        The line number of the telomere. This is the index of the tel DataFrame.
+    scfmap
+        The path to the scfmap file. Default is "assembly.scfmap". 
     layout
-        The path to the layout file. Default is "6-layoutContigs/unitig-popped.layout".
-    
+        The path to the layout file. Default is "6-layoutContigs/unitig-popped.layout". 
+
     Returns
     -------
-        The DataFrame containing the readName, 5prime, 3prime, start, end, and type columns.
+        The DataFrame containing the readName, start_hpc, end_hpc, start, end, and type columns.
     """
     print("Finding the reads support for the additional artifical sequences outside of the telomere...")
-    contig = str(intra_telo['contig'][0])
+
+    intra_telo = tel.copy()    
+    intra_telo = intra_telo.loc[lineNum,:]
+    contig = intra_telo['contig']
+
+    if (intra_telo['start'] - 0) > (intra_telo['totalLen']-intra_telo['end']):
+        pos= "end"
+    else:
+        pos = "start"
+    print(f"Looking for the reads from {pos} of {contig}")
+
     if pos == 'start':
-        bp = int(intra_telo['start'][0])
+        bp = int(intra_telo['start'])
     elif pos == 'end' :
-        bp = int(intra_telo['end'][0])
+        bp = int(intra_telo['end'])
     else :
         print ("the pos argument should be either start or end")
         return
-    len_fai = int(intra_telo['len_fai'][0])
+    len_fai = int(intra_telo['totalLen'])
 
     with open(scfmap, 'rb') as f:
         data = f.read().decode('utf-8')  # Decode bytes to string
@@ -129,13 +200,13 @@ def find_reads_intra_telo(intra_telo, pos,scfmap = "assembly.scfmap",layout = "6
 
     filtered_matches_body = filtered_matches[4:-1]
     filtered_matches_body = [entry.split("\t") for entry in filtered_matches_body]
-    df = pd.DataFrame(filtered_matches_body, columns=["readName", "5prime", "3prime"])
+    df = pd.DataFrame(filtered_matches_body, columns=["readName", "start_hpc", "end_hpc"])
     
-    df['5prime'] = df['5prime'].astype(int)
-    df['3prime'] = df['3prime'].astype(int)
+    df['start_hpc'] = df['start_hpc'].astype(int)
+    df['end_hpc'] = df['end_hpc'].astype(int)
     
-    df['start'] = df[['3prime', '5prime']].min(axis=1) * 1.5  # multiply 1.5 cuz this is baesd on HPC coordinates
-    df['end'] = df[['3prime', '5prime']].max(axis=1) * 1.5    # multiply 1.5 cuz this is baesd on HPC coordinates
+    df['start'] = df[['end_hpc', 'start_hpc']].min(axis=1) * 1.5  # multiply 1.5 cuz this is baesd on HPC coordinates
+    df['end'] = df[['end_hpc', 'start_hpc']].max(axis=1) * 1.5    # multiply 1.5 cuz this is baesd on HPC coordinates
     
     pieceinfo = filtered_matches[0:4]
     pieceinfo = [entry.split("\t") for entry in pieceinfo]
@@ -149,7 +220,7 @@ def find_reads_intra_telo(intra_telo, pos,scfmap = "assembly.scfmap",layout = "6
         print("pos should be either start or end")
     df_sub['type'] = df_sub['readName'].apply(lambda x: 'ont' if ';' in x else 'hifi')
     df_sub['type'] = pd.Categorical(df_sub['type'], categories=['ont','hifi'], ordered=True)
-    df_sub_count = df_sub.groupby('type')['5prime'].count().reset_index()
+    df_sub_count = df_sub.groupby('type')['start_hpc'].count().reset_index()
     
     print("Summary : ")
     print("   Num of ONT reads : " + str(df_sub_count.iloc[0,1]))

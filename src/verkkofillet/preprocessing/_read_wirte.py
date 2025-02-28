@@ -4,6 +4,7 @@ import pandas as pd
 import pickle
 import glob
 import sys
+import copy
 import shutil
 from .._default_func import check_user_input, print_directory_tree,addHistory
 from .._run_shell import run_shell
@@ -30,7 +31,7 @@ class FilletObj:
         self.qv = None
         self.history = None
         self.scfmap = None
-
+    
     def __repr__(self):
         attributes = vars(self)
         

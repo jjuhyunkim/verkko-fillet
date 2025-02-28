@@ -1,5 +1,6 @@
 import pandas as pd
 import os
+import copy
 from natsort import natsorted
 
 def readChr(obj,mapFile, 
@@ -29,9 +30,17 @@ def readChr(obj,mapFile,
     -------
         obj with stats attribute containing the chromosome assignment results.
     """
+    obj = copy.deepcopy(obj)
     chromosome_assignment_directory = os.path.abspath(chromosome_assignment_directory)
     stat_directory = os.path.abspath(stat_directory)
     mapFile = os.path.abspath(mapFile)
+
+    if not os.path.exists(chromosome_assignment_directory):
+        raise FileNotFoundError(f"{chromosome_assignment_directory} does not exist.")
+    if not os.path.exists(stat_directory):
+        raise FileNotFoundError(f"{stat_directory} does not exist.")
+    if not os.path.exists(mapFile):
+        raise FileNotFoundError(f"{mapFile} does not exist.")
     
     # read translation
     translation_hap1 = pd.read_csv(f"{chromosome_assignment_directory}/translation_hap1", header = None, sep = '\t')
@@ -109,7 +118,7 @@ def readChr(obj,mapFile,
     print("The chromosome infomation was stored in obj.stats")
     return obj
 
-def find_multiContig_chr(obj):
+def detectBrokenContigs(obj):
     """\
     Find contigs that assigned same chromosome and haplotype.
 
@@ -122,5 +131,12 @@ def find_multiContig_chr(obj):
     -------
         The DataFrame containing the duplicated contigs with different contig names.
     """
-    df = obj.stats[obj.stats.duplicated(subset=['hap', 'chr'], keep=False)]
-    return df
+    obj = copy.deepcopy(obj)
+    stats = obj.stats.copy()
+    tab = stats.groupby(["ref_chr","hap_verkko"])['contig'].count().reset_index()
+    tab = tab.loc[tab['contig']>1].reset_index(drop=True)
+    if len(tab)>0:
+        print("Warning: the following chromosomes have more than one contig:")
+        print(tab)
+    else:
+        print("All chromosomes have one contig!")

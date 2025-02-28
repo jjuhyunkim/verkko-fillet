@@ -232,3 +232,103 @@ def showPairwiseAlign(obj,
         display(Image(filename=image_path, width=500))
     else:
         print(f"Image {image_path} not found.")
+
+def gfaToFasta(gfa = "assembly.homopolymer-compressed.gfa", out_fasta=None):
+    """
+    Convert GFA file to FASTA format.
+
+    Parameters
+    ----------
+    gfa
+        Path to the GFA file. [default: assembly.homopolymer-compressed.gfa]
+    out_fasta
+        Path to the output FASTA file. If not provided, the output file will be named automatically. [default: None]
+    
+    Returns
+    -------
+        output FASTA file
+    """
+    print(f"Converting {gfa} to FASTA format")
+    if out_fasta is None:
+        out_fasta = gfa.replace(".gfa", ".fasta")
+    if not os.path.exists(gfa):
+        print(f"{gfa} not found")
+        return
+    if os.path.exists(out_fasta):
+        print(f"{out_fasta} already exists")
+        return
+    with open(gfa, 'r') as f:
+        with open(out_fasta, 'w') as o:
+            for line in f:
+                if line[0] == "S":
+                    line = line.strip().split("\t")
+                    o.write(f">{line[1]}\n{line[2]}\n")
+    print(f"Output written to {out_fasta}")
+    
+def mapBetweenNodes(ref="assembly.homopolymer-compressed.fasta", query='assembly.homopolymer-compressed.fasta', threads=1, out=None, showOnly=False,
+                working_directory="chromosome_assignment"):
+    """
+    Map the query sequences to the reference sequences using mashmap.
+
+    Parameters
+    ----------
+    ref
+        Path to the reference fasta file. [default: assembly.homopolymer-compressed.fasta]
+    query
+        Path to the query fasta file. [default: assembly.homopolymer-compressed.fasta]
+    threads
+        Number of threads to use. [default: 1]
+    out
+        Path to the output file. If not provided, the output file will be named automatically. [default: None]
+    showOnly
+        If set to True, the script will not be executed; it
+        will only display the intended operations. [default: False]
+    working_directory
+        Path to the working directory. [default: chromosome_assignment]
+    """
+    # Ensure paths are absolute
+    
+    working_dir = os.path.abspath(working_directory)
+    print(f"aligning {ref} to {query}")
+
+    if not os.path.exists(working_dir):
+        print(f"Creating working directory: {working_dir}")
+        os.makedirs(working_dir)
+
+    ref = os.path.abspath(ref)
+    query = os.path.abspath(query)
+
+    if out is None:
+        ref_base = os.path.basename(ref)
+        ref_base = re.sub(r"\.(fa|fasta|fq|fastq)(\.gz)?$", "", ref_base)
+
+        query_base = os.path.basename(query)
+        query_base = re.sub(r"\.(fa|fasta|fq|fastq)(\.gz)?$", "", query_base)
+
+        out = f"{ref_base}_vs_{query_base}.mashmap.out"
+
+    print(f"Reference: {ref}")
+    print(f"Query: {query}")
+    print(f"Output: {out}")
+
+    # Check if the reference fasta file has an index file
+    if not os.path.exists(f"{ref}.fai"):
+        print("Indexing reference fasta file")
+        cmd = f"samtools faidx -@ {threads} {ref}"
+        run_shell(cmd, wkDir=working_dir, functionName="mapBetweenNodes_refIdx", longLog=False, showOnly=showOnly)
+        
+    # Check if the query fasta file has an index file
+    if not os.path.exists(f"{query}.fai"):
+        print("Indexing query fasta file")
+        cmd = f"samtools faidx -@ {threads} {query}"
+        run_shell(cmd, wkDir=working_dir, functionName="mapBetweenNodes_queryIdx", longLog=False, showOnly=showOnly)
+
+    cmd = f"mashmap -r {ref} -q {query} -t {threads} --skipSelf --output {out}"
+    if showOnly:
+        # If showOnly is True, just display the command instead of executing it
+        print(f"Command to be executed:\n{cmd}")
+    else:
+        if not os.path.exists(f"{out}"):
+            print(f"Running mashmap to align {query} to {ref}")
+            # Run the shell command to perform the operation
+            run_shell(cmd, wkDir=working_dir, functionName="mapBetweenNodes_mashmap", longLog=False, showOnly=showOnly)

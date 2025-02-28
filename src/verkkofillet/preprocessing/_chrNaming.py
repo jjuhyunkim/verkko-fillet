@@ -2,6 +2,7 @@ import re
 import networkx as nx
 from collections import Counter
 import pandas as pd
+import copy
 import sys
 import shlex
 import subprocess
@@ -108,6 +109,7 @@ def naming_contigs(obj, node_database, duplicate_nodes ,
         The DataFrame containing the nodes and their corresponding assigned contig names.
 
     """
+    obj = copy.deepcopy(obj)
     stats = obj.stats.copy()
     path = obj.paths.copy()
     scfmap = obj.scfmap.copy()

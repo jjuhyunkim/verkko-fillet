@@ -1,8 +1,12 @@
 import matplotlib.pyplot as plt
+import seaborn as sns
 import pandas as pd
 import numpy as np
 from .._run_shell import run_shell
 import os
+import matplotlib
+matplotlib.rcParams['pdf.fonttype'] = 42
+matplotlib.rcParams['ps.fonttype'] = 42
     
 def showMashmapOri(obj, mashmap_out = "chromosome_assignment/assembly.mashmap.out.filtered.out", by = "chr_hap", plot_height = 10, plot_width = 5):
     """
@@ -76,4 +80,66 @@ def showMashmapOri(obj, mashmap_out = "chromosome_assignment/assembly.mashmap.ou
     
     # Adjust layout and show the plot
     plt.tight_layout()
+    plt.show()
+
+def nodeMashmapBlockSize(
+        mashmap_out,
+        node,
+        showNum = 10,
+        width = 8, height = 5,
+        save = True, figName = None):
+    """
+    Plot the top 10 nodes with the largest block size aligned to a specific node.
+
+    Parameters
+    -----------
+    mashmap_out : str
+        The Mashmap output file.
+    node : str
+        The node to which the other nodes are aligned.
+    showNum : int
+        The number of nodes to display. Default is 10.
+    width : int
+        The width of the plot. Default is 8.
+    height : int
+        The height of the plot. Default is 5.
+    save : bool
+        Whether to save the plot. Default is True.
+    figName : str
+        The name of the figure file. Default is None.
+    """
+    tab = pd.read_csv(mashmap_out, sep="\t", header=None, usecols=[0,4,5,10])
+    tab.columns = ['query', 'strand', 'ref', 'blocksize']
+    tab['ref'] = tab['strand'] + tab['ref']
+    tab = tab.loc[tab['query'] == node]
+    tab_group = tab.groupby('ref')['blocksize'].sum().sort_values(ascending=False).reset_index()
+    tab_group.columns = ['node', 'blocksize']
+    tab_group = tab_group.head(showNum)
+
+    
+
+    plt.figure(figsize=(width, height))  # Adjust figure size
+
+    sns.lineplot(x="node", y="blocksize", data=tab_group, marker="o", linewidth=2.5)
+
+    # Labels and title
+    plt.xlabel("nodes")
+    plt.ylabel("block size")
+    plt.title(f"Top 10 nodes with the largest block size aligned to {node}")
+    plt.xticks(rotation=75)
+    # Show the plot
+    if figName is None:
+        figName = f"figs/mashmap.{node}_top{showNum}_blocksize.png"
+
+    if save:
+        if not os.path.exists("figs"):
+            os.makedirs("figs")
+
+        if os.path.exists(figName):
+            print(f"File {figName} already exists")
+            print("Please remove the file or change the name")
+
+        elif not os.path.exists(figName):
+            plt.savefig(figName)
+            print(f"File {figName} saved")
     plt.show()

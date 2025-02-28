@@ -1,8 +1,33 @@
 import pandas as pd
 import logging
+import re
+import copy
 from .._default_func import addHistory
 # Configure logging
 logging.basicConfig(level=logging.INFO)
+
+def path_to_gaf(input_string):
+    # Split the input string by commas
+    items = input_string.split(',')
+    
+    # Process each item
+    result = []
+    for item in items:
+        if item.endswith('+'):
+            result.append('>' + item[:-1])
+        elif item.endswith('-'):
+            result.append('<' + item[:-1])
+        elif item.endswith(']'):
+            result.append(item)
+        else :
+            error = "Invalid input string: " + input_string
+            print(error)
+            return error
+
+    
+    # Join the processed items into a single string
+    return ''.join(result)
+
 
 def progress_bar(current, total):
     """
@@ -32,8 +57,9 @@ def checkGapFilling(obj):
     ----------
         The updated 'gap' DataFrame.
     """
-    total = obj.gaps.shape[0]  # Total number of gaps
-    gap = obj.gaps  # Assuming gap is the DataFrame containing gap information
+    obj_sub = copy.deepcopy(obj)
+    total = obj_sub.gaps.shape[0]  # Total number of gaps
+    gap = obj_sub.gaps  # Assuming gap is the DataFrame containing gap information
 
     gap['finalGaf'] = gap['finalGaf'].str.replace('<', '&lt;').str.replace('>', '&gt;')
     gap['done'] = gap['finalGaf'].apply(lambda x: "✅" if x else "")
@@ -104,7 +130,8 @@ def fillGaps(obj, *, gapId, final_path):
     obj : object
         The updated verkko fillet object.
     """
-    gap = obj.gaps  # The DataFrame containing gap data
+    obj_sub = copy.deepcopy(obj)
+    gap = obj_sub.gaps  # The DataFrame containing gap data
 
     # Ensure the gapId exists
     if gapId not in gap['gapId'].values:
@@ -146,76 +173,218 @@ def fillGaps(obj, *, gapId, final_path):
             print("❌ The start node and its direction do not match the original node.")
         
     # Count remaining empty strings or 'NA' in 'finalGaf
-    obj.gaps = gap
+    obj_sub.gaps = gap
     
-    obj = addHistory(obj, f"{gapId} filled with {final_path}", 'fillGaps')
+    obj_sub = addHistory(obj_sub, f"{gapId} filled with {final_path}", 'fillGaps')
     # Show progress after each gap filled
-    checkGapFilling(obj)
+    checkGapFilling(obj_sub)
     
     # Return the updated object
     
-    return obj
+    return obj_sub
 
 # Reset the index of the 'gap' DataFrame
-def writeFixedGaf(obj, rukki = "8-hicPipeline/rukki.paths.gaf", save = "final_rukki_fixed.paths.gaf"):
-    """\
-    Write the fixed GAF path to a new file.
+
+
+def preprocess_path(path_str):
+    path_str = path_str.replace("\[", ",\[")
+    path_str = path_str.replace("\]", "\],")
+    split_path = re.split(r',', path_str)
+    return [p for p in split_path if p.strip()]  # Remove empty elements
+
+def connectContigs(obj, contig, contig_to,  at = "left", gap = "[N5000N:connectContig]", flip = False, fix_path = True):
+    """
+    Connects two contigs by adding a gap between them.
 
     Parameters
     ----------
     obj
-        The VerkkoFillet object to be used.
-    rukki
-        The path to the original rukki file. Default is "8-hicPipeline/rukki.paths.gaf".
-    save
-        The path to save the fixed rukki file. Default is "final_rukki_fixed.paths.gaf".
+        The VerkkoFillet object to be used. 
+    contig
+        The name of the contig to connect. 
+    contig_to
+        The name of the contig to connect to. 
+    at
+        The position to connect the contig. Default is "left". Other option is "right".
+    gap
+        The gap to add between the contigs. Default is "[N5000N:connectContig]". 
+    flip
+        Whether to flip the path from contig. Default is False. If True, the path will be flipped.
 
     Returns
     -------
-        fixed_rukki file.
+        The updated VerkkoFillet object with new gap added.
     """
-    print("Reading original rukki path from "+rukki)
-    ori_rukki = pd.read_csv(rukki, sep ='\t', header = 0)
-    
-    gap = obj.gaps.reset_index()
-    
-    # Iterate through each row of the 'gap' DataFrame
-    for num in range(0, gap.shape[0]):  # Use shape[0] for rows, not shape[1]
-        finalGaf = gap.loc[num, 'finalGaf']
+    obj_sub = copy.deepcopy(obj)
+    pathdb = obj_sub.paths.copy()
+    gapdb = obj_sub.gaps.copy()
+
+    path1_raw = pathdb.loc[pathdb['name'] == contig_to]["path"].values
+    path2_raw = pathdb.loc[pathdb['name'] == contig]["path"].values
+
+    path1_path = preprocess_path(path1_raw[0])
+    path2_path = preprocess_path(path2_raw[0])
+
+    gapid_add= f"gapid_{str(gapdb['gapId'].str.replace('gapid_','').astype(int).max()+1)}"
+
+    if flip:
+        path2_path = path2_path[::-1]
+        path2_path = [s.translate(str.maketrans("+-", "-+")) for s in path2_path]
+
+    if at == "left":
+        marker = ["startMarker"]
+        fixedPath = path2_path + [gap] + marker
+    if at == "right":
+        marker = ['endMarker']
+        fixedPath = marker + [gap]+  path2_path
         
-        # If finalGaf is an empty string, stop the iteration
-        if finalGaf == "":
-            # print("Stopping as finalGaf is empty.")
-            break  # Exit the loop if finalGaf is empty
-        
-        # Extract relevant values
-        contig = gap.loc[num, 'name']
-        ori_gap = gap.loc[num, 'gaps']
-        
-        # Fetch the 'path' for the given contig from 'ori_rukki'
-        ori_path_series = ori_rukki.loc[ori_rukki['name'] == contig, 'path']
-        
-        # Check if ori_path_series is not empty to avoid IndexError
-        if ori_path_series.empty:
-            print(f"Warning: No path found for contig '{contig}'")
-            continue  # Skip this iteration if no path is found
+    fixedPath = ','.join(fixedPath)
+    gap_new_line = pd.DataFrame({"gapId": gapid_add, 
+                  "name" : [contig_to],
+                  "gaps" : marker,
+                  "notes" : f"connected {contig} to {contig_to} at {at} with flip {flip}",
+                  "fixedPath": fixedPath,
+                  "startMatch" : "",
+                  "endMatch" : "",
+                  "finalGaf" : "",
+                  "done" : True})
+
+    gapdb = pd.concat([gapdb,gap_new_line], ignore_index=True)
+    obj_sub = addHistory(obj_sub, f"{gapid_add} was created", 'connectContig')
     
-        ori_path = ori_path_series.tolist()[0]
+    newPath = fixedPath
+    pathdb = obj_sub.paths.copy()
+    pathdb = pathdb.loc[pathdb["name"] != contig]
+    ori_path = pathdb.loc[pathdb["name"] == contig_to, 'path'].values[0]
     
-        # Transform the ori_gap using the transform_path function
-        modified_elements = transform_path(ori_gap)
-        modified_path = "".join(modified_elements)
-        
-        # Replace the modified path with the finalGaf, handling HTML escape sequences
-        fixedGaf = ori_path.replace(modified_path, finalGaf).replace('&lt;', '<').replace('&gt;', '>')
+    marker = marker[0]
+    if marker == "startMarker":
+        pathdb.loc[pathdb["name"] == contig_to, 'path'] = newPath + ori_path
+    elif marker == "endMarker":
+        pathdb.loc[pathdb["name"] == contig_to, 'path'] = ori_path + newPath
+    else:
+        print("marker doesn't match")
+
+    gapdb['name'] = gapdb['name'].replace(contig, contig_to)
     
-        # Update the ori_rukki DataFrame with the new fixedGaf value
-        ori_rukki.loc[ori_rukki['name'] == contig, 'path'] = fixedGaf
+    if fix_path:
+        obj_sub.paths = pathdb
     
-        print(f"Updated path for contig '{contig}': {fixedGaf}")
+    obj_sub.gaps = gapdb
+
+    print(f"Connected {contig} to {contig_to} at {at} with flip {flip}")
+    print(f"{contig} was merged to {contig_to} in obj.paths")
+    print(f"{contig} was replaced with {contig_to} in obj.gaps")
+    print(f"New gap was added to obj.gaps with gapId {gapid_add}")
+    return obj_sub
+
+
+
+def deleteGap(obj, gapId):
+
+    """
+    Deletes a gap from the 'gap' DataFrame for a specific gapId.
+
+    Parameters
+    ----------
+    obj
+        An verkko fillet object that contains the 'gap' DataFrame in obj.gaps.
+    gapId
+        The identifier for the gap to delete.
+
+    Returns
+    -------
+        The updated verkko fillet object.
+    """
+    obj_sub = copy.deepcopy(obj)
+    if gapId not in obj.gaps['gapId'].values:
+        raise ValueError(f"gapId {gapId} not found in the DataFrame.")
+    gaps = obj_sub.gaps.copy()
+    gaps = gaps.loc[gaps['gapId'] != gapId]
+    obj_sub.gaps = gaps
+    obj_sub = addHistory(obj_sub, f"{gapId} was removed", 'deleteGap')
+    return obj_sub
+
+
+def writeFixedPaths(obj, save_path = "assembly.fixed.paths.tsv", save_gaf = "assembly.fixed.paths.gaf"):
+    """
+    Writes the fixed paths to a file.
+
+    Parameters
+    ----------
+    obj
+        The VerkkoFillet object to be used. 
+    save_path
+        The file path to save the fixed paths. Default is "assembly.fixed.paths.tsv".
+    save_gaf
+        The file path to save the fixed gaf. Default is "assembly.fixed.paths.gaf".
+
+    Returns
+    -------
+        The fixed paths and gaf saved to the specified file paths.
+    """
+    obj_sub = copy.deepcopy(obj)
+    gapdb = obj_sub.gaps.copy()
+    gapdb = gapdb.reset_index()
+    pathdb = obj_sub.paths.copy()
+
+    print("Checking for startMarker and endMarker...")
+    print(" ")
+    for num in range(len(gapdb)):
+        marker = gapdb.loc[num, "gaps"][0]
+
+        if isinstance(marker, str) and re.search(r"startMarker|endMarker", marker):
+            print('yes')
+            note = gapdb.loc[num, "notes"].split(" ")
+            rmnode = note[1]
+            remainnode = note[3]
+
+            newPath = gapdb.loc[num, "fixedPath"].replace("startMarker", "").replace("endMarker", "")
+            print(newPath)
+            # update pathdb
+            pathdb = pathdb.loc[pathdb["name"] != rmnode]
+            ori_path = pathdb.loc[pathdb["name"] == remainnode, 'path'].values[0]
+            print(ori_path)
+            # add path to main contig
+            if marker == "startMarker":
+                pathdb.loc[pathdb["name"] == remainnode, 'path'] = newPath + ori_path
+            elif marker == "endMarker":
+                pathdb.loc[pathdb["name"] == remainnode, 'path'] = ori_path + newPath
+            else:
+                print("marker doesn't match")
+
+            gapdb['name'] = gapdb['name'].replace(rmnode, remainnode)
+
+    print("Fixing paths using gap infomation...")
+    print(" ")
+    for num in range(len(gapdb)):
+        marker = gapdb.loc[num, "gaps"][0]
+
+        if isinstance(marker, str) and re.search(r"startMarker|endMarker", marker):
+            continue
+        if gapdb.loc[num, 'finalGaf'] == "":
+            continue
+        else:
+            fixed_path = gapdb.loc[num, 'fixedPath'].replace(" ", "")
+            gap_path = ','.join(gapdb.loc[num, 'gaps'])
+            contig = gapdb.loc[num, 'name']
+
+            ori_path = pathdb.loc[pathdb['name'] == contig, 'path'].values[0]
+            ori_path = ori_path.replace(gap_path, fixed_path)
+
+            # update path
+            pathdb.loc[pathdb['name'] == contig, 'path'] = ori_path
+
+    pathdb = pathdb.reset_index(drop=True)
+    pathdb = pathdb.drop(columns = "gaps")
+       
+    gaf = pathdb.copy()
+    gaf['path'] = pathdb['path'].apply(path_to_gaf)
+
+    pathdb.to_csv(save_path, sep = "\t", index = False)
+    print(f"Fixed paths were saved to {save_path}")
     
-    # After the loop, ori_rukki will be updated, and you can do something with it, like printing
-    # print(ori_rukki)
-    ori_rukki.to_csv(save, index=False, sep = '\t')
-    obj = addHistory(obj, f"Final rukki path was saved as {save}", 'writeFixedGaf')
-    print("Writing fixed rukki path to "+save)
+    gaf.to_csv(save_gaf, sep = "\t", index = False)
+    print(f"Fixed gaf were saved to {save_gaf}")
+
+

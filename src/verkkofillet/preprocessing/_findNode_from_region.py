@@ -1,9 +1,10 @@
 import pandas as pd
 import numpy as np
 import time
+from tqdm import tqdm
 import pandas as pd
 import os
-from tqdm import tqdm
+
 import re
 import sys
 
@@ -392,3 +393,107 @@ def getNodeCoor(obj, regions_node_db, hifi_read, node_layout, node_layout_idx, n
     mergedb_all['mid_on_node'] = mergedb_all['mid_on_node'].astype(int)
 
     return loc_on_node, mergedb_all
+
+
+def nodeExtract(node):
+    if node.endswith("-"):
+        strand = '-'
+        node = node.rstrip('-')
+    elif node.endswith("+"):
+        strand = '+'
+        node = node.rstrip('+')
+    else:
+        strand = '.'
+    return node, strand
+
+
+def update_seg_link_withGap(gap_list, segment, link):
+    segment_sub = segment.copy()
+    link_sub = link.copy()
+
+    for z in range(len(gap_list)):
+        gap = gap_list[z]
+        gap_pre , gap_pre_strand= nodeExtract(gap[0])
+        gap_sur , gap_sur_strand = nodeExtract(gap[2])
+        gap_gapName = gap[1]
+        gap_len = gap_gapName.split('N')[1]
+
+        segment_sub = pd.concat([segment_sub, pd.DataFrame({'s' : ['s'],'node': [gap_gapName], 'len': [gap_len]})])
+        link_sub = pd.concat([link_sub, pd.DataFrame({'l' : ['L'],'from': [gap_pre], 'fromOrient' : [gap_pre_strand], 'to': [gap_gapName], 'toOrient':[gap_sur_strand], 'overlap': [0]})])
+        link_sub = pd.concat([link_sub, pd.DataFrame({'l' : ['L'],'from': [gap_gapName], 'fromOrient' : [gap_pre_strand], 'to': [gap_sur], 'toOrient':[gap_sur_strand], 'overlap': [0]})])
+
+    return segment_sub, link_sub
+
+
+def getNodeSpace_from_onePath(node_list, segment, link):
+    idx_start = 0
+    node_space = pd.DataFrame()
+
+    if len(node_list) == 1:
+        node, strand = nodeExtract(node_list[0])
+        node_len = segment.loc[segment['node'] == node, 'len']
+        node_len = int(node_len.iloc[0]) if not node_len.empty else 0
+
+        node_space = pd.concat([
+            node_space,
+            pd.DataFrame({'node': [node], 'start_coor': [idx_start], 'end_coor': [idx_start + node_len], 'strand': [strand]})
+        ], ignore_index=True)
+
+        return node_space
+
+    for i in range(1,len(node_list)):
+        pre , pre_strand= nodeExtract(node_list[i-1])
+        suf, suf_strand = nodeExtract(node_list[i])
+        
+
+        # Extract values as native Python numbers
+        overlapM = link.loc[(link['from'] == pre) & (link['to'] == suf), 'overlap']
+        pre_len = segment.loc[segment['node'] == pre, 'len']
+        suf_len = segment.loc[segment['node'] == suf, 'len']
+
+        # Convert Pandas Series to a single value (float -> int)
+        overlapM = int(overlapM.iloc[0]) if not overlapM.empty else 0
+        pre_len = int(pre_len.iloc[0]) if not pre_len.empty else 0
+        suf_len = int(suf_len.iloc[0]) if not suf_len.empty else 0
+
+        # print(f"overlapM: {overlapM}, pre_len: {pre_len}, suf_len: {suf_len}")
+
+        # Append row to node_space DataFrame
+        node_space = pd.concat([
+            node_space,
+            pd.DataFrame({'node': [pre], 'start_coor': [idx_start], 'end_coor': [idx_start + pre_len], 'strand': [pre_strand]})
+        ], ignore_index=True)
+
+        # Update idx_start
+        idx_start = idx_start + pre_len - overlapM
+
+    # Append last node
+    node_space = pd.concat([
+        node_space,
+        pd.DataFrame({'node': [suf], 'start_coor': [idx_start], 'end_coor': [idx_start + suf_len], 'strand': [suf_strand]})
+    ], ignore_index=True)
+
+    return node_space
+
+
+def getNodeSpace_from_allPath(obj, segment, link, file):
+    node_space = pd.DataFrame()
+
+    for j in tqdm(range(len(obj.paths))):
+        node_list = obj.paths['path'].values[j].split(',')
+        contig_name = obj.paths['name'].values[j]
+        if '[' in obj.paths['path'].values[j]:
+            gap_list = list(obj.gaps[obj.gaps['name'] == contig_name]['gaps'])
+            segment, link = update_seg_link_withGap(gap_list, segment, link)
+            
+        node_space_sub = getNodeSpace_from_onePath(node_list, segment, link)
+        node_space_sub['chr'] = contig_name
+        node_space_sub['score'] = 100
+        node_space_sub = node_space_sub[['chr', 'start_coor','end_coor','node','score','strand']]
+        node_space = pd.concat([node_space, node_space_sub])
+        
+    node_space.columns = ['chrom','chromStart','chromEnd','name','score','strand']
+    
+    node_space.to_csv(file, index=False, sep = '\t', header = True)
+    
+    return node_space

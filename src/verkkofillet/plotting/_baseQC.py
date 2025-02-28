@@ -1,9 +1,97 @@
 import pandas as pd
 import os
+import copy
 import seaborn as sns
+import matplotlib
+matplotlib.rcParams['pdf.fonttype'] = 42
+matplotlib.rcParams['ps.fonttype'] = 42
 from matplotlib import pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap
 from natsort import natsorted
+
+
+def n50Plot(obj, width = 8,height = 5 , save = True, figName = None, nprint = None, colName = "ref_chr", dpi = 300):
+    """
+    Generates a line plot showing the distribution of contig lengths. The N50 value is indicated by a red dashed line.
+
+    Parameters
+    -----------
+    obj
+        An object that contains a `.stats` attribute, which should be a pandas DataFrame.
+    width
+        Width of the plot. Default is 8.
+    height
+        Height of the plot. Default is 5.
+    save
+        If True, the plot is saved as a PNG file. Default is True.
+    figName
+        Name of the saved plot. Default is None. If None, the plot is saved as "figs/N50.png". You can set the path and format to save the plot. For example, "figs/N50.pdf".
+    nprint
+        Number of contigs to display. Default is None. If None, all contigs are displayed.
+    colName
+        Column name to group by in obj.stats. Default is "ref_chr".
+    dpi
+        Resolution of the saved plot. Default is 300.
+    """
+    
+    obj = copy.deepcopy(obj)
+
+    if not hasattr(obj, "stats"):
+        raise AttributeError("Object does not have a 'stats' attribute")
+    
+    stats = obj.stats.copy()
+    if nprint is None:
+        nprint = stats.shape[0]
+
+    # check the column name
+    if colName not in stats.columns:
+        raise ValueError(f"Column name {colName} not found in stats")
+    if "hap_verkko" not in stats.columns:
+        raise ValueError(f"Column name hap_verkko not found in stats")
+    
+    stats[colName] = stats[colName].astype(str)
+    stats['by'] = stats[colName] + "_" + stats["hap_verkko"]
+    stats.sort_values("contig_len", ascending=False, inplace=True)
+    stats.reset_index(drop=True, inplace=True)
+    total = stats["contig_len"].sum()
+
+    # calculate n50 and l50
+    n50 = 0
+    l50 = 0
+
+    for i in range(len(stats)):
+        if n50 < total/2:
+            n50 += stats.loc[i, "contig_len"]
+            l50 += 1
+        else:
+            break
+
+    plt.figure(figsize=(width, height))
+    sns.lineplot(data = stats.head(nprint), x = 'by', y = "contig_len")
+    plt.xlabel("Contig")
+    plt.ylabel("Contig length")
+    plt.title(f"Contig length distribution. Top {nprint} contigs")
+    plt.axvline(x=l50, color='r', linestyle='--')
+    plt.text(l50, stats["contig_len"].max() * 0.1, f"n50={n50:,}", rotation=90, ha = 'left')
+    plt.xticks(rotation=75, ha='right')
+
+    if figName is None:
+        figName = f"figs/N50.png"
+        
+    if save:
+        if not os.path.exists("figs"):
+            os.makedirs("figs")
+
+        if os.path.exists(figName):
+            print(f"File {figName} already exists")
+            print("Please remove the file or change the name to save the new file")
+
+        elif not os.path.exists(figName):
+            plt.savefig(figName, dpi=dpi)
+            print(f"File {figName} saved")
+    print(f"n50={n50:,}")
+    print(f"l50={l50}")
+    plt.show()
 
 
 def qvPlot(obj):

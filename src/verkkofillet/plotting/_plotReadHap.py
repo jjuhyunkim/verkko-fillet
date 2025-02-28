@@ -1,6 +1,9 @@
 import seaborn as sns
 import matplotlib.pyplot as plt
 import pandas as pd
+import matplotlib
+matplotlib.rcParams['pdf.fonttype'] = 42
+matplotlib.rcParams['ps.fonttype'] = 42
 
 def plotHist_readOnNode(nodeinfo, mergedb_all, loc_on_node, node, **kwargs):
     mergedb = mergedb_all.loc[mergedb_all['node'] == node]
