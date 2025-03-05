@@ -1,8 +1,7 @@
-(release-notes)=
 # Release-notes
 
 ```{toctree}
-:maxdepth: 1
+:maxdepth: 2
 
 0.1.1
 0.1.2
