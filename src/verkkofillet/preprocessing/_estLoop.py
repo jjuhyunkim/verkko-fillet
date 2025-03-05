@@ -2,7 +2,7 @@ import subprocess
 import pandas as pd
 import plotly.graph_objects as go
 import os
-
+import numpy as np
 import itertools
 import copy
 import pandas as pd
@@ -10,8 +10,56 @@ from collections import Counter
 import seaborn as sns
 import matplotlib.pyplot as plt
 import os
+import numpy as np
+from sklearn.linear_model import LinearRegression
+import math
 
-def calNodeDepth(obj, hap_info = "assembly.colors.csv", gfa = "assembly.homopolymer-compressed.noseq.gfa", width = 8, height = 5, save = True, figName = None, dpi = 300):
+def impute_depth(obj, loopNode, realNum):
+    
+    if len(loopNode) != len(realNum):
+        print(f"loopNum : {len(loopNode)}")
+        print(f"realNum : {len(realNum)})")
+        raise ValueError("The length of loopNode and realNum should be the same")
+    depthDb= obj.node.copy()
+    depthDb.index= depthDb['node']
+    depthdb_sub = depthDb.loc[loopNode]
+    depthdb_sub
+
+    # Define the lists
+    list1 = list(depthdb_sub['norm_len'])
+
+    list2 = realNum
+
+    # Remove NaNs from list2 and corresponding elements from list1 for training
+    train_indices = [i for i, x in enumerate(list2) if not math.isnan(x)]
+    train_list1 = [list1[i] for i in train_indices]
+    train_list2 = [list2[i] for i in train_indices]
+
+    # Reshape data for linear regression
+    train_list1 = np.array(train_list1).reshape(-1, 1)
+    train_list2 = np.array(train_list2)
+
+    # Fit linear regression model
+    model = LinearRegression()
+    model.fit(train_list1, train_list2)
+
+    # Impute the NaN values
+    imputed_values = []
+    for i, x in enumerate(list2):
+        if math.isnan(x):
+            # Predict using the model
+            imputed_value = model.predict(np.array([[list1[i]]]))[0]
+            imputed_values.append(imputed_value)
+        else:
+            imputed_values.append(x)
+
+    # print(imputed_values)
+
+    depthdb_sub['imputed'] = imputed_values
+    depthdb_sub['real'] = realNum
+    return depthdb_sub
+
+def calNodeDepth(obj, width = 8, height = 5, save = True, figName = None, dpi = 300, force = False):
     """
     Plot the depth of nodes in the graph.
 
@@ -31,43 +79,47 @@ def calNodeDepth(obj, hap_info = "assembly.colors.csv", gfa = "assembly.homopoly
         The resolution of the figure. Default is 300.
     """
 
-
+    
     obj = copy.deepcopy(obj)
-
-    hap_info = os.path.abspath(hap_info)
-    gfa = os.path.abspath(gfa)
-
-    if not os.path.exists(hap_info):
-        raise FileNotFoundError(f"The hap_info file does not exist: {hap_info}")
-    if not os.path.exists(gfa):
-        raise FileNotFoundError(f"The GFA file does not exist: {gfa}")
 
     if obj.paths_freq is None:
         raise ValueError("No paths_freq found. Please run `vf.tl.graphIdx` and `vf.tl.graphAlign` first.")
+    if obj.node is None:
+        raise ValueError("No node information found. Please run `vf.tl.graphIdx` and `vf.tl.graphAlign` first")
+    columnList= ["count","norm_len","cov","cov_hap"]
+    if all(elem in obj.node.columns for elem in columnList):
+        if force:
+            for col in columnList:
+                del obj.node[col]
+            else:
+                print("The depth of nodes has already been calculated. Skip calculation.")
+        
+        return obj
+    
 
     # Count the frequency of each node in the paths
     print("Counting the frequency of each node in the paths...")
     paths_freq = obj.paths_freq.copy()
-    nested_list = paths_freq['path_modi'].str.split("@").tolist()
-    flatlist = list(filter(None, list(itertools.chain(*nested_list))))
-    del nested_list
+    
+    # Ensure `path_modi` is a string before splitting
+    paths_freq['nested_list'] = paths_freq['path_modi'].astype(str).str.split("@")
 
+    # Fix the apply function
+    paths_freq['expanded_list'] = paths_freq.apply(
+        lambda row: [item for item in row['nested_list'] for _ in range(row['nsupport'])], axis=1
+    )
+
+    # Flatten the list while filtering out None values
+    flatlist = list(filter(None, itertools.chain(*paths_freq['expanded_list'])))
+
+    # Count occurrences
     count_dict = Counter(flatlist)
     count_df = pd.DataFrame(count_dict.items(), columns=['node', 'count'])
+
+    # Sort and get median
     count_df = count_df.sort_values(by='count', ascending=False)
-    median = count_df['count'].median()
-    print(f"Median: {median}")
 
-
-    nodeLen = pd.read_csv(gfa, sep='\t', header=None)
-    nodeLen = nodeLen[nodeLen[0] == "S"]
-    nodeLen = nodeLen.iloc[:,[1,3]]
-    nodeLen.columns = ['node', 'len']
-    nodeLen['len'] = nodeLen['len'].str.replace(r'^LN:i:', '', regex=True)
-    nodeLen['len'] = pd.to_numeric(nodeLen['len'], errors='coerce')  # Handle non-numeric values gracefully
-    # nodeLen
-
-    hapdb = pd.read_csv(hap_info, sep='\t', header=0)
+    nodedb = obj.node.copy()
 
     color_map = {
         "#AAAAAA" : "ambiguous",
@@ -75,36 +127,42 @@ def calNodeDepth(obj, hap_info = "assembly.colors.csv", gfa = "assembly.homopoly
         "#8888FF" : "hap2",
         "#FFFF00" : "ambiguous"
     }
-    hapdb['hap'] = hapdb['color'].map(color_map)
+    nodedb['hap'] = nodedb['color'].map(color_map)
     # hapdb
 
-    merged = pd.merge(nodeLen, hapdb, on='node')
-    merged = merged[['node', 'len', 'hap']]
+    merged = nodedb[['node', 'len', 'hap']]
     merged = pd.merge(merged, count_df, on='node')
+    merged['norm_len'] = merged['count'] / merged['len']
     
+    median = merged['norm_len'].median()
+    merged['cov'] = merged['norm_len']/median
+    print(f"Median normalized by length: {median}")
 
-    hapSpecificMed = merged.loc[merged['hap'].isin(["hap1", "hap2"]),"count"].median()
-    merged['cov_hap'] = merged['count'] / hapSpecificMed
-    print(f"Median of haplotype specific nodes : {hapSpecificMed}")
+    hapSpecificMed = merged.loc[merged['hap'].isin(["hap1", "hap2"]),"norm_len"].median()
+    merged['cov_hap'] = merged['norm_len'] / hapSpecificMed
+    print(f"Median of haplotype specific nodes normalized by length : {hapSpecificMed}")
     
     count_df = merged.copy()
-    count_df = count_df.sort_values(by='count', ascending=False)
+    y = 'count'
+    count_df = count_df.sort_values(by=y, ascending=False)
 
     # plot line plots
-    fig = plt.figure(figsize=(8, 5))
+    fig = plt.figure(figsize=(width, height))
     gs = fig.add_gridspec(1, 2, width_ratios=[4, 1])  # Line plot wider than box plot
 
     # Line plot
+    print(f"Plotting the depth of nodes in the graph...")
+    
     ax0 = fig.add_subplot(gs[0])
-    sns.lineplot(data=count_df, x='node', y='count', marker="o", ax=ax0, markersize=3, alpha=0.5)
+    sns.lineplot(data=count_df, x='node', y=y, marker="o", ax=ax0, markersize=3, alpha=0.5)
     ax0.set_title("Line Plot")
     ax0.set_yscale("log")
     ax0.set(xticklabels=[], xlabel=None, xticks=[])
-    ax0.axhline(median, color='r', linestyle='--', label='Median', linewidth=.5, alpha=0.5)
+    ax0.axhline(count_df[y].median(), color='r', linestyle='--', label='Median', linewidth=.5, alpha=0.5)
 
     # Box plot (on the right)
     ax1 = fig.add_subplot(gs[1])
-    sns.boxplot(y=count_df["count"], ax=ax1)
+    sns.boxplot(y=count_df[y], ax=ax1)
     ax1.set_title("Box Plot")
     ax1.set_yscale("log")
 
@@ -127,10 +185,13 @@ def calNodeDepth(obj, hap_info = "assembly.colors.csv", gfa = "assembly.homopoly
             print(f"File {figName} saved")
 
     plt.show()
-
+    #print(count_df)
+    #print(nodedb)
     count_df.reset_index(drop=True, inplace=True)
-    count_df['cov'] = count_df['count']/median
-    return count_df
+    nodedb = pd.merge(nodedb, count_df.loc[:,['node'] + columnList], on='node', how='left')
+    obj.node = nodedb
+
+    return obj
 
 def estLoops(obj, nodeList, gaf="graphAlignment/verkko.graphAlign_allONT.gaf"):
     """

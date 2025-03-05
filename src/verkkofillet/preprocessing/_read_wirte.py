@@ -9,6 +9,7 @@ import shutil
 from .._default_func import check_user_input, print_directory_tree,addHistory
 from .._run_shell import run_shell
 from datetime import datetime
+import inspect
 
 # --------------------------------------------------------------------------------
 # Reading and Writing data files and AnnData objects
@@ -31,6 +32,9 @@ class FilletObj:
         self.qv = None
         self.history = None
         self.scfmap = None
+        self.node = None
+        self.edge = None
+
     
     def __repr__(self):
         attributes = vars(self)
@@ -51,14 +55,82 @@ class FilletObj:
         
         return repr_str
 
+def readNode(obj, graph = "assembly.homopolymer-compressed.noseq.gfa", color = "assembly.colors.csv"):
+
+    obj = copy.deepcopy(obj)
+    if not os.path.exists(graph):
+        raise FileNotFoundError(f"File {graph} not found")
+    if not os.path.exists(color):
+        raise FileNotFoundError(f"File {color} not found")
+    
+    print(f"Reading {graph}")
+    nodeLen = pd.read_csv(graph, sep='\t', header=None)
+    nodeLen = nodeLen[nodeLen[0] == "S"]
+    nodeLen = nodeLen.iloc[:,[1,3]]
+    nodeLen.columns = ['node', 'len']
+    nodeLen['len'] = nodeLen['len'].str.replace(r'^LN:i:', '', regex=True)
+    nodeLen['len'] = pd.to_numeric(nodeLen['len'], errors='coerce')  # Handle non-numeric values gracefully
+    print(f"Reading {color}")
+    color = pd.read_csv(color, sep='\t', header=0)
+    obj.node = pd.merge(nodeLen, color, on='node')
+    obj = addHistory(obj, f"node file is loaded from {graph}", {inspect.currentframe().f_code.co_name})
+    print(f"Node information is stored in obj.node")
+    return obj
+
+def readEdge(obj, graph = "assembly.homopolymer-compressed.noseq.gfa"):
+    obj = copy.deepcopy(obj)
+    nodeLen = pd.read_csv(graph, sep='\t', header=None)
+    nodeLen = nodeLen[nodeLen[0] == "L"]
+    nodeLen = nodeLen.loc[:,1:5]
+    nodeLen.columns = ["node1", "node1_strand", "node2", "node2_strand", "overlap"]
+    obj.edge = nodeLen
+    obj = addHistory(obj, f"edge file is loaded from {graph}", {inspect.currentframe().f_code.co_name})
+    return obj
+
+def readPath(obj, paths_path = "assembly.paths.tsv"):
+    """
+    """
+    if not os.path.exists(paths_path):
+        raise FileNotFoundError(f"File {paths_path}")
+    
+    obj = copy.deepcopy(obj)
+
+    # Load paths file if it exist
+    obj.paths = pd.read_csv(paths_path, header=0, sep='\t', index_col=None)
+    print("Path file loaded successfully.")
+    obj = addHistory(obj, f"path file is loaded from {paths_path}", {inspect.currentframe().f_code.co_name})
+    
+    return obj
+
+def readScfmap(obj, scfmap_path = "assembly.scfmap"):
+    """
+    """
+    obj = copy.deepcopy(obj)
+    if not os.path.exists(scfmap_path):
+        raise FileNotFoundError(f"File {scfmap_path} not found")
+
+    scfmap = pd.read_csv(scfmap_path, sep = ' ', header = None)
+    scfmap.columns = ['info','contig','pathName']
+    scfmap= scfmap.loc[scfmap['info']=='path']
+    del scfmap['info']
+    obj.scfmap = scfmap
+    print("scfmap file loaded successfully.")
+    
+    
+    obj = addHistory(obj, f"scfmap file is loaded from {scfmap_path}", {inspect.currentframe().f_code.co_name})
+    return obj
+
+
 
 def read_Verkko(verkkoDir, 
                 verkko_fillet_dir=None, 
-                paths_path=None,
+                paths_path="assembly.paths.tsv",
                 force = False,
-                scfmap_path = None, 
+                scfmap_path = "assembly.scfmap", 
                 version=None, 
                 species=None, 
+                graph = "assembly.homopolymer-compressed.noseq.gfa",
+                color = "assembly.colors.csv",
                 lock_original_folder = True, showOnly = False, longLog = False):
     """
     Prepares the Verkko environment by creating necessary directories, locking the original directory, 
@@ -105,62 +177,39 @@ def read_Verkko(verkkoDir,
         cmd=f"sh {script} {verkkoDir} {verkko_fillet_dir}"
         run_shell(cmd, wkDir=verkko_fillet_dir, functionName = "make_verkko_fillet_dir" ,longLog = longLog, showOnly = showOnly)
         
-    working_dir=verkko_fillet_dir
     
     # lock original verkko folder to prevent mess up
     if lock_original_folder :
         print(f"Lock the original Verkko folder to prevent it from being modified.")
         script = os.path.abspath(os.path.join(script_path, "lock_folder.sh"))
         cmd=f"sh {script} {verkkoDir}"
-        run_shell(cmd, wkDir=working_dir, functionName = "lock_original_folder" ,longLog = longLog, showOnly = showOnly)
+        run_shell(cmd, wkDir=verkko_fillet_dir, functionName = "lock_original_folder" ,longLog = longLog, showOnly = showOnly)
 
     # Set the additional attributes on the object
     obj.species = species
     obj.verkkoDir = verkkoDir
     obj.verkko_fillet_dir = verkko_fillet_dir
     obj.version = version
-    obj.history = pd.DataFrame({
-    "timestamp": [datetime.now()],
-    "activity": [f"verkko-fillet obj is generated. from : {verkkoDir}, outdir : {verkko_fillet_dir}"],
-        "function" : "read_Verkko"
-})
-    # Check and set the paths_path
-    if paths_path == None:
-        paths_path = os.path.abspath(os.path.join(verkko_fillet_dir, "assembly.paths.tsv"))
+    obj.history = pd.DataFrame({"timestamp": [datetime.now()],"activity": [f"verkko-fillet obj is generated. from : {verkkoDir}, outdir : {verkko_fillet_dir}"], "function" : "read_Verkko"})
+    # obj = addHistory(obj, f"verkko-fillet obj is generated. from : {verkkoDir}", {inspect.currentframe().f_code.co_name})
     
-    # Load paths file if it exists
-    if paths_path is not None and os.path.exists(paths_path):
-        print(f"Path file loading...from {paths_path}")
-        try:
-            # Read CSV file with pandas
-            obj.paths = pd.read_csv(paths_path, header=0, sep='\t', index_col=None)
-            print("Path file loaded successfully.")
-            # obj.history = addHistory(f"path file is loaded from {paths_path}")
-        except Exception as e:
-            print(f"Error loading paths file: {e}")
-    else:
-        print("Paths file not found or path is None.")
+    print(f"change working directory: {verkko_fillet_dir}")
+    os.chdir(verkko_fillet_dir)
     
-    if scfmap_path == None:
-        scfmap_path = os.path.abspath(os.path.join(verkko_fillet_dir, "assembly.scfmap"))
-    
-    if scfmap_path is not None and os.path.exists(scfmap_path):
-        print(f"scfmap file loading...from {scfmap_path}")
-        try:
-            scfmap = pd.read_csv(scfmap_path, sep = ' ', header = None)
-            scfmap.columns = ['info','contig','pathName']
-            scfmap= scfmap.loc[scfmap['info']=='path']
-            del scfmap['info']
-            obj.scfmap = scfmap
-            print("scfmap file loaded successfully.")
-            # obj.history = addHistory(f"path file is loaded from {paths_path}")
-        except Exception as e:
-            print(f"Error loading paths file: {e}")
-    else:
-        print("scfmap file not found or path is None.")
-        
-    return obj
+    # read Path file
+    if paths_path != None:
+        obj = readPath(obj, paths_path)
 
+    # read scfmap file
+    if scfmap_path != None:
+        obj = readScfmap(obj, scfmap_path)
+
+    # read node file 
+    if graph != None:
+        obj = readNode(obj, graph, color)
+        obj = readEdge(obj, graph)
+    
+    return obj
 
 def save_Verkko(obj,
                 fileName: str):
@@ -200,6 +249,7 @@ def load_Verkko(fileName):
         obj = pickle.load(f)
         
     obj = addHistory(obj,f"Reading verkko-fillet obj from {fileName}", 'load_Verkko')
+    
     return obj
     
 def hard_copy_symlink(symlink_path, destination_path):
@@ -224,74 +274,9 @@ def hard_copy_symlink(symlink_path, destination_path):
     else :
         shutil.copy(symlink_path, destination_path)
 
-def mkCNSdir(obj, new_folder_path, final_gaf = "final_rukki_fixed.paths.gaf"):
-    """\
-    Creates a new CNS directory by creating symbolic links to the original verkko directory.
-
-    Parameters
-    ----------
-    obj
-        Object containing the original verkko directory path.
-    new_folder_path
-        Path to the new folder to be created.
-    final_gaf
-        Path to the final GAF file. Default is "final_rukki_fixed.paths.gaf".
-
-    Returns
-    -------
-        new folder with mendatory files and symbolic links
-    """
-    newFolder = os.path.abspath(new_folder_path)
-    verkkoDir = os.path.abspath(obj.verkkoDir)  # Define oriDir only once
-    
-    # Check if the new folder exists
-    if os.path.exists(newFolder):
-        print("New verkko folder for CNS already exists!")
-    else:
-        # Create the new folder
-        os.makedirs(newFolder)  # Using os.makedirs to handle any intermediate directories
-        
-        try:
-            # Create symbolic links for each directory/file
-            subprocess.run(["ln", "-s", os.path.join(verkkoDir, "1-buildGraph"), os.path.join(newFolder, "1-buildGraph")], check=True)
-            subprocess.run(["ln", "-s", os.path.join(verkkoDir, "2-processGraph"), os.path.join(newFolder, "2-processGraph")], check=True)
-            subprocess.run(["ln", "-s", os.path.join(verkkoDir, "3-align"), os.path.join(newFolder, "3-align")], check=True)
-            subprocess.run(["ln", "-s", os.path.join(verkkoDir, "3-alignTips"), os.path.join(newFolder, "3-alignTips")], check=True)
-            subprocess.run(["ln", "-s", os.path.join(verkkoDir, "4-processONT"), os.path.join(newFolder, "4-processONT")], check=True)
-            subprocess.run(["ln", "-s", os.path.join(verkkoDir, "hifi-corrected.fasta.gz"), os.path.join(newFolder, "hifi-corrected.fasta.gz")], check=True)
-            subprocess.run(["ln", "-s", os.path.join(verkkoDir, "6-rukki"), os.path.join(newFolder, "6-rukki")], check=True)
-            subprocess.run(["ln", "-s", os.path.join(verkkoDir, "5-untip"), os.path.join(newFolder, "5-untip")], check=True)
-
-            # Copy the "6-layoutContigs" directory and ensure path joins correctly
-            layoutContigs_folder = os.path.join(newFolder, "6-layoutContigs")
-            os.makedirs(layoutContigs_folder, exist_ok=True)  # Ensure directory exists
-            source_files = glob.glob(os.path.join(verkkoDir, "6-layoutContigs",'**', '*'), recursive=True)
-            for source in source_files:
-                try:
-                    hard_copy_symlink(source, layoutContigs_folder)
-                except subprocess.CalledProcessError as e:
-                    print(f"Error copying {source} to {consensus_folder}: {e}")
-            subprocess.run(["cp", final_gaf, os.path.join(newFolder, "6-layoutContigs", "consensus_paths.txt")],check=True)
-            
-            # Create the 7-consensus directory
-            consensus_folder = os.path.join(newFolder, "7-consensus")
-            os.makedirs(consensus_folder, exist_ok=True)  # Ensure directory exists
-            source_files = glob.glob(os.path.join(verkkoDir, "7-consensus", "ont_subset.*"))
-            
-            for source in source_files:
-                try:
-                    hard_copy_symlink(source, consensus_folder)
-                except subprocess.CalledProcessError as e:
-                    print(f"Error copying {source} to {consensus_folder}: {e}")
-            
-            print(f"Symbolic links and files created from {verkkoDir} to {newFolder}")
-            print(" ")
-            print_directory_tree(new_folder_path, max_depth=1, prefix="", is_root=True)
-        except subprocess.CalledProcessError as e:
-            print(f"Error creating symbolic link or copying files: {e}")
 
 
-def updateCNSdir_missingEdges(obj, new_folder_path):
+def updateCNSdir_missingEdges(obj, new_folder_path, final_gaf = "assembly.fixed.paths.gaf", showOnly = False, longLog = False):
     """
     Updates the CNS directory by handling missing edges and creating necessary symbolic links or files.
     
@@ -315,70 +300,95 @@ def updateCNSdir_missingEdges(obj, new_folder_path):
         print("New verkko folder for CNS is not exists!")
         return
     
-    try:
-        # Create symbolic links or handle files in `7-consensus`
-        consensus_folder = os.path.join(newFolder, "7-consensus")
-        os.makedirs(consensus_folder, exist_ok=True)
-        subprocess.run(
-            ["bash", "-c", f"cat {filletDir}/missing_edge/patch.*.gaf | awk '{{print $1}}' >> ont_subset.id"], 
-            check=True, 
-            cwd=consensus_folder
-        )
-        subprocess.run(["gunzip", "ont_subset.fasta.gz"], check=True, cwd=consensus_folder)
-        subprocess.run(
-            ["bash", "-c", f"zcat {verkkoDir}/3-align/split/ont*.fasta.gz | seqtk subseq - ont_subset.id >> ont_subset.fasta"], 
-            check=True, 
-            cwd=consensus_folder
-        )
-        subprocess.run(["bgzip", "ont_subset.fasta"], check=True, cwd=consensus_folder)
-
-        # Handle files in `6-layoutContigs`
-        layout_folder = os.path.join(newFolder, "6-layoutContigs")
-        os.makedirs(layout_folder, exist_ok=True)
-        subprocess.run(["rm", "consensus_paths.txt"], check=True, cwd=layout_folder)
-        subprocess.run(
-            ["bash", "-c", f"cat {filletDir}/missing_edge/patch.*.gaf >> combined-alignments.gaf"], 
-            check=True, 
-            cwd=layout_folder
-        )
-        subprocess.run(
-            ["bash", "-c", f"cat {filletDir}/missing_edge/patch.*.gfa | grep '^L' | grep gap >> combined-edges.gfa"], 
-            check=True, 
-            cwd=layout_folder
-        )
-        subprocess.run(
-            ["bash", "-c", f"cat {filletDir}/missing_edge/patch.*.gfa | awk 'BEGIN {{ FS=\"[ \\t]+\"; OFS=\"\\t\"; }} ($1 == \"S\") && ($3 != \"*\") {{ print $2, length($3); }}' >> nodelens.txt"], 
-            check=True, 
-            cwd=layout_folder
-        )
-        subprocess.run(
-            ["bash", "-c", f"tail -n 2 ../7-consensus/ont_subset.id >> ont-gapfill.txt"], 
-            check=True, 
-            cwd=layout_folder
-        )
-
-        # Fetch the Verkko module path and construct script path
-        script_path_proc = subprocess.run(
-            "verkko -h | grep 'Verkko module path' | cut -d' ' -f 6",
-            shell=True,  # Enables shell commands
-            text=True,   # Ensures the output is in text format
-            capture_output=True,  # Captures stdout and stderr
-            check=True   # Raises an exception for non-zero exit codes
-        )
-        script_path = script_path_proc.stdout.strip()
-        script = os.path.abspath(os.path.join(script_path, "scripts", "replace_path_nodes.py"))
+    script = os.path.abspath(os.path.join(script_path, "_updateCNSdir_missingEdges.sh"))
+    cmd=f"sh {script} {filletDir} {verkkoDir} {newFolder} {final_gaf}"
+    run_shell(cmd, wkDir=filletDir, functionName = "make_verkko_fillet_dir" ,longLog = longLog, showOnly = showOnly)
         
-        # Run the script
-        subprocess.run(
-            ["bash", "-c", f"{script} ../4-processONT/alns-ont-mapqfilter.gaf ../6-layoutContigs/combined-nodemap.txt | grep -F -v -w -f ../6-layoutContigs/ont-gapfill.txt > ../6-layoutContigs/ont.alignments.gaf || true"], 
-            check=True, 
-            cwd=layout_folder
-        )
-        print("All files are updated! the new folder is ready for verkko-cns")
-    except subprocess.CalledProcessError as e:
-        print(f"Error occurred while executing a subprocess command: {e}")
-    except Exception as e:
-        print(f"An unexpected error occurred: {e}")
+
+def mkCNSdir(obj, new_folder_path, final_gaf = "assembly.fixed.paths.gaf", missingEdge = False):
+    """\
+    Creates a new CNS directory by creating symbolic links to the original verkko directory.
+
+    Parameters
+    ----------
+    obj
+        Object containing the original verkko directory path.
+    new_folder_path
+        Path to the new folder to be created.
+    final_gaf
+        Path to the final GAF file. Default is "final_rukki_fixed.paths.gaf".
+
+    Returns
+    -------
+        new folder with mendatory files and symbolic links
+    """
+    print(f"Creating a new verkko folder for CNS at: {new_folder_path}")
+    print(f"Copying the final GAF file from: {final_gaf}")
+    print(f"missingEdge mode is set to: {missingEdge}")
+
+    newFolder = os.path.abspath(new_folder_path)
+    verkkoDir = os.path.abspath(obj.verkkoDir)  # Define original directory
+
+    # Create the new folder (only if it doesn't exist)
+    os.makedirs(newFolder, exist_ok=True)
+
+    # Check if the folder already exists
+    if os.path.exists(newFolder) and os.listdir(newFolder):
+        print("New verkko folder for CNS already exists and is not empty!")
+        return
+
+    # Create symbolic links for directories
+    for folder in ["1-buildGraph", "2-processGraph", "3-align", "3-alignTips", "4-processONT", "6-rukki", "5-untip"]:
+        source_path = os.path.join(verkkoDir, folder)
+        link_path = os.path.join(newFolder, folder)
+
+        if not os.path.exists(source_path):
+            print(f"Warning: Directory {folder} does not exist in the original Verkko directory.")
+            continue
+
+        # Check if symlink already exists
+        if not os.path.exists(link_path):
+            os.symlink(source_path, link_path)
+
+    if missingEdge:
+        updateCNSdir_missingEdges(obj, newFolder)
+    else:
+        # Create additional folders
+        os.makedirs(os.path.join(newFolder, "6-layoutContigs"), exist_ok=True)
+        os.makedirs(os.path.join(newFolder, "7-consensus"), exist_ok=True)
+
+        # Create symbolic links for specific files
+        files_to_link = [
+            "6-layoutContigs/combined-alignments.gaf",
+            "6-layoutContigs/combined-edges.gfa",
+            "6-layoutContigs/nodelens.txt",
+            "7-consensus/ont_subset.fasta.gz",
+            "7-consensus/ont_subset.id",
+            "6-layoutContigs/ont-gapfill.txt"
+        ]
+
+        for file in files_to_link:
+            source_file = os.path.join(verkkoDir, file)
+            link_file = os.path.join(newFolder, file)
+
+            if not os.path.exists(source_file):
+                print(f"Warning: File {file} does not exist in the original Verkko directory.")
+                continue
+
+            if not os.path.exists(link_file):
+                os.symlink(source_file, link_file)
+
+        # Ensure `final_gaf` exists before copying
+        final_gaf = os.path.abspath(final_gaf)
+        target_gaf = os.path.join(newFolder, "6-layoutContigs", "consensus_paths.txt")
+
+        if not os.path.exists(final_gaf):
+            print(f"Warning: File {final_gaf} does not exist in the original Verkko directory.")
+        else:
+            subprocess.run(["cp", final_gaf, target_gaf], check=True)
+
+        print("✅ All files are updated! The new folder is ready for verkko-cns.")
+
 
 testDir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../data/'))
 def loadGiraffe():

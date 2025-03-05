@@ -36,7 +36,7 @@ def n50Plot(obj, width = 8,height = 5 , save = True, figName = None, nprint = No
     
     obj = copy.deepcopy(obj)
 
-    if not hasattr(obj, "stats"):
+    if obj.stats is None:
         raise AttributeError("Object does not have a 'stats' attribute")
     
     stats = obj.stats.copy()
@@ -76,7 +76,7 @@ def n50Plot(obj, width = 8,height = 5 , save = True, figName = None, nprint = No
     plt.xticks(rotation=75, ha='right')
 
     if figName is None:
-        figName = f"figs/N50.png"
+        figName = f"figs/N50.lineplot.png"
         
     if save:
         if not os.path.exists("figs"):
@@ -91,10 +91,11 @@ def n50Plot(obj, width = 8,height = 5 , save = True, figName = None, nprint = No
             print(f"File {figName} saved")
     print(f"n50={n50:,}")
     print(f"l50={l50}")
+
     plt.show()
 
 
-def qvPlot(obj):
+def qvPlot(obj, width = 5, height = 7, save = True, figName = None):
     """
     Generates a bar plot showing QV stats by haplotype.
 
@@ -104,9 +105,10 @@ def qvPlot(obj):
         An object that contains a `.stats` attribute, which should be a pandas DataFrame.
     """
     # Create figure and axes
-    qvTab=obj.qv
+    obj = copy.deepcopy(obj)
+    qvTab=obj.qv.copy()
     
-    fig, ax1 = plt.subplots(figsize=(3, 3))
+    fig, ax1 = plt.subplots(figsize=(width, height))
     
     # Create barplot for QV
     barplot = sns.barplot(x='asmName', y='QV', data=qvTab, ax=ax1, color='grey')
@@ -144,11 +146,25 @@ def qvPlot(obj):
     
     # Remove legend from the second axis (if not needed)
     ax2.legend_.remove() if ax2.legend_ else None
-    
+    if figName is None:
+        figName = f"figs/qvplot.barplot.png"
+
+    if save:
+        if not os.path.exists("figs"):
+            print("Creating figs directory")
+            os.makedirs("figs")
+
+        if os.path.exists(figName):
+            print(f"File {figName} already exists")
+            print("Please remove the file or change the name")
+
+        elif not os.path.exists(figName):
+            plt.savefig(figName)
+            print(f"File {figName} saved")
     # Show the plot
     plt.show()
 
-def completePlot(obj, plot_height = 10 , plot_width = 5):
+def completePlot(obj, width = 6, height = 3, save = True, figName = None):
     """
     Generates a bar plot showing contig completeness grouped by reference chromosome and haplotype. The completeness of each chromosome is calculated by comparing it to the reference length. A completeness value greater than 100 indicates that the contig length exceeds the original reference length.
 
@@ -161,15 +177,32 @@ def completePlot(obj, plot_height = 10 , plot_width = 5):
         - `hap` (str): Haplotype information.
         - `contig_len` (int): Length of the contigs.
     """
-    stat_db = obj.stats
-    plt.figure(figsize=(plot_width, plot_height))  # Adjust the figure size as needed
+    obj = copy.deepcopy(obj)
+    stat_db = obj.stats.copy()
+    plt.figure(figsize=(width, height))  # Adjust the figure size as needed
     sns.barplot(stat_db.groupby(['ref_chr','hap'])['completeness'].sum().reset_index(),
                 x="ref_chr", y="completeness", hue="hap")
     plt.title("completeness", fontsize=14)
     plt.xticks(rotation=45)
+    if figName is None:
+        figName = f"figs/completePlot.barplot.png"
+
+    if save:
+        if not os.path.exists("figs"):
+            print("Creating figs directory")
+            os.makedirs("figs")
+
+        if os.path.exists(figName):
+            print(f"File {figName} already exists")
+            print("Please remove the file or change the name")
+
+        elif not os.path.exists(figName):
+            plt.savefig(figName)
+            print(f"File {figName} saved")
+    plt.show()
 
 
-def contigLenPlot(obj, plot_height = 10 , plot_width = 5):
+def contigLenPlot(obj, width = 6, height = 3, save = True, figName = None):
     """
     Generates a bar plot showing length of contig by haplotype.
 
@@ -178,14 +211,31 @@ def contigLenPlot(obj, plot_height = 10 , plot_width = 5):
     obj
         An object that contains a `.stats` attribute, which should be a pandas DataFrame.
     """
-    stat_db = obj.stats
-    plt.figure(figsize=(plot_width, plot_height))  # Adjust the figure size as needed
+    obj = copy.deepcopy(obj)
+    stat_db = obj.stats.copy()
+    plt.figure(figsize=(width, height))  # Adjust the figure size as needed
     sns.barplot(stat_db.groupby(['ref_chr','hap'])['contig_len'].sum().reset_index(),
                 x="ref_chr", y="contig_len", hue="hap")
     plt.title("len(contig)", fontsize=14)
     plt.xticks(rotation=45)
+    if figName is None:
+        figName = f"figs/contigLen.barplot.png"
 
-def contigPlot(obj,plot_height = 10 , plot_width = 5):
+    if save:
+        if not os.path.exists("figs"):
+            print("Creating figs directory")
+            os.makedirs("figs")
+
+        if os.path.exists(figName):
+            print(f"File {figName} already exists")
+            print("Please remove the file or change the name")
+
+        elif not os.path.exists(figName):
+            plt.savefig(figName)
+            print(f"File {figName} saved")
+    plt.show()
+
+def contigPlot(obj,width = 2, height = 4, save = True, figName = None):
     """
     Generates a heatmap of statistics for each haplotype and contig. Brick color represents T2T contigs without gaps, salmon color indicates T2T contigs with gaps, and beige color denotes non-T2T contigs.
 
@@ -194,6 +244,7 @@ def contigPlot(obj,plot_height = 10 , plot_width = 5):
     obj
         An object that contains a `.stats` attribute, which should be a pandas DataFrame 
     """
+    obj = copy.deepcopy(obj)
     stat_db = obj.stats.copy()
     stat_db.loc[stat_db['t2tStat'] == "not_t2t", "scf_ctg"] = 0
     stat_db.loc[stat_db['t2tStat'] == "scf", "scf_ctg"] = 1
@@ -202,10 +253,26 @@ def contigPlot(obj,plot_height = 10 , plot_width = 5):
     # Create the pivot table
     ctg = pd.pivot_table(stat_db,values='scf_ctg',index='ref_chr',columns='hap',aggfunc='max')
     
-    plt.figure(figsize=(plot_width, plot_height))  # Adjust the figure size as needed
+    plt.figure(figsize=(width, height))  # Adjust the figure size as needed
     sns.heatmap(ctg, cmap="Reds", linecolor="white", linewidths=0.005, cbar=False, vmin=0, vmax=2)
     
     # Display the plot
+    if figName is None:
+        figName = f"figs/contigPlot.heatmap.png"
+
+    if save:
+        if not os.path.exists("figs"):
+            print("Creating figs directory")
+            os.makedirs("figs")
+
+        if os.path.exists(figName):
+            print(f"File {figName} already exists")
+            print("Please remove the file or change the name")
+
+        elif not os.path.exists(figName):
+            plt.savefig(figName)
+            print(f"File {figName} saved")
+
     plt.show()
 
     

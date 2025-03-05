@@ -5,12 +5,31 @@ import numpy as np
 from .._run_shell import run_shell
 import os
 import matplotlib
+import copy
 matplotlib.rcParams['pdf.fonttype'] = 42
 matplotlib.rcParams['ps.fonttype'] = 42
 
 
 def percTel(intra_telo , showContig=None,
             width = 5, height = 7, save = True, figName = None):
+    """
+    Generates a heatmap showing the telomere percentage by contig.
+
+    Parameters
+    -----------
+    intra_telo
+        A DataFrame containing the telomere percentage data. 
+    showContig
+        Columns to show in the heatmap. Default is None. If None, only the 'contig' column is shown. 
+    width
+        Width of the plot. Default is 5. 
+    height
+        Height of the plot. Default is 7.
+    save
+        If True, the plot is saved as a PNG file. Default is True. 
+    figName
+        Name of the saved plot. Default is None. If None, the plot is saved as "figs/intra_telo.heatmap.png". 
+    """
     
     if showContig is None:
         showContig = ['contig']

@@ -112,7 +112,7 @@ def check_match(gap_value, element, position):
     """
     return "match" if gap_value[position] == element else "notMatch"
 
-def fillGaps(obj, *, gapId, final_path):
+def fillGaps(obj, gapId, final_path, notes = None):
     """
     Fills gaps for a specific gapId, updates the 'fixedPath', 'startMatch', 'endMatch', and 'finalGaf' columns.
     
@@ -124,6 +124,9 @@ def fillGaps(obj, *, gapId, final_path):
         The identifier for the gap.
     final_path
         The final path to fill the gap.
+    notes
+        The notes to add to the gap. Default is None.
+
 
     Returns
     -------
@@ -159,6 +162,9 @@ def fillGaps(obj, *, gapId, final_path):
         # Check the direction and update 'startMatch' and 'endMatch'
         gap.loc[gap['gapId'] == gapId, 'startMatch'] = check_match(gap_row.gaps, elements[0], 0)
         gap.loc[gap['gapId'] == gapId, 'endMatch'] = check_match(gap_row.gaps, elements[-1], 2)
+        
+        if notes is not None:
+            gap.loc[gap['gapId'] == gapId, 'notes'] = notes
 
         print(f"Updated gapId {gapId}!")
         print(" ")
@@ -168,9 +174,9 @@ def fillGaps(obj, *, gapId, final_path):
             print("❌ The start node and its direction do not match the original node.")
         
         if check_match(gap_row.gaps, elements[-1], 2) == "match" :
-            print("✅ The start node and its direction match the original node.")
+            print("✅ The end node and its direction match the original node.")
         else :
-            print("❌ The start node and its direction do not match the original node.")
+            print("❌ The end node and its direction do not match the original node.")
         
     # Count remaining empty strings or 'NA' in 'finalGaf
     obj_sub.gaps = gap
@@ -331,10 +337,10 @@ def writeFixedPaths(obj, save_path = "assembly.fixed.paths.tsv", save_gaf = "ass
     print("Checking for startMarker and endMarker...")
     print(" ")
     for num in range(len(gapdb)):
-        marker = gapdb.loc[num, "gaps"][0]
+        marker =gapdb.loc[num,"gaps"]
 
         if isinstance(marker, str) and re.search(r"startMarker|endMarker", marker):
-            print('yes')
+            
             note = gapdb.loc[num, "notes"].split(" ")
             rmnode = note[1]
             remainnode = note[3]
@@ -375,12 +381,34 @@ def writeFixedPaths(obj, save_path = "assembly.fixed.paths.tsv", save_gaf = "ass
             # update path
             pathdb.loc[pathdb['name'] == contig, 'path'] = ori_path
 
-    pathdb = pathdb.reset_index(drop=True)
-    pathdb = pathdb.drop(columns = "gaps")
-       
-    gaf = pathdb.copy()
-    gaf['path'] = pathdb['path'].apply(path_to_gaf)
+    # Convert lists to sets for easy comparison
+    path_list = pathdb['path'].apply(lambda x: x.replace(' ', '').split(",")).tolist()
 
+    # Step 2: Apply regex to remove '+$' and '-$' from each item inside sublists
+    pathdb['path_clean'] = [[re.sub(r'(\+$|\-$)', '', item) for item in sublist] for sublist in path_list]
+    pathdb['path_set'] = pathdb['path_clean'].apply(set)
+
+    # Find rows that are subsets of any other row
+    to_remove = set()
+    for i, set1 in enumerate(pathdb['path_set']):
+        for j, set2 in enumerate(pathdb['path_set']):
+            if i != j and set1.issubset(set2):  # If row i is covered by row j
+                to_remove.add(i)
+
+    # Keep only non-covered rows
+    df_filtered = pathdb.drop(index=list(to_remove)).drop(columns=['path_set'])
+
+    # print(df_filtered)
+    df_filtered = df_filtered.reset_index(drop=True)
+    df_filtered = df_filtered.drop(columns = "gaps")
+    df_filtered = df_filtered.drop(columns = "path_clean")
+    
+    gaf = df_filtered.copy()
+    gaf['path'] = df_filtered['path'].apply(path_to_gaf)
+
+    print(f"The total number of original paths is {len(pathdb)}")
+    print(f"The total number of final paths is {len(df_filtered)}")
+    
     pathdb.to_csv(save_path, sep = "\t", index = False)
     print(f"Fixed paths were saved to {save_path}")
     

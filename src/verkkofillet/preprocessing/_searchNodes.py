@@ -134,7 +134,7 @@ def searchNodes(obj, node_list_input, multimap_filter = 'mapq', force = False):
             .str.replace(r'(?=\])', '@', regex=True)   # Add '@' before ']'
             .str.replace(r'($)', '@', regex=True)      # Add '@' at the start and end
         )
-        gaf_size['path_modi'] = ["@".join(list(set(x)) + ['']) for x in gaf_size['path_modi'].str.split("@")]    
+        # gaf_size['path_modi'] = ["@".join(list(x) + ['']) for x in gaf_size['path_modi'].str.split("@")]    
         
         obj.paths_freq = gaf_size
     else:
@@ -143,44 +143,63 @@ def searchNodes(obj, node_list_input, multimap_filter = 'mapq', force = False):
     # Debug information
     print(f"Extracting paths containing nodes: {node_list_input}")
     
-    # Build regex pattern for filtering
-    pattern = '|'.join(map(re.escape, node_list))  # Escape special characters
+    # Input data
+    # node_list_input = ['utig4-2658', 'utig4-2656']
+    
+    pattern = '|'.join(node_list)  # Create regex pattern for filtering
 
-    # Filter rows based on presence of nodes in path
-    filtered_df = obj.paths_freq[obj.paths_freq['path_modi'].str.contains(pattern, regex=True)]
+    # Copy dataset
+    paths_freq = obj.paths_freq.copy()
+
+    # Generate reversed path
+    paths_freq['reversed_path'] = paths_freq['path_modi'].apply(lambda x: "@".join(reversed(x.split("@"))))
+
+    # Combine paths and remove duplicates
+    paths_freq['combined_paths'] = paths_freq.apply(lambda row: "_".join(sorted(set([row['path_modi'], row['reversed_path']]))), axis=1)
+
+    # Filter rows containing specified nodes
+    filtered_df = paths_freq[paths_freq['path_modi'].str.contains(pattern, regex=True)].copy()  # Ensure we copy
 
     # Add presence columns for each node
-    for node in node_list:
-        filtered_df.loc[:, node] = filtered_df['path_modi'].str.contains(node).map({True: 'Y', False: ''})
+    for node in node_list_input:
+        filtered_df[node] = filtered_df['path_modi'].str.contains(node, regex=False).map({True: 'Y', False: ''})
 
-    # Sorting logic
-    # filtered_df['sort_index'] = filtered_df[node_list].sum(axis=1)
-    filtered_df = filtered_df.sort_values(['nsupport'], ascending=False)
+    # Handle NaN values in nsupport before grouping
+    filtered_df['nsupport'] = filtered_df['nsupport'].fillna(0)
 
-    filtered_df=filtered_df.reset_index()
-    del filtered_df['index']
-
-    # make flat db
-    grouped = filtered_df.groupby(['path_modi'])['nsupport'].apply(list)
+    # Group and reshape nsupport
+    grouped = filtered_df.groupby(['combined_paths'])['nsupport'].apply(list)
     df_result = grouped.apply(lambda x: x[:2] + [None] * (2 - len(x))).apply(pd.Series)
     df_result.columns = ["fw", "rv"]
     df_result = df_result.reset_index()
     df_result['fw'] = df_result['fw'].fillna(0).astype(int)
     df_result['rv'] = df_result['rv'].fillna(0).astype(int)
 
-    filtered_fullinfo = filtered_df.loc[filtered_df.groupby('path_modi')['nsupport'].idxmax()].drop(columns=['nsupport'], inplace = False)
+    # Keep the row with the highest nsupport per group
+    filtered_fullinfo = filtered_df.loc[filtered_df.groupby('combined_paths')['nsupport'].idxmax()].drop(columns=['nsupport'])
 
-    cleaned = filtered_fullinfo.merge(df_result, on='path_modi')
-    cleaned.columns = ['path', 'path_modi'] + node_list_input + ['fw', 'rv']
+    # Merge full info with grouped data
+    cleaned = filtered_fullinfo.merge(df_result, on='combined_paths')
+
+    # Compute total support
     cleaned['total_support'] = cleaned['fw'] + cleaned['rv']
-    cleaned['sort_index'] = cleaned[node_list_input].sum(axis=1)
 
-    cleaned = cleaned.sort_values(by=['sort_index', 'total_support'], ascending=False)
-    cleaned.drop(columns=['sort_index','path_modi'], inplace=True)
+    # Drop unnecessary columns
+    cleaned = cleaned.drop(columns=['combined_paths', 'reversed_path'])
 
-    # Escape special HTML characters in the path for better visualization
-    cleaned['path'] = cleaned['path'].str.replace('<', '&lt;').str.replace('>', '&gt;')
+    # Rename columns for clarity
+    cleaned.columns = ['path', 'path_modi'] + node_list_input + ['fw', 'rv', 'total_support']
+
+    # Sorting logic
+    cleaned['sort_index'] = cleaned[node_list_input].sum(axis=1)  # Sorting key
+    cleaned = cleaned.sort_values(by=['sort_index', 'total_support'], ascending=False).drop(columns=['sort_index'])
+
+    # Replace HTML special characters
+    cleaned['path'] = cleaned['path'].replace({'<': '&lt;', '>': '&gt;'}, regex=True)
+    del cleaned['path_modi']
     cleaned.reset_index(drop=True, inplace=True)
+    # Final cleaned DataFrame
+
 
     # Styling for display
     headers = {
@@ -282,7 +301,7 @@ def find_hic_support(obj, node,
                      hic_support_file = "8-hicPipeline/hic.byread.compressed", 
                      max_print = 20, 
                      scfmap_file = "assembly.scfmap", 
-                     exclude_chr = None):
+                     exclude_chr = ['chrX_mat', 'chrY_pat']):
     """\
     Find HiC support for a specific node.
 
@@ -306,19 +325,37 @@ def find_hic_support(obj, node,
         dot plot of HiC support for the specified node.
     """
     # read data
-    stat = obj.stats[['contig','ref_chr','hap']]
-    scf = read_Scfmap(scfmap_file)
-    nodeChr = get_NodeChr(obj)
     
-    # read HiC data and parsing
+    if node[-1] in ['+','-']:
+        node = node[:-1]
+    
+    print("Finding HiC support for node:", node)
+
+    # chech the hic file exist
+    if not os.path.exists(hic_support_file):
+        print("HiC support file not found at:", hic_support_file)
+        return
+    # if node have + or - at the end, remove it
     hic = pd.read_csv(hic_support_file, sep =' ', header = None)
     hic.columns = ['X','node1','node2','num']
     # filter the desiring node
     filtered_hic = hic[(hic['node1'] == node) | (hic['node2'] == node)]
+    if filtered_hic.shape[0] == 0:
+        print("No HiC support found for node:", node)
+        return
+    
+    obj = copy.deepcopy(obj)
+    stat = obj.stats[['contig','ref_chr','hap']]
+    
+
+    scf = read_Scfmap(scfmap_file)
+    nodeChr = get_NodeChr(obj)
+    
+    # read HiC data and parsing
+    
     filtered_hic['searchNode'] = node
     filtered_hic['counterpart'] = filtered_hic['node2'].copy()
     filtered_hic.loc[filtered_hic['counterpart'] == node, 'counterpart'] = filtered_hic['node1']
-    
     # merge datasets to map between chromosome naming
     merge = pd.merge(stat,scf, how = 'inner', left_on="contig",right_on= "fasta_name")
     merge = pd.merge(nodeChr,merge, how = 'inner', left_on="name",right_on= "path_name")
@@ -338,7 +375,7 @@ def find_hic_support(obj, node,
     data = pd.merge(merge,filtered_hic,how = 'right', left_on="node", right_on = "counterpart")
     
     # excluding chr if user gave list.
-    if exclude_chr != None:
+    if exclude_chr is not None:
         data = data[~data['chr'].isin(exclude_chr)]
     
     # sort the data and make index and cut 

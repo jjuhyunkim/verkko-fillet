@@ -3,12 +3,15 @@ import seaborn as sns
 import pandas as pd
 import numpy as np
 from .._run_shell import run_shell
+import copy
 import os
 import matplotlib
 matplotlib.rcParams['pdf.fonttype'] = 42
 matplotlib.rcParams['ps.fonttype'] = 42
-    
-def showMashmapOri(obj, mashmap_out = "chromosome_assignment/assembly.mashmap.out.filtered.out", by = "chr_hap", plot_height = 10, plot_width = 5):
+
+
+def showMashmapOri(obj, mashmap_out = "chromosome_assignment/assembly.mashmap.out.filtered.out", by = "chr_hap", 
+                   width = 5, height = 7, save = True, figName = None):
     """
     Generates a bar plot showing the covered regions of the assembly for each reference.
 
@@ -21,6 +24,7 @@ def showMashmapOri(obj, mashmap_out = "chromosome_assignment/assembly.mashmap.ou
     by
         Specifies the grouping method for the plot. Default is "chr_hap". Available options are ['contig', 'all', 'chr_hap'].
     """
+    obj = copy.deepcopy(obj)
     working_dir = os.path.abspath(obj.verkko_fillet_dir)  # Ensure absolute path for the working directory
     
     mashmap = pd.read_csv(working_dir + "/" + mashmap_out , header = None, sep ='\t')
@@ -65,7 +69,7 @@ def showMashmapOri(obj, mashmap_out = "chromosome_assignment/assembly.mashmap.ou
     data = data.sort_values(by = "qcover_perc", ascending = False)
     
     # Prepare the plot
-    fig, ax = plt.subplots(figsize=(plot_width, plot_height))
+    fig, ax = plt.subplots(figsize=(width, height))
     
     # Add horizontal bars for positive and negative values
     ax.barh(data['by'], data['positive_qcover'], color='purple', label='Positive Strand')
@@ -80,6 +84,21 @@ def showMashmapOri(obj, mashmap_out = "chromosome_assignment/assembly.mashmap.ou
     
     # Adjust layout and show the plot
     plt.tight_layout()
+    if figName is None:
+        figName = f"figs/intra_telo.heatmap.png"
+
+    if save:
+        if not os.path.exists("figs"):
+            print("Creating figs directory")
+            os.makedirs("figs")
+
+        if os.path.exists(figName):
+            print(f"File {figName} already exists")
+            print("Please remove the file or change the name")
+
+        elif not os.path.exists(figName):
+            plt.savefig(figName)
+            print(f"File {figName} saved")
     plt.show()
 
 def nodeMashmapBlockSize(
@@ -115,8 +134,6 @@ def nodeMashmapBlockSize(
     tab_group = tab.groupby('ref')['blocksize'].sum().sort_values(ascending=False).reset_index()
     tab_group.columns = ['node', 'blocksize']
     tab_group = tab_group.head(showNum)
-
-    
 
     plt.figure(figsize=(width, height))  # Adjust figure size
 
