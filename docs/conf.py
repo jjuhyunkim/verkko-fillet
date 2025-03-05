@@ -110,8 +110,9 @@ exclude_patterns = [
     "Thumbs.db",
     ".DS_Store",
     "**.ipynb_checkpoints",
-    "release-notes/[!i]*.md",
+    
 ]
+# "release-notes/[!i]*.md",
 
 # -- Options for jupyter notebooks ----
 nb_execution_mode = "off"  # Prevents notebook execution
