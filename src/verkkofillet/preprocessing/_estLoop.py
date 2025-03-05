@@ -65,7 +65,7 @@ def calNodeDepth(obj, width = 8, height = 5, save = True, figName = None, dpi = 
 
     Parameters
     -----------
-    obj : VerkkoFillet object
+    obj : object
         The VerkkoFillet object.
     width : int
         The width of the plot. Default is 8.
