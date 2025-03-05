@@ -18,6 +18,8 @@ Extracting gap from path, preprocessing recipes.
 
    pp.read_Verkko
    pp.readChr
+   pp.readNode
+   pp.readScfmap
    pp.writeFixedPaths
    pp.save_Verkko
    pp.load_Verkko
@@ -44,9 +46,14 @@ Extracting gap from path, preprocessing recipes.
    pp.fillGaps
    pp.estLoops
    pp.checkGapFilling
+   pp.connectContigs
    pp.naming_contigs
    pp.find_multi_used_node
    pp.find_hic_support
+   pp.deleteGap
+   pp.impute_depth
+   pp.calNodeDepth
+   pp.detectBrokenContigs
 
 ```
 

@@ -18,6 +18,7 @@ Run execute scripts
 
    tl.graphIdx
    tl.graphAlign
+
 ``` 
 
 ### QV check
@@ -41,6 +42,7 @@ Run execute scripts
    tl.rmrDNA
    tl.chrAssign
    tl.showPairwiseAlign
+   tl.mapBetweenNodes
 
 ``` 
 

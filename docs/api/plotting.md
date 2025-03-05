@@ -21,5 +21,9 @@ Plotting functions
    pl.contigPlot
    pl.qvPlot
    pl.showMashmapOri
+   pl.n50Plot
+   pl.nodeMashmapBlockSize
+   pl.percTel
+   pl.plotHist_readOnNode
 
 ```
