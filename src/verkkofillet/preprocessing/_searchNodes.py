@@ -159,7 +159,10 @@ def searchNodes(obj, node_list_input, multimap_filter = 'mapq', force = False):
 
     # Filter rows containing specified nodes
     filtered_df = paths_freq[paths_freq['path_modi'].str.contains(pattern, regex=True)].copy()  # Ensure we copy
-
+    
+    if filtered_df.empty:
+        print("No paths found")
+        return
     # Add presence columns for each node
     for node in node_list_input:
         filtered_df[node] = filtered_df['path_modi'].str.contains(node, regex=False).map({True: 'Y', False: ''})

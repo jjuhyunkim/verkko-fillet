@@ -3,6 +3,7 @@ import shlex
 import subprocess
 import os
 import pandas as pd
+from .._run_shell import run_shell
 
 
 script_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../bin/'))
@@ -55,7 +56,7 @@ def mkMeryl(obj, fofn, working_directory="kmer", prefix="assembly", fasta = "ass
         print(f"Error during kmer calculation: {e}. Check the log file at {log_file_path}.")
 
 def calQV(obj, 
-          working_directory = "kmer" , prefix="assembly", fasta = "assembly.fasta", k = 31,
+          working_directory = "kmer" , prefix="assembly", fasta = "assembly.fasta", k = 31, showOnly = False
          ):
     """
     Perform quality evaluation using Merqury's qv.sh script.
@@ -74,8 +75,11 @@ def calQV(obj,
         {prefix}.qv_cal.qv
     """
     # Define paths
-    script = os.path.abspath(os.path.join(script_path, "qv.sh"))
-    
+    print(f"This step might take a while and need lots of memory.")
+    print(f"Please make sure you have enough resources.")
+    print(f"Or please run this step on a cluster")
+    print(f"You can see the command line using `showOnly=True`")
+
     working_dir = os.path.abspath(working_directory)
     asm = os.path.abspath(fasta)
     
@@ -95,7 +99,6 @@ def calQV(obj,
         print(f"The QV output file already exists.")
         return
     
-    
     # Extract assembly for the maternal and paternal haplotypes
     haplotypes = {
         "dam": "assembly_dam.fasta",
@@ -105,27 +108,18 @@ def calQV(obj,
     sire=os.path.join(working_dir,"assembly_sire.fasta")
     
     if not (os.path.exists(dam) and os.path.exists(sire)):
+        print(f"Extracting haplotypes from the assembly.")
         for hap, output in haplotypes.items():
-            samtools_cmd = f"samtools faidx {asm} $(grep '^{hap}' {asm}.fai | cut -f 1 | tr '\\n' ' ') > {output}"
-            subprocess.run(samtools_cmd, shell=True, check=True, cwd=working_dir)
-            subprocess.run(f"samtools faidx {output}", shell=True, check=True, cwd=working_dir)
+            samtools_extract = f"samtools faidx {asm} $(grep '^{hap}' {asm}.fai | cut -f 1 | tr '\\n' ' ') > {output}"
+            run_shell(cmd_qv, wkDir=working_dir, functionName=f"samtools_extract_{output}", longLog=False, showOnly=showOnly)
+            samtools_idx = f"samtools faidx {output}"
+            run_shell(cmd_qv, wkDir=working_dir, functionName=f"samtools_index_{output}", longLog=False, showOnly=showOnly)
     
     # Run Merqury qv.sh for quality evaluation
-    log_file_path = os.path.join(working_dir, "qv_cal.logs")
-    qv_cmd = [
-        script,
-        f"{prefix}_meryl.k{k}.meryl",
-        haplotypes["dam"],
-        haplotypes["sire"],
-        f"{prefix}.qv_cal"
-    ]
-    with open(log_file_path, "w") as log_file:
-        subprocess.run(
-            qv_cmd,
-            stdout=log_file,  # Redirect standard output
-            stderr=subprocess.STDOUT,  # Redirect standard error to the same log file
-            check=True,
-            cwd=working_dir
-        )
-    
-    print(f"Quality evaluation completed. Logs are saved to {log_file_path}.")
+    hap1 = os.path.abspath(haplotypes["dam"])
+    hap2 = os.path.abspath(haplotypes["sire"])
+    script = os.path.abspath(os.path.join(script_path, "qv.sh"))
+
+    cmd_qv=f"sh {script} {prefix}_meryl.k{k}.meryl {hap1} {hap2} {prefix}.qv_cal"
+
+    run_shell(cmd_qv, wkDir=working_dir, functionName="qvCal", longLog=False, showOnly=showOnly)

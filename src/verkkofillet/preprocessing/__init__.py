@@ -1,4 +1,4 @@
-from ._read_wirte import read_Verkko, save_Verkko, load_Verkko, mkCNSdir, updateCNSdir_missingEdges, loadGiraffe, FilletObj, readNode, readScfmap
+from ._read_wirte import read_Verkko, save_Verkko, load_Verkko, mkCNSdir, updateCNSdir_missingEdges, loadGiraffe, FilletObj, readNode, readScfmap,checkFiles
 from ._read_chr import readChr, detectBrokenContigs
 from ._find_gaps import findGaps, find_elements_with_brackets
 from ._searchNodes import searchNodes, searchSplit, readGaf, find_hic_support, get_NodeChr,read_Scfmap
@@ -57,4 +57,7 @@ __all__ = [
     'readNodeInfo',
     'getNodeCoor',
     'getNodeSpace_from_allPath',
+
+
+    "checkFiles",
     ]

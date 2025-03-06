@@ -404,7 +404,7 @@ def writeFixedPaths(obj, save_path = "assembly.fixed.paths.tsv", save_gaf = "ass
     df_filtered = df_filtered.drop(columns = "path_clean")
     
     gaf = df_filtered.copy()
-    gaf['path'] = df_filtered['path'].apply(path_to_gaf)
+    gaf['path'] = df_filtered['path'].apply(path_to_gaf).apply(lambda x: x.replace(' ', ''))
 
     print(f"The total number of original paths is {len(pathdb)}")
     print(f"The total number of final paths is {len(df_filtered)}")
