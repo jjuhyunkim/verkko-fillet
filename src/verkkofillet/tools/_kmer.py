@@ -56,8 +56,7 @@ def mkMeryl(obj, fofn, working_directory="kmer", prefix="assembly", fasta = "ass
         print(f"Error during kmer calculation: {e}. Check the log file at {log_file_path}.")
 
 def calQV(obj, 
-          working_directory = "kmer" , prefix="assembly", fasta = "assembly.fasta", k = 31, showOnly = False
-         ):
+          working_directory = "kmer" , prefix="assembly", fasta = "assembly.fasta", k = 31, showOnly = False, trio = False):
     """
     Perform quality evaluation using Merqury's qv.sh script.
 
@@ -100,26 +99,32 @@ def calQV(obj,
         return
     
     # Extract assembly for the maternal and paternal haplotypes
-    haplotypes = {
-        "dam": "assembly_dam.fasta",
-        "sire": "assembly_sire.fasta"
-    }
-    dam=os.path.join(working_dir,"assembly_dam.fasta")
-    sire=os.path.join(working_dir,"assembly_sire.fasta")
-    
-    if not (os.path.exists(dam) and os.path.exists(sire)):
-        print(f"Extracting haplotypes from the assembly.")
-        for hap, output in haplotypes.items():
-            samtools_extract = f"samtools faidx {asm} $(grep '^{hap}' {asm}.fai | cut -f 1 | tr '\\n' ' ') > {output}"
-            run_shell(cmd_qv, wkDir=working_dir, functionName=f"samtools_extract_{output}", longLog=False, showOnly=showOnly)
-            samtools_idx = f"samtools faidx {output}"
-            run_shell(cmd_qv, wkDir=working_dir, functionName=f"samtools_index_{output}", longLog=False, showOnly=showOnly)
-    
-    # Run Merqury qv.sh for quality evaluation
-    hap1 = os.path.abspath(haplotypes["dam"])
-    hap2 = os.path.abspath(haplotypes["sire"])
-    script = os.path.abspath(os.path.join(script_path, "qv.sh"))
+    if trio:
+        print(f"trio mode is on")
+        haplotypes = {
+            "dam": "assembly_dam.fasta",
+            "sire": "assembly_sire.fasta"
+        }
+        dam=os.path.join(working_dir,"assembly_dam.fasta")
+        sire=os.path.join(working_dir,"assembly_sire.fasta")
+        
+        if not (os.path.exists(dam) and os.path.exists(sire)):
+            print(f"Extracting haplotypes from the assembly.")
+            for hap, output in haplotypes.items():
+                samtools_extract = f"samtools faidx {asm} $(grep '^{hap}' {asm}.fai | cut -f 1 | tr '\\n' ' ') > {output}"
+                run_shell(cmd_qv, wkDir=working_dir, functionName=f"samtools_extract_{output}", longLog=False, showOnly=showOnly)
+                samtools_idx = f"samtools faidx {output}"
+                run_shell(cmd_qv, wkDir=working_dir, functionName=f"samtools_index_{output}", longLog=False, showOnly=showOnly)
+        
+        # Run Merqury qv.sh for quality evaluation
+        hap1 = os.path.abspath(haplotypes["dam"])
+        hap2 = os.path.abspath(haplotypes["sire"])
+        script = os.path.abspath(os.path.join(script_path, "qv.sh"))
 
-    cmd_qv=f"sh {script} {prefix}_meryl.k{k}.meryl {hap1} {hap2} {prefix}.qv_cal"
+        cmd_qv=f"sh {script} {prefix}_meryl.k{k}.meryl {hap1} {hap2} {prefix}.qv_cal"
 
-    run_shell(cmd_qv, wkDir=working_dir, functionName="qvCal", longLog=False, showOnly=showOnly)
+        run_shell(cmd_qv, wkDir=working_dir, functionName="qvCal", longLog=False, showOnly=showOnly)
+    else:
+        print(f"trio mode is off")
+        cmd_qv=f"sh {script} {prefix}_meryl.k{k}.meryl {asm} {prefix}.qv_cal"
+        run_shell(cmd_qv, wkDir=working_dir, functionName="qvCal", longLog=False, showOnly=showOnly)
