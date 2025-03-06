@@ -25,7 +25,7 @@ def find_intra_telo(obj, telo_file="internal_telomere/assembly_1/assembly.window
 
     Returns
     -------
-        The DataFrame containing the contig, internal-left, internal-right, non-internal-left, non-internal-right, and problem columns.
+        The DataFrame containing the contig, internal-left, internal-right, distal-left, distal-right, and problem columns.
     """
     print("Finding the internal telomeres in the assembly...")
 
@@ -65,7 +65,7 @@ def find_intra_telo(obj, telo_file="internal_telomere/assembly_1/assembly.window
     tel = tel.drop(rows_to_remove).reset_index(drop=True)
 
 
-    tel['telomere'] = 'non-internal'
+    tel['telomere'] = 'distal'
     tel['contig_start_len'] = tel['start']
     tel['contig_end_len'] = tel['totalLen'] - tel['end']
     tel['lenmin'] = tel[['contig_start_len', 'contig_end_len']].min(axis=1)
@@ -90,12 +90,12 @@ def find_intra_telo(obj, telo_file="internal_telomere/assembly_1/assembly.window
     result = tel.groupby(['contig','tel-arm'])['teloPerct'].max().unstack(fill_value=0)
     result['problem'] = "OK/OK"
     # check if columns are in the result
-    check_columns = ['internal-left', 'internal-right', 'non-internal-left', 'non-internal-right']
+    check_columns = ['internal-left', 'internal-right', 'distal-left', 'distal-right']
     for col in check_columns:
         if col not in result.columns:
             result[col] = 0
 
-    missingTel = (result['non-internal-left']==0) | (result['non-internal-right']==0) 
+    missingTel = (result['distal-left']==0) | (result['distal-right']==0) 
     INTEL = (result['internal-left']==0) | (result['internal-right']==0)
 
     result.loc[missingTel & INTEL, 'problem'] = "MissingTel/INTEL"

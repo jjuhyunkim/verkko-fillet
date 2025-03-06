@@ -34,7 +34,7 @@ def percTel(intra_telo , showContig=None,
     if showContig is None:
         showContig = ['contig']
 
-    check_columns = ['internal-left', 'internal-right', 'non-internal-left', 'non-internal-right']
+    check_columns = ['distal-left', 'internal-left', 'internal-right', 'distal-right']
     intra_telo = intra_telo.copy()
     intra_telo['by'] = intra_telo[showContig].astype(str).agg('_'.join, axis=1)
     heatmapDb = intra_telo.loc[:,['by']+ check_columns]
