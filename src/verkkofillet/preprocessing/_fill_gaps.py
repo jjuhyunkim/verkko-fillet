@@ -2,6 +2,8 @@ import pandas as pd
 import logging
 import re
 import copy
+import time
+from tqdm import tqdm
 from .._default_func import addHistory
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -329,14 +331,25 @@ def writeFixedPaths(obj, save_path = "assembly.fixed.paths.tsv", save_gaf = "ass
     -------
         The fixed paths and gaf saved to the specified file paths.
     """
+    print(f"Starting to write fixed paths to {save_path} and {save_gaf}...")
+    print(" ")
+
     obj_sub = copy.deepcopy(obj)
     gapdb = obj_sub.gaps.copy()
     gapdb = gapdb.reset_index()
     pathdb = obj_sub.paths.copy()
+    scfmap = obj.scfmap.copy()
+    stats = obj.stats.copy()
 
-    print("Checking for startMarker and endMarker...")
-    print(" ")
-    for num in range(len(gapdb)):
+    scfmat_stats = scfmap.merge(stats, on = "contig")
+    chrassignpath = list(scfmat_stats['pathName'])
+    # print(chrassignpath)
+    
+    pathdb.reset_index(drop = True, inplace = True)
+    
+    connectFrom =[]
+    connectTo = []
+    for num in tqdm(range(len(gapdb)), desc="Checking for startMarker and endMarker..."):
         marker =gapdb.loc[num,"gaps"]
 
         if isinstance(marker, str) and re.search(r"startMarker|endMarker", marker):
@@ -346,11 +359,11 @@ def writeFixedPaths(obj, save_path = "assembly.fixed.paths.tsv", save_gaf = "ass
             remainnode = note[3]
 
             newPath = gapdb.loc[num, "fixedPath"].replace("startMarker", "").replace("endMarker", "")
-            print(newPath)
+            # print(newPath)
             # update pathdb
             pathdb = pathdb.loc[pathdb["name"] != rmnode]
             ori_path = pathdb.loc[pathdb["name"] == remainnode, 'path'].values[0]
-            print(ori_path)
+            # print(ori_path)
             # add path to main contig
             if marker == "startMarker":
                 pathdb.loc[pathdb["name"] == remainnode, 'path'] = newPath + ori_path
@@ -360,10 +373,16 @@ def writeFixedPaths(obj, save_path = "assembly.fixed.paths.tsv", save_gaf = "ass
                 print("marker doesn't match")
 
             gapdb['name'] = gapdb['name'].replace(rmnode, remainnode)
-
-    print("Fixing paths using gap infomation...")
+            connectFrom.append(rmnode)
+            connectTo.append(remainnode)
+    
     print(" ")
-    for num in range(len(gapdb)):
+    for frm, to_ in zip(connectFrom, connectTo):
+        print(f"Connected {frm} to {to_} in path space")
+
+    
+    print(" ")
+    for num in tqdm(range(len(gapdb)), desc="Fixing paths using obj.gaps..."):
         marker = gapdb.loc[num, "gaps"][0]
 
         if isinstance(marker, str) and re.search(r"startMarker|endMarker", marker):
@@ -387,14 +406,22 @@ def writeFixedPaths(obj, save_path = "assembly.fixed.paths.tsv", save_gaf = "ass
     # Step 2: Apply regex to remove '+$' and '-$' from each item inside sublists
     pathdb['path_clean'] = [[re.sub(r'(\+$|\-$)', '', item) for item in sublist] for sublist in path_list]
     pathdb['path_set'] = pathdb['path_clean'].apply(set)
-
+    
+    pathdb.reset_index(drop = True, inplace = True)
     # Find rows that are subsets of any other row
     to_remove = set()
-    for i, set1 in enumerate(pathdb['path_set']):
+    for i, set1 in tqdm(enumerate(pathdb['path_set']), desc="Checking for redundant paths..."):
         for j, set2 in enumerate(pathdb['path_set']):
             if i != j and set1.issubset(set2):  # If row i is covered by row j
                 to_remove.add(i)
-
+    print(" ")
+    print(f"Removing {len(to_remove)} covered rows...")
+    print(f"Those rows might be unsed during gap filling...")
+    sig = [x for x in list(pathdb.loc[list(to_remove), 'name']) if x in chrassignpath]
+    if len(sig) > 0:
+        print(" ")
+        print(f"WARNING: These chromosome assigned contigs are going to be removed: {sig}")
+    
     # Keep only non-covered rows
     df_filtered = pathdb.drop(index=list(to_remove)).drop(columns=['path_set'])
 
@@ -405,7 +432,7 @@ def writeFixedPaths(obj, save_path = "assembly.fixed.paths.tsv", save_gaf = "ass
     
     gaf = df_filtered.copy()
     gaf['path'] = df_filtered['path'].apply(path_to_gaf).apply(lambda x: x.replace(' ', ''))
-
+    print(" ")
     print(f"The total number of original paths is {len(pathdb)}")
     print(f"The total number of final paths is {len(df_filtered)}")
     

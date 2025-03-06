@@ -8,7 +8,7 @@ from .._run_shell import run_shell
 
 script_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../bin/'))
 
-def mkMeryl(obj, fofn, working_directory="kmer", prefix="assembly", fasta = "assembly.fasta", k = 31):
+def mkMeryl(obj, fofn, working_directory="kmer", prefix="assembly", fasta = "assembly.fasta", k = 31, showOnly = False):
     """\
     Create meryl database for k-mer counting.
     
@@ -56,7 +56,7 @@ def mkMeryl(obj, fofn, working_directory="kmer", prefix="assembly", fasta = "ass
         print(f"Error during kmer calculation: {e}. Check the log file at {log_file_path}.")
 
 def calQV(obj, 
-          working_directory = "kmer" , prefix="assembly", fasta = "assembly.fasta", k = 31, showOnly = False, trio = False):
+          working_directory = "kmer" , prefix="assembly", fasta = "assembly.fasta", k = 31, showOnly = False, trio = False, contig_prefix = ["dam","sire"]):
     """
     Perform quality evaluation using Merqury's qv.sh script.
 
@@ -68,6 +68,16 @@ def calQV(obj,
         The working directory for the analysis. Default is "kmer".
     prefix
         Prefix for the meryl output. Default is "assembly".
+    fasta
+        Path to the assembly FASTA file. Default is "assembly.fasta".
+    k
+        The k-mer size. Default is 31.
+    showOnly
+        If True, only show the command line without running it. Default is False.
+    trio
+        If True, the assembly is going to split into maternal and paternal haplotypes. Default is False.
+    contig_prefix
+        Prefixes for the maternal and paternal haplotypes. Default is ["dam", "sire"]. This is only used if trio is True. If trio mode is off, this parameter is ignored.
 
     Returns
     -------
@@ -100,31 +110,36 @@ def calQV(obj,
     
     # Extract assembly for the maternal and paternal haplotypes
     if trio:
+        hap1=contig_prefix[0]
+        hap2=contig_prefix[1]
+
         print(f"trio mode is on")
         haplotypes = {
-            "dam": "assembly_dam.fasta",
-            "sire": "assembly_sire.fasta"
+            hap1: f"assembly_{hap1}.fasta",
+            hap2: f"assembly_{hap2}.fasta"
         }
-        dam=os.path.join(working_dir,"assembly_dam.fasta")
-        sire=os.path.join(working_dir,"assembly_sire.fasta")
+        dam=os.path.join(working_dir,f"assembly_{hap1}.fasta")
+        sire=os.path.join(working_dir,f"assembly_{hap2}.fasta")
         
         if not (os.path.exists(dam) and os.path.exists(sire)):
             print(f"Extracting haplotypes from the assembly.")
             for hap, output in haplotypes.items():
                 samtools_extract = f"samtools faidx {asm} $(grep '^{hap}' {asm}.fai | cut -f 1 | tr '\\n' ' ') > {output}"
-                run_shell(cmd_qv, wkDir=working_dir, functionName=f"samtools_extract_{output}", longLog=False, showOnly=showOnly)
+                run_shell(samtools_extract, wkDir=working_dir, functionName=f"samtools_extract_{output}", longLog=False, showOnly=showOnly)
                 samtools_idx = f"samtools faidx {output}"
-                run_shell(cmd_qv, wkDir=working_dir, functionName=f"samtools_index_{output}", longLog=False, showOnly=showOnly)
+                run_shell(samtools_idx, wkDir=working_dir, functionName=f"samtools_index_{output}", longLog=False, showOnly=showOnly)
         
         # Run Merqury qv.sh for quality evaluation
-        hap1 = os.path.abspath(haplotypes["dam"])
-        hap2 = os.path.abspath(haplotypes["sire"])
+        hap1_asm = os.path.abspath(haplotypes["dam"])
+        hap2_asm = os.path.abspath(haplotypes["sire"])
         script = os.path.abspath(os.path.join(script_path, "qv.sh"))
 
-        cmd_qv=f"sh {script} {prefix}_meryl.k{k}.meryl {hap1} {hap2} {prefix}.qv_cal"
+        cmd_qv=f"sh {script} {prefix}_meryl.k{k}.meryl {hap1_asm} {hap2_asm} {prefix}.qv_cal"
 
         run_shell(cmd_qv, wkDir=working_dir, functionName="qvCal", longLog=False, showOnly=showOnly)
+        print(f"QV calculation was done!")
     else:
         print(f"trio mode is off")
         cmd_qv=f"sh {script} {prefix}_meryl.k{k}.meryl {asm} {prefix}.qv_cal"
         run_shell(cmd_qv, wkDir=working_dir, functionName="qvCal", longLog=False, showOnly=showOnly)
+        print(f"QV calculation was done!")

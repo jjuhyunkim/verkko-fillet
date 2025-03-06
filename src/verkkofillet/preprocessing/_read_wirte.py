@@ -339,6 +339,12 @@ def mkCNSdir(obj, new_folder_path, final_gaf = "assembly.fixed.paths.gaf", missi
         Path to the new folder to be created.
     final_gaf
         Path to the final GAF file. Default is "final_rukki_fixed.paths.gaf".
+    missingEdge
+        Whether to handle missing edges. Default is False.
+    tmp_id
+        Path to the temporary ID file. Default is "missing_edge/ont_subset.tmp.id".
+    tmp_fasta
+        Path to the temporary FASTA file. Default is "missing_edge/ont_subset.tmp.fasta".
 
     Returns
     -------
