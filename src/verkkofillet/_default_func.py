@@ -2,7 +2,6 @@ import os
 import pandas as pd
 from datetime import datetime
 
-
 def addHistory(obj, activity, function):
     # Initialize an empty DataFrame for history
     history = obj.history.copy()
@@ -67,3 +66,27 @@ def print_directory_tree(base_path, max_depth=1, prefix="", is_root=True):
             # Add prefix for subdirectories
             sub_prefix = "    " if is_last else "│   "
             print_directory_tree(entry_path, max_depth - 1, prefix + sub_prefix, is_root=False)
+
+
+def flatten_and_remove_none(nested_list):
+    """
+    Flatten a nested list and remove None values.
+    
+    Parameters:
+        nested_list (list): The nested list to be flattened and cleaned.
+        
+    Returns:
+        list: A flattened list with None values removed.
+    """
+    # Flatten the list using recursion
+    flattened_list = []
+    for item in nested_list:
+        if isinstance(item, list):  # If item is a list, recursively flatten it
+            flattened_list.extend(flatten_and_remove_none(item))
+        else:
+            flattened_list.append(item)
+    
+    # Remove None values
+    cleaned_list = [item for item in flattened_list if item is not None]
+    
+    return cleaned_list

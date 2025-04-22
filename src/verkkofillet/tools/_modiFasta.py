@@ -49,7 +49,7 @@ def sort_by_random_chr_hap(item, by="hap", type_list = ['mat', 'pat', 'hapUn']):
     is_random = '_random_' in item
 
     # Extract parts: base 'chrX' part, type ('mat' or 'pat'), and random suffix (if any)
-    match = re.match(r'(chr\d+|chrUn|chrX|chrY|chrM)_([A-Za-z]+)(_\d+)?(_random_utig4-?\d+)?', item)
+    match = re.match(r'(chr\d+|chrUn|chrX|chrY|chrM|chr[A-Za-z]+)_([A-Za-z]+)(_\d+)?(_random_[A-Za-z0-9-]+)?', item)
     if match:
         chr_part = match.group(1)
         type_part = match.group(2)
@@ -117,7 +117,7 @@ def sortContig(ori_fasta, sorted_fasta=None, sort_by="hap"):
     
     # Extract sequence IDs
     sequence_ids = [record.id for record in sequences]
-    
+    print(f"Sorting {len(sequence_ids)} sequences based on the custom sorting criterion...")
     # Sorting the sequence IDs based on the custom function
     sorted_data = sorted(sequence_ids, key=lambda item: sort_by_random_chr_hap(item, by=sort_by))
     
@@ -157,8 +157,16 @@ def renameContig(obj,
     -------
         output_fasta
     """
+    print(f"Starting renaming contigs in the {original_fasta} file ...")
+    print(" ")
+
+    print("Checking the required files ...")
+    print("   - Checking the chromosome map file ...")
+    print("   - Checking the original fasta file ..." )
+    print(" ")
     working_dir = os.path.abspath(obj.verkko_fillet_dir)
     script = os.path.abspath(os.path.join(script_path, "changeChrName.sh"))  # Assuming script_path is defined elsewhere
+    chrMap=chrMap.merge(obj.scfmap, on = 'contig')
     chrMap.to_csv(out_mapFile, sep ='\t', header = None, index=False)
     
     if output_fasta is None:  # Use 'is None' for comparison
@@ -183,7 +191,7 @@ def renameContig(obj,
     cmd = f"sh {shlex.quote(script)} {shlex.quote(out_mapFile)} {shlex.quote(str(original_fasta))} {shlex.quote(outFasta)}"
     
     run_shell(cmd, wkDir=working_dir, functionName = "chrRename" ,longLog = False, showOnly = showOnly)
-
+    print("The contig renaming was completed successfully!")
     print(f"Final renamed fasta file : {outFasta}")
 
 

@@ -74,4 +74,5 @@ def findGaps(obj):
     obj.gaps["endMatch"] = ""
     obj.gaps["finalGaf"] = ""
     obj.gaps = obj.gaps.loc[:,['gapId','name','gaps','notes','fixedPath','startMatch','endMatch','finalGaf','done']]
+    obj.gaps = obj.gaps.reset_index(drop=True)
     return obj

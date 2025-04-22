@@ -3,6 +3,7 @@ import seaborn as sns
 import pandas as pd
 import numpy as np
 from .._run_shell import run_shell
+import matplotlib.cm as cm
 import copy
 import os
 import matplotlib
@@ -137,7 +138,7 @@ def nodeMashmapBlockSize(
 
     plt.figure(figsize=(width, height))  # Adjust figure size
 
-    sns.lineplot(x="node", y="blocksize", data=tab_group, marker="o", linewidth=2.5)
+    ax = sns.barplot(x="node", y="blocksize", data=tab_group, color="grey")
 
     # Labels and title
     plt.xlabel("nodes")

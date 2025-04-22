@@ -3,10 +3,12 @@ import os
 import copy
 import seaborn as sns
 import matplotlib
+import matplotlib.patches as mpatches
 matplotlib.rcParams['pdf.fonttype'] = 42
 matplotlib.rcParams['ps.fonttype'] = 42
 from matplotlib import pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap
+from matplotlib.colors import ListedColormap
 from natsort import natsorted
 
 
@@ -119,7 +121,7 @@ def qvPlot(obj, width = 5, height = 7, save = True, figName = None):
         ax1.text(
             bar.get_x() + bar.get_width() / 2,  # X-coordinate (center of bar)
             height-5,                        # Y-coordinate (middle of bar)
-            f'{qvTab["QV"][index]:.0f}',       # Label (formatted as an integer)
+            f'{qvTab["QV"][index]:.2f}',       # Label (formatted as an integer)
             ha='center',                       # Horizontal alignment
             va='center',                       # Vertical alignment
             color='white',                     # Text color
@@ -252,10 +254,16 @@ def contigPlot(obj,width = 2, height = 4, save = True, figName = None):
     
     # Create the pivot table
     ctg = pd.pivot_table(stat_db,values='scf_ctg',index='ref_chr',columns='hap',aggfunc='max')
-    
+    # Custom labels dictionary
+    custom_labels = {0: 'Not T2T', 1: 'T2T w/ gap', 2: 'T2T wo gap'}
+
     plt.figure(figsize=(width, height))  # Adjust the figure size as needed
-    sns.heatmap(ctg, cmap="Reds", linecolor="white", linewidths=0.005, cbar=False, vmin=0, vmax=2)
-    
+    # Create a custom colormap
+    cmap = ListedColormap(['#fff5f0','#fb694a','#67000d'])
+    ax = sns.heatmap(ctg, cmap=cmap, linecolor="white", linewidths=0.005, cbar=False, vmin=0, vmax=2)
+    handles = [mpatches.Patch(color=cmap(i), label=custom_labels[i]) for i in custom_labels]
+    plt.legend(handles=handles, title='stats', loc='upper left',  bbox_to_anchor=(1, 1), frameon=False)
+
     # Display the plot
     if figName is None:
         figName = f"figs/contigPlot.heatmap.png"

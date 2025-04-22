@@ -19,7 +19,7 @@ from . import plotting as pl
 from . import preprocessing as pp
 from . import tools as tl
 from ._run_shell import run_shell
-from ._default_func import check_user_input,print_directory_tree,addHistory
+from ._default_func import check_user_input,print_directory_tree,addHistory,flatten_and_remove_none
 
 sys.modules.update({f"{__name__}.{m}": globals()[m] for m in ["tl", "pp", "pl"]})
 
@@ -39,4 +39,5 @@ __all__ = [
     'check_user_input',
     'print_directory_tree',
     'addHistory',
+    'flatten_and_remove_none',
 ]

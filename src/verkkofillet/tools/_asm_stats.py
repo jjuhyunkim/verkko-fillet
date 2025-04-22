@@ -37,7 +37,7 @@ def getT2T(obj, fasta="assembly.fasta", working_directory = "stats"):
 
     # Check if all output files already exist
     if all(os.path.exists(os.path.join(working_dir, file)) for file in output_files):
-        print("All output files already exist. Skipping rDNA removal.")
+        print("All output files already exist. Skipping getT2T.")
         return
         
     if not os.path.exists(script):

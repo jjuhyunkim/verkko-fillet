@@ -96,6 +96,10 @@ def searchNodes(obj, node_list_input, multimap_filter = 'mapq', force = False):
         An object containing graph alignment data (obj.gaf) and path frequency data (obj.paths_freq).
     node_list_input
         A list of node identifiers to search for.
+    multimap_filter
+        The column name used to filter the GAF data (default is 'mapq').
+    force
+        If True, forces the regeneration of obj.paths_freq even if it already exists.
 
     Returns
     -------

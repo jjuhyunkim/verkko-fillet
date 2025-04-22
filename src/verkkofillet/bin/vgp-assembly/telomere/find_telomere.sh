@@ -26,5 +26,3 @@ java -cp $modulepath/telomere/telomere.jar SizeFasta $file > $prefix.lens
 # Lowering threshold to 0.10 (10%) from the initial 0.40 (40%)
 java -cp $modulepath/telomere/telomere.jar FindTelomereWindows $prefix.telomere 99.9 0.1 > $prefix.windows
 java -cp $modulepath/telomere/telomere.jar FindTelomereBreaks $prefix.lens $prefix.sdust $prefix.telomere > $prefix.breaks
-
-

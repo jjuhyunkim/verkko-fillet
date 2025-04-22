@@ -8,6 +8,8 @@ import shlex
 import subprocess
 import os
 import shutil
+from tqdm import tqdm
+from .._default_func import flatten_and_remove_none
 
 def make_unique(column):
     counts = {}
@@ -47,6 +49,12 @@ def find_multi_used_node(obj):
     duplication reads : list 
         list of duplicated nodes
     """
+    if obj.paths is None:
+        raise ValueError("Paths are not available in the VerkkoFillet object.")
+    if obj.scfmap is None:
+        raise ValueError("SCF map is not available in the VerkkoFillet object.")
+    if obj.stats is None:
+        raise ValueError("Stats are not available in the VerkkoFillet object.")
     path = obj.paths.copy()
     scfmap = obj.scfmap.copy()
     stats = obj.stats.copy()
@@ -57,7 +65,7 @@ def find_multi_used_node(obj):
     path = pd.merge(scfmap, path, how = 'outer',left_on = "pathName",right_on="name")
     path['nodeSet'] = path['nodeSet'].apply(remove_elements_starting_with_bracket)
     
-    assignedContig = list(obj.stats['contig']) 
+    assignedContig = list(stats['contig']) 
     unassignedPath = path.loc[~path['contig'].isin(assignedContig)].reset_index()
     assignedPath = path.loc[path['contig'].isin(assignedContig)].reset_index()
     
@@ -81,8 +89,7 @@ def find_multi_used_node(obj):
     
     return duplicates, path_grouped
 
-def naming_contigs(obj, node_database, duplicate_nodes , 
-                   gfa = "assembly.homopolymer-compressed.noseq.gfa", 
+def naming_contigs(obj, node_database, duplicate_nodes ,
                    dam = "mat", sire = "pat", fai = "assembly.fasta.fai"):
     """\
     Rename the contigs based on the provided chromosome map file.
@@ -110,15 +117,34 @@ def naming_contigs(obj, node_database, duplicate_nodes ,
 
     """
     obj = copy.deepcopy(obj)
+    if obj.stats is None:
+        raise ValueError("Stats are not available in the VerkkoFillet object.")
+    if obj.paths is None:
+        raise ValueError("Paths are not available in the VerkkoFillet object.")
+    if obj.scfmap is None:
+        raise ValueError("SCF map is not available in the VerkkoFillet object.")
+    if obj.node is None:
+        raise ValueError("Nodes are not available in the VerkkoFillet object.")
+    if obj.edge is None:
+        raise ValueError("Edges are not available in the VerkkoFillet object.")
+    
     stats = obj.stats.copy()
     path = obj.paths.copy()
     scfmap = obj.scfmap.copy()
-    fai_chr = pd.read_csv(fai, sep='\t', header=None, usecols=[0])[0].tolist()
+    gfa_link = obj.edge.copy()
+    gfa_link = gfa_link[['node1', 'node2']]
+    gfa_link.columns = ['start', 'end']
+
+    print(f"All required files are available ... ")
+    
+    if not os.path.exists(fai):
+        raise FileNotFoundError(f"The file {fai} does not exist.")
+    else:
+        print(f"Reading fai file ... ")
+        fai_chr = pd.read_csv(fai, sep='\t', header=None, usecols=[0])[0].tolist()
 
     scfmap = scfmap.loc[scfmap['contig'].isin(fai_chr)]
     
-    gfa_link = pd.read_csv(gfa, sep = '\t', comment = "S", header = None, usecols= [1,3])
-    gfa_link.columns = ['start','end']
     gfa_link = gfa_link[~gfa_link['start'].isin(duplicate_nodes)]
     gfa_link = gfa_link[~gfa_link['end'].isin(duplicate_nodes)]
     
@@ -130,7 +156,7 @@ def naming_contigs(obj, node_database, duplicate_nodes ,
     path['nodeSet'] = path['nodeSet'].apply(remove_elements_starting_with_bracket)
     path['nodeSet'] = path['nodeSet'].apply(lambda lst: remove_ignore_nodes(lst, duplicate_nodes))
     
-    assignedContig = list(obj.stats['contig'])
+    assignedContig = list(stats['contig'])
     assignedContig = [re.sub(r':.*', '', string) for string in assignedContig]
     unassignedPath = path.loc[~path['contig'].isin(assignedContig)].reset_index()
     assignedPath = path.loc[path['contig'].isin(assignedContig)].reset_index()
@@ -149,12 +175,13 @@ def naming_contigs(obj, node_database, duplicate_nodes ,
     
     # Find connected components
     connected_components = [set(component) for component in nx.connected_components(G)]
-    len(connected_components)
+    num_cluster = len(connected_components)
+    print(f"Number of connected components: {num_cluster}")
     
     # assign chromosome
     dict1 = {}
     
-    for i in range(0,len(connected_components)):
+    for i in tqdm(range(0,len(connected_components)), desc="Assigning Chromosome to clusters", ncols=80, colour="white"):
         dict2 = {}
         chr_assign = df_exploded.loc[df_exploded['node'].isin(connected_components[i]), "chr"].unique()
         if len(chr_assign) == 1:
@@ -167,7 +194,7 @@ def naming_contigs(obj, node_database, duplicate_nodes ,
             dict1.update(dict2)
             #print("component_" + str(i) + " : " + chr_assign)
         if len(chr_assign) < 1:
-            print("component_" + str(i) + " : empty")
+            print("NodeCluster_" + str(i) + " : empty")
     
     # Assuming dict1 has sets or lists as values and we want to check if 'nodeSet' is a subset of any of those sets
     for i in range(0, unassignedPath.shape[0]):
@@ -189,6 +216,7 @@ def naming_contigs(obj, node_database, duplicate_nodes ,
         # Print if it's a subset and which key was assigned
         # print(f"Row {i}: Is subset? {some_key is not None}, Assigned Key: {some_key}")
     
+    print(f"Starting Naming contigs ...")
     # update unassigned
     unassignedPath.loc[unassignedPath['assignChr'].isna(), 'assignChr'] = "chrUn"
     unassignedPath = unassignedPath[~unassignedPath['contig'].isna()].reset_index()
@@ -222,4 +250,271 @@ def naming_contigs(obj, node_database, duplicate_nodes ,
     final_contigNaming['new_contig_name'] = make_unique(final_contigNaming['new_contig_name'])
     # final_contigNaming.to_csv(out_mapFile, sep ='\t', header = None, index=False)
     # Display the updated DataFrame
+    print(f"Done!")
     return final_contigNaming
+
+
+
+import networkx as nx
+import pandas as pd
+
+def cut_graph_using_ancestors(graph, source, target):
+    """
+    Cuts the graph based on ancestors of the target and descendants of the source.
+    Keeps only the nodes and edges that are part of the path from source to target.
+
+    Parameters:
+        graph (nx.DiGraph): The original directed graph.
+        source (str): The source node.
+        target (str): The target node.
+
+    Returns:
+        nx.DiGraph: A new graph containing only the nodes and edges involved in paths from source to target.
+    """
+    if source not in graph or target not in graph:
+        print(f"Source or target node does not exist in the graph.")
+        print(f"Add edge from {source} to {target} to the graph.")
+        graph.add_edge(source, target)
+
+    
+    # Find the ancestors of the target (all nodes that can reach the target)
+    ancestors_of_target = nx.ancestors(graph, target)
+    ancestors_of_target.add(target)  # Include the target node itself
+
+    # Find the descendants of the source (all nodes that can be reached from the source)
+    descendants_of_source = nx.descendants(graph, source)
+    descendants_of_source.add(source)  # Include the source node itself
+
+    # Find the intersection of ancestors and descendants
+    relevant_nodes = ancestors_of_target.intersection(descendants_of_source)
+
+    # Create a subgraph with only the relevant nodes
+    subgraph = graph.subgraph(relevant_nodes).copy()
+
+    return subgraph
+
+def grabNodesInGap(obj, source, target):
+    """
+    Find nodes in the gap between source and target.
+
+    Parameters
+    ----------
+    obj
+        The VerkkoFillet object to be used.
+    source
+        The source node.
+    target
+        The target node.
+
+    Returns
+    -------
+    lst
+        List of nodes in the gap.
+    """
+    # Sample data for edges
+    edge = obj.edge.copy()
+
+    # Adding start and end columns as per your structure
+    edge['start'] = edge['node1'].astype(str) + edge['node1_strand'].astype(str)
+    edge['end'] = edge['node2'].astype(str) + edge['node2_strand'].astype(str)
+    edge = edge[['start', 'end']]
+
+    # Create a directed graph
+    G = nx.DiGraph()
+
+    # Add edges to the graph
+    for _, row in edge.iterrows():
+        G.add_edge(row['start'], row['end'])
+    
+    # Cut the graph using ancestors of target and descendants of source
+    cut_graph = cut_graph_using_ancestors(G, source, target)
+    if cut_graph is None:
+        return 
+    else:
+        lst = list(cut_graph.nodes)
+        return lst
+
+def keepNodesInUnresolvedGaps(obj):
+    """\
+    Find nodes that are used in more than one path.
+    
+    Parameters
+    ----------
+    obj
+        The VerkkoFillet object to be used.
+    
+    Returns
+    -------
+    obj
+        The updated VerkkoFillet object with new paths dataframe.
+    result
+        List of nodes kept in unresolved gaps.
+    """
+    gaps = obj.gaps[['gaps','fixedPath','notes']].copy()
+    gaps = gaps.reset_index()
+    path = obj.paths.copy()
+    path = path.reset_index()
+
+    if "rm" not in path.columns:
+        path['rm'] = ""
+    
+    keepGapNode = []
+
+    for i in tqdm(range(len(gaps))):
+        if gaps['gaps'][i] == 'startMarker':
+            note = gaps.loc[i, "notes"].split(" ")
+            source = note[1]
+            source = path.loc[path['name'] == source, 'path'].values[0].split(",")[-1].replace(" ", "")
+            target = note[3]
+            target = path.loc[path['name'] == target, 'path'].values[0].split(",")[0].replace(" ", "")
+            gapinfo = [source, "[gap]", target]
+            # print(f"source: {source}, target: {target}")
+        
+        elif gaps['gaps'][i] == 'endMarker': 
+            note = gaps.loc[i, "notes"].split(" ")
+            source = note[3]
+            source = path.loc[path['name'] == source, 'path'].values[0].split(",")[-1].replace(" ", "")
+            target = note[0]
+            target = path.loc[path['name'] == target, 'path'].values[0].split(",")[0].replace(" ", "")
+            gapinfo = [source, "[gap]", target]
+            # print(f"source: {source}, target: {target}")
+        
+        elif gaps['fixedPath'][i] == '':
+            gapinfo = gaps['gaps'][i]
+        
+        else : 
+            gapinfo = gaps['fixedPath'][i]
+        
+        if isinstance(gapinfo, str):
+            gapinfo = gapinfo.split(",")
+
+        # print(len(gapinfo))
+        # Step 2: Remove all whitespace from each element
+        gapinfo = [s.replace(" ", "") for s in gapinfo]
+
+        # Step 3: Find index of first item starting with "["
+        index = [i for i, item in enumerate(gapinfo) if item.startswith("[")]
+        if index is not None:
+            for idx in range(len(index)):
+                sliceIndex = index[idx]
+                source = gapinfo[sliceIndex-1]
+                target = gapinfo[sliceIndex+1]
+                # print(f"source: {source}, target: {target}")
+                gapNode_to_keep = grabNodesInGap(obj, source, target)
+                # gapNode_to_keep= list(gapNode_to_keep)
+                keepGapNode.append(gapNode_to_keep)
+
+    result = flatten_and_remove_none(keepGapNode)
+    result = [x.rstrip("-+") for x in result]
+    print(f"Total number of nodes used in gap filling: {len(result)}")
+    print(result)
+    includelst = []
+
+    for i in tqdm(range(len(path)), ncols=80, colour="white", desc="Finding paths consisting of unused nodes"):
+        path_list = path.loc[i, 'path'].split(",")
+        path_list = [x.rstrip("-+") for x in path_list]  # Remove trailing "-" and "+" from each string
+        path_name = path.loc[i, 'name']
+        # print(path_list)
+        if all(item in result for item in path_list):
+            # print("hi")
+            includelst.append(path_name)
+        
+    includelst = list(set(includelst))
+    print(f"The total number of paths consisting of nodes should be preserved.: {len(includelst)}")
+
+    
+    path.loc[path['name'].isin(includelst), 'rm'] = "keep_Nodes_in_unresolved_gaps"
+    
+    if "index" in path.columns:
+        del path['index']
+    if "level_0" in path.columns:
+        del path['level_0']
+
+    obj.paths = path
+    return obj, result
+
+from tqdm import tqdm 
+
+def reClusteringGapNodeByPath(obj):
+    gapNodeDb =pd.DataFrame()
+    paths = obj.paths.copy()
+    paths.reset_index(drop=True, inplace=True)
+
+    gaps = obj.gaps.copy()
+    gaps.reset_index(drop=True, inplace=True)
+
+    for i in tqdm(range(len(obj.gaps)), desc="Processing gaps", unit="gap"):
+        gapinfo = gaps.loc[i, 'gaps']
+        gapinfo = [s.replace(" ", "") for s in gapinfo]
+
+
+        name = gaps.loc[i, 'name']
+        hap = name.split("_")[0]
+        gapid = gaps.loc[i, 'gapId']
+
+        gap_node = grabNodesInGap(obj, gapinfo[0], gapinfo[-1])
+        gap_node.remove(gapinfo[0])
+        gap_node.remove(gapinfo[-1])
+        gap_node = [x.rstrip("-+") for x in gap_node]
+        
+
+        for j in gap_node:
+            node = j + "+"
+            # print("Checking node:", node)
+
+            match = paths.loc[paths['path'] == node, 'name']
+            
+            if not match.empty:
+                paths_name = match.values[0]
+                # print("Matched path name:", paths_name)
+
+                nodeDf = pd.DataFrame({
+                    "gapId": [gapid],
+                    "mainContig": [name],
+                    "pathName": [paths_name],
+                    "node": [node]
+                })
+
+                gapNodeDb = pd.concat([gapNodeDb, nodeDf], ignore_index=True)
+
+
+    gapNodeDb = gapNodeDb.reset_index(drop=True)
+
+    gapNodeDb["mainContig_hap"] = gapNodeDb["mainContig"].str.split("_").str[0]
+    gapNodeDb["pathName_hap"] = gapNodeDb["pathName"].str.split("_").str[0]
+    gapNodeDb.loc[gapNodeDb['mainContig_hap'] == gapNodeDb['pathName_hap'], 'same'] = True
+    gapNodeDb.loc[gapNodeDb['mainContig_hap'] != gapNodeDb['pathName_hap'], 'same'] = False
+
+
+    gapNodeDb_false = gapNodeDb.loc[gapNodeDb['same'] == False,:]
+    gapNodeDb_false.reset_index(drop=True, inplace=True)
+    gapNodeDb_false_count = gapNodeDb_false.groupby('node')['mainContig'].nunique().reset_index(name='count').sort_values(by='count', ascending=False)
+    unique_nodes = gapNodeDb_false_count.loc[gapNodeDb_false_count['count'] == 1, 'node'].tolist()
+    notUnique_nodes = gapNodeDb_false_count.loc[gapNodeDb_false_count['count'] > 1, 'node'].tolist()
+
+    gapNodeDb['fixed'] = gapNodeDb['mainContig']
+    gapNodeDb.loc[gapNodeDb['node'].isin(unique_nodes),'fixed'] = gapNodeDb.loc[gapNodeDb['node'].isin(unique_nodes),'mainContig']
+    gapNodeDb.loc[gapNodeDb['node'].isin(notUnique_nodes),'fixed'] = "unhap"
+    gapNodeDb = gapNodeDb[['mainContig', 'pathName', 'node', 'fixed','same']]
+    gapNodeDb.drop_duplicates(inplace=True)
+    gapNodeDb.reset_index(drop=True, inplace=True)
+
+    gapNodeDb['fixed'] = gapNodeDb['fixed'] + "_" + gapNodeDb['node']
+
+    stats = obj.stats.copy()
+
+    scfmap = obj.scfmap.copy()
+    scfmap.reset_index(drop=True, inplace=True)
+    scfmap = scfmap[['contig','pathName']]
+    scfmap
+
+    stat_scfmap = pd.merge(stats, scfmap, how = 'left', left_on = 'contig', right_on = 'contig')
+    stat_scfmap_gapNodedb = pd.merge(stat_scfmap, gapNodeDb, how = 'right', left_on = 'pathName', right_on = 'mainContig')
+    stat_scfmap_gapNodedb = stat_scfmap_gapNodedb[['node','pathName_x','pathName_y','ref_chr', 'hap','same']]
+    stat_scfmap_gapNodedb.columns = ['node','mainContig_pathName','original_pathName', 'ref_chr', 'hap', 'same']
+    stat_scfmap_gapNodedb['ref_chr_pathName'] = stat_scfmap_gapNodedb['ref_chr'].astype(str) + "_" + stat_scfmap_gapNodedb['hap'].astype(str) + "_random_" + stat_scfmap_gapNodedb['node'].astype(str)
+    stat_scfmap_gapNodedb = pd.merge(stat_scfmap_gapNodedb, scfmap, how = 'left', left_on = 'original_pathName', right_on = 'pathName')
+    stat_scfmap_gapNodedb.rename(columns = {'contig' : 'original_contig'}, inplace = True)
+    node_feature_dict = dict(zip(stat_scfmap_gapNodedb["original_contig"], stat_scfmap_gapNodedb["ref_chr_pathName"]))
+
+    return stat_scfmap_gapNodedb,node_feature_dict

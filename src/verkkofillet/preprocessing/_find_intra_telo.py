@@ -58,7 +58,7 @@ def find_intra_telo(obj, telo_file="internal_telomere/assembly_1/assembly.window
             
             # Merge the rows by combining the 'start', 'end', and other columns
             tel.loc[i - 1, 'end'] = tel.loc[i, 'end']  # Update 'end' to the next row's 'end'
-            
+            tel.loc[i - 1, 'teloPerct'] = max(tel.loc[i, 'teloPerct'], tel.loc[i - 1, 'teloPerct'])
             # Mark the current row for removal (row i)
             rows_to_remove.append(i)
     # Drop the rows that have been merged
@@ -103,6 +103,7 @@ def find_intra_telo(obj, telo_file="internal_telomere/assembly_1/assembly.window
     result.loc[~missingTel & INTEL, 'problem'] = "OK/INTEL"
 
     result_merged = pd.merge(result, statsdb, left_on='contig', right_on='contig', how='right')
+    
     
     # result_merged
     if out_prefix is None:
@@ -205,11 +206,14 @@ def find_reads_intra_telo(tel, lineNum ,scfmap = "assembly.scfmap",layout = "6-l
     df['start_hpc'] = df['start_hpc'].astype(int)
     df['end_hpc'] = df['end_hpc'].astype(int)
     
-    df['start'] = df[['end_hpc', 'start_hpc']].min(axis=1) * 1.5  # multiply 1.5 cuz this is baesd on HPC coordinates
-    df['end'] = df[['end_hpc', 'start_hpc']].max(axis=1) * 1.5    # multiply 1.5 cuz this is baesd on HPC coordinates
+    df['start'] = df[['end_hpc', 'start_hpc']].min(axis=1) * 1.6  # multiply 1.5 cuz this is baesd on HPC coordinates
+    df['end'] = df[['end_hpc', 'start_hpc']].max(axis=1) * 1.6    # multiply 1.5 cuz this is baesd on HPC coordinates
     
     pieceinfo = filtered_matches[0:4]
     pieceinfo = [entry.split("\t") for entry in pieceinfo]
+
+    df['type'] = df['readName'].apply(lambda x: 'ont' if ';' in x else 'hifi')
+    df['type'] = pd.Categorical(df['type'], categories=['ont','hifi'], ordered=True)
 
     if pos == "start":
         df_sub = df.loc[(df['start'] < bp)|(df['end'] < bp)]
@@ -218,12 +222,11 @@ def find_reads_intra_telo(tel, lineNum ,scfmap = "assembly.scfmap",layout = "6-l
         df_sub = df.loc[(df['start'] > bp_new)|(df['end'] > bp_new)]
     else:
         print("pos should be either start or end")
-    df_sub['type'] = df_sub['readName'].apply(lambda x: 'ont' if ';' in x else 'hifi')
-    df_sub['type'] = pd.Categorical(df_sub['type'], categories=['ont','hifi'], ordered=True)
+    
     df_sub_count = df_sub.groupby('type')['start_hpc'].count().reset_index()
     
     print("Summary : ")
     print("   Num of ONT reads : " + str(df_sub_count.iloc[0,1]))
     print("   Num of HiFi reads : " + str(df_sub_count.iloc[1,1]))
     
-    return df_sub
+    return df_sub, df

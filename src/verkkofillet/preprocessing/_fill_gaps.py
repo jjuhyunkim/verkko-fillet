@@ -9,6 +9,18 @@ from .._default_func import addHistory
 logging.basicConfig(level=logging.INFO)
 
 def path_to_gaf(input_string):
+    """
+    Converts a path string into a GAF format.
+
+    Parameters
+    ----------
+        input_string (str): The input path string to be converted.
+
+    Returns
+    -------
+        str: The converted GAF format string.
+    """
+    
     # Split the input string by commas
     items = input_string.split(',')
     
@@ -24,7 +36,7 @@ def path_to_gaf(input_string):
         else :
             error = "Invalid input string: " + input_string
             print(error)
-            return error
+            return
 
     
     # Join the processed items into a single string
@@ -200,7 +212,7 @@ def preprocess_path(path_str):
     split_path = re.split(r',', path_str)
     return [p for p in split_path if p.strip()]  # Remove empty elements
 
-def connectContigs(obj, contig, contig_to,  at = "left", gap = "[N5000N:connectContig]", flip = False, fix_path = True):
+def connectContigs(obj, contig, contig_to,  at = "left", gap = "[N5000N:connectContig]", flip = False):
     """
     Connects two contigs by adding a gap between them.
 
@@ -226,11 +238,10 @@ def connectContigs(obj, contig, contig_to,  at = "left", gap = "[N5000N:connectC
     obj_sub = copy.deepcopy(obj)
     pathdb = obj_sub.paths.copy()
     gapdb = obj_sub.gaps.copy()
-
+    gap= gap.replace(" ", "")
     path1_raw = pathdb.loc[pathdb['name'] == contig_to]["path"].values
     path2_raw = pathdb.loc[pathdb['name'] == contig]["path"].values
 
-    path1_path = preprocess_path(path1_raw[0])
     path2_path = preprocess_path(path2_raw[0])
 
     gapid_add= f"gapid_{str(gapdb['gapId'].str.replace('gapid_','').astype(int).max()+1)}"
@@ -241,16 +252,16 @@ def connectContigs(obj, contig, contig_to,  at = "left", gap = "[N5000N:connectC
 
     if at == "left":
         marker = ["startMarker"]
-        fixedPath = path2_path + [gap] + marker
+        fixedPath = path2_path + [gap]+ marker
     if at == "right":
         marker = ['endMarker']
-        fixedPath = marker + [gap]+  path2_path
+        fixedPath = marker + [gap] +  path2_path
         
     fixedPath = ','.join(fixedPath)
     gap_new_line = pd.DataFrame({"gapId": gapid_add, 
-                  "name" : [contig_to],
+                  "name" : [contig],
                   "gaps" : marker,
-                  "notes" : f"connected {contig} to {contig_to} at {at} with flip {flip}",
+                  "notes" : f"connected {contig} to {contig_to} at {at} with flip {flip} {gap}",
                   "fixedPath": fixedPath,
                   "startMatch" : "",
                   "endMatch" : "",
@@ -259,24 +270,6 @@ def connectContigs(obj, contig, contig_to,  at = "left", gap = "[N5000N:connectC
 
     gapdb = pd.concat([gapdb,gap_new_line], ignore_index=True)
     obj_sub = addHistory(obj_sub, f"{gapid_add} was created", 'connectContig')
-    
-    newPath = fixedPath
-    pathdb = obj_sub.paths.copy()
-    pathdb = pathdb.loc[pathdb["name"] != contig]
-    ori_path = pathdb.loc[pathdb["name"] == contig_to, 'path'].values[0]
-    
-    marker = marker[0]
-    if marker == "startMarker":
-        pathdb.loc[pathdb["name"] == contig_to, 'path'] = newPath + ori_path
-    elif marker == "endMarker":
-        pathdb.loc[pathdb["name"] == contig_to, 'path'] = ori_path + newPath
-    else:
-        print("marker doesn't match")
-
-    gapdb['name'] = gapdb['name'].replace(contig, contig_to)
-    
-    if fix_path:
-        obj_sub.paths = pathdb
     
     obj_sub.gaps = gapdb
 
@@ -333,113 +326,361 @@ def writeFixedPaths(obj, save_path = "assembly.fixed.paths.tsv", save_gaf = "ass
     """
     print(f"Starting to write fixed paths to {save_path} and {save_gaf}...")
     print(" ")
+    obj = copy.deepcopy(obj)
+    path = obj.paths.copy()
+    gaps = obj.gaps.copy()
+    gaps.reset_index(drop=True, inplace=True)
+    path.reset_index(drop=True, inplace=True)
+    gaps["fixedPath"] = gaps["fixedPath"].fillna("empty")
+    gaps["fixedPath"] = gaps["fixedPath"].replace("", "empty")
+    gaps["fixedPath"] = gaps["fixedPath"].replace(" ", "empty")
+    # show stats
+    statDb = path.groupby('rm').size().reset_index(name='counts').sort_values(by='counts', ascending=False)
+    cat = list(statDb['rm'])
+    count = list(statDb['counts']) 
+    print(f"The total number of original paths is {len(path)}")
+    print(f"The number of paths that were removed:")
+    for i in range(len(cat)):
+        print(f"{cat[i]}: {count[i]}")
+    print(" ")
 
-    obj_sub = copy.deepcopy(obj)
-    gapdb = obj_sub.gaps.copy()
-    gapdb = gapdb.reset_index()
-    pathdb = obj_sub.paths.copy()
-    scfmap = obj.scfmap.copy()
-    stats = obj.stats.copy()
+    # Fix the paths with gap filling
+    for i in tqdm(range(len(gaps)), desc="Fixing paths"):
+        fixed_gap = gaps.loc[i, "fixedPath"].replace(" ", "")
+        ori_gap = gaps.loc[i, "gaps"]
+        name = gaps.loc[i, "name"]
+        gapId = gaps.loc[i, "gapId"]
+        if ori_gap not in ["startMarker", "endMarker"] and fixed_gap != "empty":
+            if isinstance(ori_gap, list):
+                ori_gap = ','.join(ori_gap)
+        
+            #if name == "sire_compressed.k31.hapmer_from_utig4-1859":
+                #print(f"gapid_31: {ori_gap} {fixed_gap}")
 
-    scfmat_stats = scfmap.merge(stats, on = "contig")
-    chrassignpath = list(scfmat_stats['pathName'])
-    # print(chrassignpath)
-    
-    pathdb.reset_index(drop = True, inplace = True)
-    
-    connectFrom =[]
-    connectTo = []
-    for num in tqdm(range(len(gapdb)), desc="Checking for startMarker and endMarker..."):
-        marker =gapdb.loc[num,"gaps"]
-
-        if isinstance(marker, str) and re.search(r"startMarker|endMarker", marker):
+            ori_path = path.loc[path['name'] == name, "path"].values[0].replace(" ", "")
             
-            note = gapdb.loc[num, "notes"].split(" ")
-            rmnode = note[1]
-            remainnode = note[3]
-
-            newPath = gapdb.loc[num, "fixedPath"].replace("startMarker", "").replace("endMarker", "")
-            # print(newPath)
-            # update pathdb
-            pathdb = pathdb.loc[pathdb["name"] != rmnode]
-            ori_path = pathdb.loc[pathdb["name"] == remainnode, 'path'].values[0]
-            # print(ori_path)
-            # add path to main contig
-            if marker == "startMarker":
-                pathdb.loc[pathdb["name"] == remainnode, 'path'] = newPath + ori_path
-            elif marker == "endMarker":
-                pathdb.loc[pathdb["name"] == remainnode, 'path'] = ori_path + newPath
+            if ori_gap in ori_path:
+                ori_path = ori_path.replace(ori_gap, fixed_gap)
             else:
-                print("marker doesn't match")
-
-            gapdb['name'] = gapdb['name'].replace(rmnode, remainnode)
-            connectFrom.append(rmnode)
-            connectTo.append(remainnode)
+                print(f"{gapId} {name} {ori_gap} not in original path")
+            
+            fixed_path = ori_path.replace(ori_gap, fixed_gap).replace(" ", "")
+            # print(fixed_path)
+            
+            path.loc[path['name'] == name, "path"] = fixed_path
     
+    # Fix the connecting paths
+    gaps_connect = gaps[gaps['gaps'].isin(['startMarker', 'endMarker'])].reset_index(drop=True)
+
+    for i in range(len(gaps_connect)):
+        note= gaps_connect.loc[i, 'notes'].split(" ")
+        marker = gaps_connect.loc[i, 'gaps']
+        
+        target = note[3]
+        source = note[1]
+        flip = note[8]
+        gap = note[9]
+        
+        print(f"{marker} {target} {source} {flip}")
+
+        target_path = path.loc[path['name'] == target, 'path'].values[0]
+        source_path = path.loc[path['name'] == source, 'path'].values[0]
+
+        if flip == "True":
+            source_path = source_path[::-1]
+            source_path = [s.translate(str.maketrans("+-", "-+")) for s in source_path]
+        
+        source_path = source_path.replace(" ", "")
+        target_path = target_path.replace(" ", "")
+        
+        if marker == "startMarker":
+            newPath = [source_path] + [gap] + [target_path]
+            newPath = [item for item in newPath if item != ""]
+            newPath = ','.join(newPath)
+            newPath = newPath.replace("startMarker", "")
+            
+        if marker == "endMarker":
+            newPath = target_path + gap + source_path
+            newPath = [item for item in newPath if item != ""]
+            newPath = ','.join(newPath)
+            newPath = newPath.replace("endMarker", "")
+            
+        newPath = newPath.replace(" ", "")
+        path.loc[path['name'] == target, 'path'] = newPath
+
+    print(f"fix the connecting path is done!")
+    
+    # Remove paths that are covered by others
+    excludelst = []
+
+    for i in tqdm(range(len(path)), ncols=80, colour="white", desc="Excluding duplicated paths"):
+        path_list = path.loc[i, 'path'].split(",")
+        path_list = [re.sub(r"[+-]", "", s) for s in path_list]
+        path_name = path.loc[i, 'name']
+
+        # Get all other paths (excluding current row), then flatten into one list
+        path_etc = path.drop(i)['path'].str.split(",").explode().tolist()
+        path_etc = [re.sub(r"[+-]", "", s) for s in path_etc]
+
+        if all(item in path_etc for item in path_list):
+            excludelst.append(path_name)
+
+    path.loc[path['name'].isin(excludelst), 'rm'] = "rm_covered_by_others"
+
+    pat_filtered = path.loc[path['rm'].str.startswith('keep')]
+
+    
+    if "index" in pat_filtered.columns:
+        pat_filtered = path.drop(columns = "index")
+    #if "rm" in path.columns:
+    #    path = path.drop(columns = "rm")
+    print(f"The number of paths that were kept: {len(pat_filtered)}")
+    pat_filtered = pat_filtered.reset_index(drop = True)
+
+    gaf = pat_filtered.copy()
+    gaf['path'] = pat_filtered['path'].apply(path_to_gaf).apply(lambda x: x.replace(' ', ''))
     print(" ")
-    for frm, to_ in zip(connectFrom, connectTo):
-        print(f"Connected {frm} to {to_} in path space")
-
+    print(f"The total number of final paths is {len(pat_filtered)}")
     
-    print(" ")
-    for num in tqdm(range(len(gapdb)), desc="Fixing paths using obj.gaps..."):
-        marker = gapdb.loc[num, "gaps"][0]
-
-        if isinstance(marker, str) and re.search(r"startMarker|endMarker", marker):
-            continue
-        if gapdb.loc[num, 'finalGaf'] == "":
-            continue
-        else:
-            fixed_path = gapdb.loc[num, 'fixedPath'].replace(" ", "")
-            gap_path = ','.join(gapdb.loc[num, 'gaps'])
-            contig = gapdb.loc[num, 'name']
-
-            ori_path = pathdb.loc[pathdb['name'] == contig, 'path'].values[0]
-            ori_path = ori_path.replace(gap_path, fixed_path)
-
-            # update path
-            pathdb.loc[pathdb['name'] == contig, 'path'] = ori_path
-
-    # Convert lists to sets for easy comparison
-    path_list = pathdb['path'].apply(lambda x: x.replace(' ', '').split(",")).tolist()
-
-    # Step 2: Apply regex to remove '+$' and '-$' from each item inside sublists
-    pathdb['path_clean'] = [[re.sub(r'(\+$|\-$)', '', item) for item in sublist] for sublist in path_list]
-    pathdb['path_set'] = pathdb['path_clean'].apply(set)
-    
-    pathdb.reset_index(drop = True, inplace = True)
-    # Find rows that are subsets of any other row
-    to_remove = set()
-    for i, set1 in tqdm(enumerate(pathdb['path_set']), desc="Checking for redundant paths..."):
-        for j, set2 in enumerate(pathdb['path_set']):
-            if i != j and set1.issubset(set2):  # If row i is covered by row j
-                to_remove.add(i)
-    print(" ")
-    print(f"Removing {len(to_remove)} covered rows...")
-    print(f"Those rows might be unsed during gap filling...")
-    sig = [x for x in list(pathdb.loc[list(to_remove), 'name']) if x in chrassignpath]
-    if len(sig) > 0:
-        print(" ")
-        print(f"WARNING: These chromosome assigned contigs are going to be removed: {sig}")
-    
-    # Keep only non-covered rows
-    df_filtered = pathdb.drop(index=list(to_remove)).drop(columns=['path_set'])
-
-    # print(df_filtered)
-    df_filtered = df_filtered.reset_index(drop=True)
-    df_filtered = df_filtered.drop(columns = "gaps")
-    df_filtered = df_filtered.drop(columns = "path_clean")
-    
-    gaf = df_filtered.copy()
-    gaf['path'] = df_filtered['path'].apply(path_to_gaf).apply(lambda x: x.replace(' ', ''))
-    print(" ")
-    print(f"The total number of original paths is {len(pathdb)}")
-    print(f"The total number of final paths is {len(df_filtered)}")
-    
-    pathdb.to_csv(save_path, sep = "\t", index = False)
+    pat_filtered.to_csv(save_path, sep = "\t", index = False)
     print(f"Fixed paths were saved to {save_path}")
     
     gaf.to_csv(save_gaf, sep = "\t", index = False)
     print(f"Fixed gaf were saved to {save_gaf}")
+    return path
+
+def checkDisconnectNode(obj, min_hpc_len = 100_000):
+    """
+    This function checks for disconnected nodes in the graph and filters them based on a minimum length.
+
+    Parameters
+    ----------
+    obj
+        An verkko fillet object that contains the 'node' and 'edge' DataFrames in obj.node and obj.edge.
+    min_hpc_len
+        The minimum length for filtering out disconnected nodes. Default is 100,000.
+
+    Returns
+    -------
+        The updated verkko fillet object with disconnected nodes filtered out.
+    """
+    obj = copy.deepcopy(obj)
+    print(f"Minimum length for filtering out disconnected HPC nodes : {min_hpc_len}bp")
+    
+    node = obj.node.copy()
+    edge = obj.edge.copy()
+    node.reset_index(drop=True, inplace=True)
+    edge.reset_index(drop=True, inplace=True)
+
+    nodelst = set(node['node'].tolist())
+    edgelst = set(edge['node1'].tolist() + edge['node2'].tolist() )
+
+    disconnected_nodes = list(nodelst - edgelst)
+    print(f"Number of disconnected nodes found : {len(disconnected_nodes)}")
+
+    disconnected_nodes_db = node.loc[node['node'].isin(disconnected_nodes),:]
+    disconnected_nodes_db_rm = disconnected_nodes_db.loc[disconnected_nodes_db['len'] < min_hpc_len, :]
+    disconnected_nodes_db_rm = disconnected_nodes_db_rm['node'].tolist()
+    print(f"Number of disconnected nodes that will be filtered : {len(disconnected_nodes_db_rm)}")
+
+    disconnected_nodes_db_keep = node.loc[node['node'].isin(disconnected_nodes),:]
+    disconnected_nodes_db_keep = disconnected_nodes_db_keep.loc[disconnected_nodes_db_keep['len'] >= min_hpc_len, :]
+    disconnected_nodes_db_keep = disconnected_nodes_db_keep['node'].tolist()
+    print(f"Disconnected paths that exceed a certain length will be preserved : {len(disconnected_nodes_db_keep)}")
+
+    path = obj.paths.copy()
+    if "rm" not in path.columns:
+        path['rm'] = ""
+
+    path['tmp'] = list(path['path'].str.rstrip("+-"))
+    path.loc[path['tmp'].isin(disconnected_nodes_db_rm), 'rm'] = "disconnected_node"
+    path.loc[path['tmp'].isin(disconnected_nodes_db_keep), 'rm'] = "keep_long_disconnected_node"
+    del path['tmp']
+    obj.paths = path
+    return obj
+
+def keepContig(obj, contig_lst = None, path_list = None):
+    """
+    This function keeps specific contigs in the paths DataFrame and marks others for removal.
+
+    Parameters
+    ----------
+    obj
+        An verkko fillet object that contains the 'paths' DataFrame in obj.paths.
+    contig_lst
+        A list of contig names to keep. Default is None.
+    path_list
+        A list of path names to keep. Default is None.
+    Returns
+    -------
+        The updated verkko fillet object with specific contigs kept in the paths DataFrame.
+    """
+    
+    obj = copy.deepcopy(obj)
+    path = obj.paths.copy()
+    scfmap = obj.scfmap.copy()
+    if "rm" not in path.columns:
+        path['rm'] = ""
+    
+    if contig_lst is not None:
+        path_name = scfmap[scfmap['contig'].isin(contig_lst)]['pathName'].to_list()
+    
+    if path_name is not None and path_list is not None:
+        path_name = path_name + path_list
+    
+    path.loc[path['name'].isin(path_name),'rm'] = "keep_contig"
+
+    obj.paths = path
+    return obj
 
 
+def updateConnect(obj):
+    """
+    This function updates the paths DataFrame by adding a 'rm' column to mark specific paths for removal.
+
+    Parameters
+    ----------
+    obj
+        An verkko fillet object that contains the 'paths' DataFrame in obj.paths.
+    Returns
+    -------
+        The updated verkko fillet object with the 'rm' column added to the paths DataFrame.
+    """
+    obj = copy.deepcopy(obj)
+    path = obj.paths.copy()
+    gaps = obj.gaps.copy()
+
+    gaps = gaps.loc[gaps['gaps'].isin(['startMarker', 'endMarker'])].reset_index(drop=True)
+
+    for i in tqdm(range(len(gaps))):
+        note = gaps.loc[i, "notes"].split(" ")
+        source = note[1]
+        target = note[3]
+        ori = note[5]
+        flip = note[8]
+        
+        path.loc[path['name'] == source, 'rm'] = 'rm-connect-source' + "_" + target + "_" + ori + "_" + flip
+
+    obj.paths = path
+    return obj
+
+def writeFixedGraph(path, graph, out = "assembly.fixed.paths.gfa", dupNode=[]):
+    """
+    This function writes the fixed graph to a GFA file.
+
+    Parameters
+    ----------
+    path
+        The path DataFrame containing the paths to be written to the GFA file.
+    graph
+        The graph file to be used for writing the fixed graph.
+    dupNode
+        A list of duplicate nodes to be excluded from the graph. Default is an empty list.
+    Returns
+        None
+    """
+    print(f"Writing fixed graph to {out}...")
+    path = path.copy()
+    onlyused = path.loc[path['rm'].str.startswith("keep"), 'path'].to_list()
+    onlyused = [item for s in onlyused for item in s.split(',')]
+    onlyused = [item.rstrip(r'+-') for item in onlyused]
+    # onlyused
+
+    gapNode = list(set(path.loc[path['rm'] == "keep_Nodes_in_unresolved_gaps", 'path'].unique()))
+    gapNode = [item.rstrip(r'+-') for item in gapNode]
+
+    node = pd.read_csv(graph, sep='\t', header=None)
+    node = node[node[0] == "S"]
+    node.columns = ['type', 'node','seq', 'ln', 'rc','il']
+    node = node.loc[node['node'].isin(onlyused),:]
+    node = node.loc[~node['node'].isin(dupNode),:]
+    node.reset_index(drop=True, inplace=True)
+
+    edge = pd.read_csv(graph, sep='\t', header=None)
+    edge.reset_index(drop=True, inplace=True)
+    edge = edge[edge[0] == "L"]
+    edge.columns = ['type', 'node1','node1_strand', 'node2', 'node2_strand','overlap']
+    edge = edge.loc[edge['node1'].isin(onlyused),:]
+    edge = edge.loc[edge['node2'].isin(onlyused),:]
+    edge.reset_index(drop=True, inplace=True)
+
+    contigdf  = path.loc[path['rm'] == "keep_contig",:]
+    contigdf.reset_index(drop=True, inplace=True)
+
+    contig = contigdf['path'].to_list()
+    contig_name = contigdf['name'].to_list()
+
+    edge['keep'] = False
+    dupNodeDf = pd.DataFrame()
+    dupEdgeDf = pd.DataFrame()
+    # for path in contig:
+    for i in tqdm(range(len(contig))):
+        path_contig = contig[i].split(",")
+        # path_contig = [item.rstrip(r'+-') for item in path_contig]
+        contig_name_list = contig_name[i]
+
+        for j in range(len(path_contig)-1):
+            # extract last str ( + or -)
+            source = path_contig[j]
+            source_add = path_contig[j]
+            source_strand = "-"
+            if source.endswith("-"):
+                source_strand = "-"
+            source = source.rstrip(r"+-")
+            source_add = source_add.rstrip(r"+-")
+
+            target = path_contig[j+1]
+            target_add = path_contig[j+1]
+            target_strand = "_"
+            if target.endswith("-"):
+                target_strand = "-"
+            target = target.rstrip(r"+-")
+            target_add = target_add.rstrip(r"+-")
+            
+            # make unique node
+            if source in dupNode:
+                source_add = source + "_" + contig_name_list
+                
+                subDf = node.loc[node['node'] == source]
+                subDf['node'] = subDf['node'].str.replace(source, source_add)
+                dupNodeDf = pd.concat([dupNodeDf, subDf], ignore_index=True)
+
+            if target in dupNode:
+                target_add = target + "_" + contig_name_list
+                
+                subDf = node.loc[node['node'] == target]
+                subDf['node'] = subDf['node'].str.replace(target, target_add)
+                dupNodeDf = pd.concat([dupNodeDf, subDf], ignore_index=True)
+
+            if source in dupNode or target in dupNode:
+                #print(source, target)
+                subedge = edge.loc[(edge['node1'] == source) & (edge['node2'] == target)]
+                #print(subedge)
+                subedge['node1'] = subedge['node1'].str.replace(source, source_add)
+                subedge['node2'] = subedge['node2'].str.replace(target, target_add)
+                #print(subedge)
+                edge = pd.concat([edge, subedge], ignore_index=True)
+
+            if source.startswith("[") or target.startswith("["):
+                edge.loc[edge['node1'].isin([source_add, target_add]) | edge['node2'].isin([source_add, target_add]), 'keep'] = True
+            else:
+                edge.loc[edge['node1'].isin([source_add, target_add]) & edge['node2'].isin([source_add, target_add]), 'keep'] = True
+                
+                # print(source, target)
+
+    edge.loc[edge['node1'].isin(gapNode) | edge['node2'].isin(gapNode), 'keep'] = True
+
+    edge = edge[edge['keep'] == True]
+    edge.drop_duplicates(inplace=True)
+    del edge['keep']
+    edge = edge.loc[~edge['node1'].isin(dupNode),:]
+    edge = edge.loc[~edge['node2'].isin(dupNode),:]
+    edge.reset_index(drop=True, inplace=True)
+
+    node = pd.concat([node, dupNodeDf], ignore_index=True)
+    node = node.loc[~node['node'].isin(dupNode),:]
+    node.drop_duplicates(inplace=True)
+    node.reset_index(drop=True, inplace=True)
+
+    node.to_csv(out, header = False, index = False, sep = '\t')
+    edge.to_csv(out, header = False, index = False, sep = '\t', mode='a')

@@ -114,6 +114,7 @@ def readScfmap(obj, scfmap_path = "assembly.scfmap"):
     scfmap.columns = ['info','contig','pathName']
     scfmap= scfmap.loc[scfmap['info']=='path']
     del scfmap['info']
+    scfmap.reset_index(drop=True, inplace=True)
     obj.scfmap = scfmap
     print("scfmap file loaded successfully.")
     
