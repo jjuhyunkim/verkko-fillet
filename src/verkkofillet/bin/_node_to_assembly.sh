@@ -1,11 +1,23 @@
 #! /bin/bash
 
 echo "Usage: _node_to_assembly.sh <assembly> <mapping> <path_file> <gfa>"
-echo "assembly: assembly file in fasta format"
-echo "mapping: mapping file in bed format"
+echo "assembly: assembly file in fasta format(uncompressed, final fasta)"
+echo "mapping: mapping file with contig names, new name for each contig(eg. chr1) and name of path for each contig"
 echo "path_file: file with path information"
-echo "gfa: graph with sequences of unitigs"
-echo " " 
+echo "gfa: graph with sequences of unitigs, with compressed"
+echo " "
+
+# example of map file 
+# column 1 : name of the contig
+# column 2 : name of the output chromosome
+# column 3 : name of the path for each contig
+#dam_compressed.k31.hapmer-0000001       CM029953.1      dam_compressed.k31.hapmer_from_utig4-1003
+#dam_compressed.k31.hapmer-0000002       CM029959.1      dam_compressed.k31.hapmer_from_utig4-1104
+#dam_compressed.k31.hapmer-0000003       CM029950.1      dam_compressed.k31.hapmer_from_utig4-1243
+#dam_compressed.k31.hapmer-0000004       CM029954.1      dam_compressed.k31.hapmer_from_utig4-1282
+#dam_compressed.k31.hapmer-0000005       CM029958.1      dam_compressed.k31.hapmer_from_utig4-1315
+#dam_compressed.k31.hapmer-0000006       CM029952.1      dam_compressed.k31.hapmer_from_utig4-1425
+
 
 echo "Loading modules"
 ml minimap2
