@@ -1,10 +1,11 @@
 #! /bin/bash
 
-echo "Usage: _node_to_assembly.sh <assembly> <mapping> <path_file> <gfa>"
+echo "Usage: _node_to_assembly.sh <assembly> <mapping> <path_file> <gfa> <name of contig>"
 echo "assembly: assembly file in fasta format(uncompressed, final fasta)"
 echo "mapping: mapping file with contig names, new name for each contig(eg. chr1) and name of path for each contig"
 echo "path_file: file with path information"
 echo "gfa: graph with sequences of unitigs, with compressed"
+echo "name of contig: name of the contig to be processed"
 echo " "
 
 # example of map file 
