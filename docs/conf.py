@@ -110,6 +110,7 @@ exclude_patterns = [
     "Thumbs.db",
     ".DS_Store",
     "**.ipynb_checkpoints",
+    "_giraffe_verkko-thic_verkko-fillet.fixChrX.ipynb",
     
 ]
 # "release-notes/[!i]*.md",
