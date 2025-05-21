@@ -1,5 +1,7 @@
 #! /bin/bash
 
+ml verkko
+
 verkkofilletdir=$1
 verkkodir=$2
 newfolder=$3

@@ -126,7 +126,7 @@ def check_match(gap_value, element, position):
     """
     return "match" if gap_value[position] == element else "notMatch"
 
-def fillGaps(obj, gapId, final_path, notes = None):
+def fillGaps(obj, gapId, final_path, notes = None, cat = "gapFill_with_evidence"):
     """
     Fills gaps for a specific gapId, updates the 'fixedPath', 'startMatch', 'endMatch', and 'finalGaf' columns.
     
@@ -140,6 +140,8 @@ def fillGaps(obj, gapId, final_path, notes = None):
         The final path to fill the gap.
     notes
         The notes to add to the gap. Default is None.
+    cat 
+        "gapFill_with_evidence", "random_assign", "maynot_correct"
 
 
     Returns
@@ -179,6 +181,10 @@ def fillGaps(obj, gapId, final_path, notes = None):
         
         if notes is not None:
             gap.loc[gap['gapId'] == gapId, 'notes'] = notes
+        if cat is not None:
+            if cat not in ["gapFill_with_evidence", "random_assign", "maynot_correct"]:
+                raise ValueError(f"cat {cat} not found in the DataFrame.")
+            gap.loc[gap['gapId'] == gapId, 'cat'] = cat
 
         print(f"Updated gapId {gapId}!")
         print(" ")
@@ -415,15 +421,18 @@ def writeFixedPaths(obj, save_path = "assembly.fixed.paths.tsv", save_gaf = "ass
 
     for i in tqdm(range(len(path)), ncols=80, colour="white", desc="Excluding duplicated paths"):
         path_list = path.loc[i, 'path'].split(",")
-        path_list = [re.sub(r"[+-]", "", s) for s in path_list]
+        path_list = [re.sub(r"[+-]$", "", s) for s in path_list]
         path_name = path.loc[i, 'name']
 
         # Get all other paths (excluding current row), then flatten into one list
         path_etc = path.drop(i)['path'].str.split(",").explode().tolist()
-        path_etc = [re.sub(r"[+-]", "", s) for s in path_etc]
+        path_etc = [re.sub(r"[+-]$", "", s) for s in path_etc]
 
-        if all(item in path_etc for item in path_list):
+#        if all(item in path_etc for item in path_list):
+#            excludelst.append(path_name)
+        if set(path_list).issubset(set(path_etc)):
             excludelst.append(path_name)
+
 
     path.loc[path['name'].isin(excludelst), 'rm'] = "rm_covered_by_others"
 

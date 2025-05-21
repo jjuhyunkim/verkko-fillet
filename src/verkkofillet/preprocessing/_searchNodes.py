@@ -121,9 +121,11 @@ def searchNodes(obj, node_list_input, multimap_filter = 'mapq', force = False):
         print(f"Filter by best {multimap_filter}")
         
         gaf = obj.gaf.copy()  # Assume obj.gaf is a DataFrame
-        gaf.head()
+        # gaf.head()
         # group by 'qname' and pick max of 'mapq' for each group
-        gaf = gaf.loc[gaf.groupby('qname')[multimap_filter].idxmax()]
+        if multimap_filter != None:
+            gaf = gaf.loc[gaf.groupby('qname')[multimap_filter].idxmax()]
+            gaf = gaf.loc[gaf.groupby('qname')[multimap_filter].idxmax()]
         gaf = gaf.reset_index(drop=True)
 
        

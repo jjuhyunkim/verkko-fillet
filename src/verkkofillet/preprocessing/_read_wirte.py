@@ -56,7 +56,9 @@ class FilletObj:
         
         return repr_str
 
-def readNode(obj, graph = "assembly.homopolymer-compressed.noseq.gfa", color = "assembly.colors.csv"):
+def readNode(obj, graph = "assembly.homopolymer-compressed.noseq.gfa", color = "assembly.colors.csv",
+             ont_cov = "8-hicPipeline/final_contigs/assembly.ont-coverage.csv",
+             hifi_cov = "8-hicPipeline/final_contigs/assembly.hifi-coverage.csv"):
 
     obj = copy.deepcopy(obj)
     if not os.path.exists(graph):
@@ -64,6 +66,22 @@ def readNode(obj, graph = "assembly.homopolymer-compressed.noseq.gfa", color = "
     if not os.path.exists(color):
         raise FileNotFoundError(f"File {color} not found")
     
+    if not os.path.exists(ont_cov):
+        print(f"File {ont_cov} not found")
+    else:
+        ont_cov_df = pd.read_csv(ont_cov, sep='\t', header=0, usecols=[0,1])
+        ont_cov_df.columns = ['node', 'ont_cov']
+        ont_cov_df['ont_cov'] = pd.to_numeric(ont_cov_df['ont_cov'], errors='coerce')
+    
+    if not os.path.exists(hifi_cov):
+        print(f"File {hifi_cov} not found")
+    else:
+        hifi_cov_df = pd.read_csv(hifi_cov, sep='\t', header=0, usecols=[0,1])
+        hifi_cov_df.columns = ['node', 'hifi_cov']
+        hifi_cov_df['hifi_cov'] = pd.to_numeric(hifi_cov_df['hifi_cov'], errors='coerce')
+
+
+
     print(f"Reading {graph}")
     nodeLen = pd.read_csv(graph, sep='\t', header=None)
     nodeLen = nodeLen[nodeLen[0] == "S"]
@@ -73,7 +91,14 @@ def readNode(obj, graph = "assembly.homopolymer-compressed.noseq.gfa", color = "
     nodeLen['len'] = pd.to_numeric(nodeLen['len'], errors='coerce')  # Handle non-numeric values gracefully
     print(f"Reading {color}")
     color = pd.read_csv(color, sep='\t', header=0)
-    obj.node = pd.merge(nodeLen, color, on='node')
+    df = pd.merge(nodeLen, color, on='node')
+
+    if ont_cov_df is not None:
+        df = pd.merge(df, ont_cov_df, on='node', how='left')
+    if hifi_cov_df is not None:
+        df = pd.merge(df, hifi_cov_df, on='node', how='left')
+
+    obj.node = df
     obj = addHistory(obj, f"node file is loaded from {graph}", {inspect.currentframe().f_code.co_name})
     print(f"Node information is stored in obj.node")
     return obj

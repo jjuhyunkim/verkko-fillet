@@ -1,4 +1,4 @@
-name: verkko-fillet-local-test
+name: verkko-fillet-env
 channels:
   - r
   - anaconda

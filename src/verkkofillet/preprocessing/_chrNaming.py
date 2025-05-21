@@ -253,11 +253,6 @@ def naming_contigs(obj, node_database, duplicate_nodes ,
     print(f"Done!")
     return final_contigNaming
 
-
-
-import networkx as nx
-import pandas as pd
-
 def cut_graph_using_ancestors(graph, source, target):
     """
     Cuts the graph based on ancestors of the target and descendants of the source.
@@ -451,8 +446,13 @@ def reClusteringGapNodeByPath(obj):
         name = gaps.loc[i, 'name']
         hap = name.split("_")[0]
         gapid = gaps.loc[i, 'gapId']
+        # print(gapid)
 
         gap_node = grabNodesInGap(obj, gapinfo[0], gapinfo[-1])
+        # print(gap_node)
+        if len(gap_node) == 0:
+            print(f"Gap node is None for gap ID: {gapid}")
+            continue
         gap_node.remove(gapinfo[0])
         gap_node.remove(gapinfo[-1])
         gap_node = [x.rstrip("-+") for x in gap_node]

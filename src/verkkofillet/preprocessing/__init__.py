@@ -9,6 +9,8 @@ from ._find_intra_telo import find_intra_telo,find_reads_intra_telo
 from ._highlight_nodes import highlight_nodes
 from ._chrNaming import find_multi_used_node, naming_contigs, grabNodesInGap, flatten_and_remove_none, keepNodesInUnresolvedGaps, reClusteringGapNodeByPath
 from ._findNode_from_region import getNodes_from_unHPCregion,bed_to_regionsList, readGAF_extractRegion,read_untig_Scfmap,read_hapAssignRead,readGraph,readNodeInfo,get_hap_ratio,getNodeCoor,finding_nodes,getNodeSpace_from_allPath
+from ._generate_final_assembly import anotateContig, annoteContigDict, generateJointPathFile, make_cat_column_unique, writeSeparateFastaFileWithNewName, pickPrimaryContigs
+
 
 __all__ = [
     "read_Verkko",
@@ -73,4 +75,10 @@ __all__ = [
     "readEdge",
     "readNode",
     "writeFixedGraph",
+    "anotateContig",
+    "annoteContigDict",
+    "generateJointPathFile",
+    "make_cat_column_unique",
+    "writeSeparateFastaFileWithNewName",
+    "pickPrimaryContigs",
     ]
