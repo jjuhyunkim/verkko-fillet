@@ -1,7 +1,7 @@
 # How to 
 
 ```{toctree}
-:maxdepth: 2
+:maxdepth: 1
 
 genome-assembly
 types-of-gap

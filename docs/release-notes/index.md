@@ -1,7 +1,7 @@
 # Release-notes
 
 ```{toctree}
-:maxdepth: 2
+:maxdepth: 1
 
 ./0.1.1.md
 ./0.1.2

@@ -1,4 +1,4 @@
-# How to Run Verkko Consensus Using a Fixed Path
+## How to Run Verkko Consensus Using a Fixed Path
 
 After fixing the paths and filling the gaps with new paths, you can run Verkko consensus using the updated path file based on the original Verkko assembly directory. The `vf.pp.mkCNSdir(obj, new_folder_path)` function uses `obj.verkkoDir` as the base directory and copies the necessary files and folders to `new_folder_path`. The final fixed path (GAF) will be saved in `new_folder_path/6-layoutContigs/consensus_paths.txt`. You can then run the Verkko consensus command as shown below:
 
