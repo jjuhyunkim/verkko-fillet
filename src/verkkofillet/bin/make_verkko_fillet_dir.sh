@@ -20,7 +20,7 @@ echo -e "verkko_original_dir : $verkko_original_dir"
 echo -e "verkko_fillet_dir : $verkko_fillet_dir"
 
 # Array of files and directories to link
-files=("assembly.fasta" "assembly.scfmap" "assembly.color.csv" "assembly.homopolymer-compressed.gfa" "assembly.homopolymer-compressed.noseq.gfa" "assembly.paths.tsv" "assembly.fasta.fai" "8-hicPipeline/rukki.paths.gaf" "5-untip/unitig-unrolled-unitig-unrolled-popped-unitig-normal-connected-tip.hifi-coverage.csv" "8-hicPipeline/unitigs.hpc.fasta" "5-untip/unitig-unrolled-unitig-unrolled-popped-unitig-normal-connected-tip.gfa" "8-hicPipeline/hic.byread.compressed")
+files=("assembly.fasta" "assembly.scfmap" "assembly.colors.csv" "assembly.homopolymer-compressed.gfa" "assembly.homopolymer-compressed.noseq.gfa" "assembly.paths.tsv" "assembly.fasta.fai" "8-hicPipeline/rukki.paths.gaf" "5-untip/unitig-unrolled-unitig-unrolled-popped-unitig-normal-connected-tip.hifi-coverage.csv" "8-hicPipeline/unitigs.hpc.fasta" "5-untip/unitig-unrolled-unitig-unrolled-popped-unitig-normal-connected-tip.gfa" "8-hicPipeline/hic.byread.compressed" "8-hicPipeline/final_contigs/assembly.ont-coverage.csv" "8-hicPipeline/final_contigs/assembly.hifi-coverage.csv")
 
 # Iterate over the files and create symbolic links
 for file in "${files[@]}"; do

@@ -1,7 +1,7 @@
 # How to 
 
 ```{toctree}
-:hidden: true
+# :hidden: true
 :maxdepth: 2
 
 genome-assembly

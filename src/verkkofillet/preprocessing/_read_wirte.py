@@ -59,6 +59,9 @@ class FilletObj:
 def readNode(obj, graph = "assembly.homopolymer-compressed.noseq.gfa", color = "assembly.colors.csv",
              ont_cov = "8-hicPipeline/final_contigs/assembly.ont-coverage.csv",
              hifi_cov = "8-hicPipeline/final_contigs/assembly.hifi-coverage.csv"):
+    
+    ont_cov_df = None
+    hifi_cov_df = None
 
     obj = copy.deepcopy(obj)
     if not os.path.exists(graph):
@@ -79,8 +82,6 @@ def readNode(obj, graph = "assembly.homopolymer-compressed.noseq.gfa", color = "
         hifi_cov_df = pd.read_csv(hifi_cov, sep='\t', header=0, usecols=[0,1])
         hifi_cov_df.columns = ['node', 'hifi_cov']
         hifi_cov_df['hifi_cov'] = pd.to_numeric(hifi_cov_df['hifi_cov'], errors='coerce')
-
-
 
     print(f"Reading {graph}")
     nodeLen = pd.read_csv(graph, sep='\t', header=None)

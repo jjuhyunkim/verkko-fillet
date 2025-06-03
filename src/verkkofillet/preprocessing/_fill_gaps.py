@@ -367,12 +367,16 @@ def writeFixedPaths(obj, save_path = "assembly.fixed.paths.tsv", save_gaf = "ass
             
             if ori_gap in ori_path:
                 ori_path = ori_path.replace(ori_gap, fixed_gap)
+                
             else:
                 print(f"{gapId} {name} {ori_gap} not in original path")
+                print(f"{gapId} trying to fix with new start and end nodes in the final path")
+                ori_gap[0] = fixed_gap.replace(" ", "").split(",")[0] # split the path into a list
+                ori_gap[-1] = fixed_gap.replace(" ", "").split(",")[-1] # split the path into a list
+                
             
-            fixed_path = ori_path.replace(ori_gap, fixed_gap).replace(" ", "")
             # print(fixed_path)
-            
+            fixed_path = ori_path.replace(ori_gap, fixed_gap).replace(" ", "")
             path.loc[path['name'] == name, "path"] = fixed_path
     
     # Fix the connecting paths
@@ -456,6 +460,11 @@ def writeFixedPaths(obj, save_path = "assembly.fixed.paths.tsv", save_gaf = "ass
     
     gaf.to_csv(save_gaf, sep = "\t", index = False)
     print(f"Fixed gaf were saved to {save_gaf}")
+
+    path.loc[path['path'].str.contains(r'\[', regex=True),'name'] 
+    contigs_with_gaps = path.loc[path['path'].str.contains(r'\[', regex=True), 'name'].tolist()
+    print(" ")
+    print("the contigs that have gaps:", contigs_with_gaps)
     return path
 
 def checkDisconnectNode(obj, min_hpc_len = 100_000):

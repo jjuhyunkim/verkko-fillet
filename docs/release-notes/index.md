@@ -1,7 +1,7 @@
 # Release-notes
 
 ```{toctree}
-:hidden: true
+# :hidden: true
 :maxdepth: 2
 
 ./0.1.1.md

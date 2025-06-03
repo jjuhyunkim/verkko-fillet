@@ -210,8 +210,8 @@ def naming_contigs(obj, node_database, duplicate_nodes ,
                 break  # No need to continue checking after the first match
         
         # If a match was found, assign the key to the 'assignChr' column
-        if some_key is not None:
-            unassignedPath.loc[i, "assignChr"] = some_key
+        # if some_key is not None:
+        unassignedPath.loc[i, "assignChr"] = some_key
         
         # Print if it's a subset and which key was assigned
         # print(f"Row {i}: Is subset? {some_key is not None}, Assigned Key: {some_key}")
@@ -477,44 +477,51 @@ def reClusteringGapNodeByPath(obj):
 
                 gapNodeDb = pd.concat([gapNodeDb, nodeDf], ignore_index=True)
 
-
-    gapNodeDb = gapNodeDb.reset_index(drop=True)
-
-    gapNodeDb["mainContig_hap"] = gapNodeDb["mainContig"].str.split("_").str[0]
-    gapNodeDb["pathName_hap"] = gapNodeDb["pathName"].str.split("_").str[0]
-    gapNodeDb.loc[gapNodeDb['mainContig_hap'] == gapNodeDb['pathName_hap'], 'same'] = True
-    gapNodeDb.loc[gapNodeDb['mainContig_hap'] != gapNodeDb['pathName_hap'], 'same'] = False
-
-
-    gapNodeDb_false = gapNodeDb.loc[gapNodeDb['same'] == False,:]
-    gapNodeDb_false.reset_index(drop=True, inplace=True)
-    gapNodeDb_false_count = gapNodeDb_false.groupby('node')['mainContig'].nunique().reset_index(name='count').sort_values(by='count', ascending=False)
-    unique_nodes = gapNodeDb_false_count.loc[gapNodeDb_false_count['count'] == 1, 'node'].tolist()
-    notUnique_nodes = gapNodeDb_false_count.loc[gapNodeDb_false_count['count'] > 1, 'node'].tolist()
-
-    gapNodeDb['fixed'] = gapNodeDb['mainContig']
-    gapNodeDb.loc[gapNodeDb['node'].isin(unique_nodes),'fixed'] = gapNodeDb.loc[gapNodeDb['node'].isin(unique_nodes),'mainContig']
-    gapNodeDb.loc[gapNodeDb['node'].isin(notUnique_nodes),'fixed'] = "unhap"
-    gapNodeDb = gapNodeDb[['mainContig', 'pathName', 'node', 'fixed','same']]
-    gapNodeDb.drop_duplicates(inplace=True)
-    gapNodeDb.reset_index(drop=True, inplace=True)
-
-    gapNodeDb['fixed'] = gapNodeDb['fixed'] + "_" + gapNodeDb['node']
-
-    stats = obj.stats.copy()
-
     scfmap = obj.scfmap.copy()
     scfmap.reset_index(drop=True, inplace=True)
     scfmap = scfmap[['contig','pathName']]
-    scfmap
+    
+    stats = obj.stats.copy()
 
     stat_scfmap = pd.merge(stats, scfmap, how = 'left', left_on = 'contig', right_on = 'contig')
-    stat_scfmap_gapNodedb = pd.merge(stat_scfmap, gapNodeDb, how = 'right', left_on = 'pathName', right_on = 'mainContig')
-    stat_scfmap_gapNodedb = stat_scfmap_gapNodedb[['node','pathName_x','pathName_y','ref_chr', 'hap','same']]
-    stat_scfmap_gapNodedb.columns = ['node','mainContig_pathName','original_pathName', 'ref_chr', 'hap', 'same']
-    stat_scfmap_gapNodedb['ref_chr_pathName'] = stat_scfmap_gapNodedb['ref_chr'].astype(str) + "_" + stat_scfmap_gapNodedb['hap'].astype(str) + "_random_" + stat_scfmap_gapNodedb['node'].astype(str)
-    stat_scfmap_gapNodedb = pd.merge(stat_scfmap_gapNodedb, scfmap, how = 'left', left_on = 'original_pathName', right_on = 'pathName')
-    stat_scfmap_gapNodedb.rename(columns = {'contig' : 'original_contig'}, inplace = True)
-    node_feature_dict = dict(zip(stat_scfmap_gapNodedb["original_contig"], stat_scfmap_gapNodedb["ref_chr_pathName"]))
 
+    # if gapNodeDb is empty, stop
+    if gapNodeDb.empty:
+        print("The database of gap-nodes is empty.")
+        node_feature_dict=None
+        stat_scfmap.rename(columns = {'contig' : 'original_contig'}, inplace = True)
+        return stat_scfmap,  node_feature_dict
+    else:
+        gapNodeDb = gapNodeDb.reset_index(drop=True)
+
+        gapNodeDb["mainContig_hap"] = gapNodeDb["mainContig"].str.split("_").str[0]
+        gapNodeDb["pathName_hap"] = gapNodeDb["pathName"].str.split("_").str[0]
+        gapNodeDb.loc[gapNodeDb['mainContig_hap'] == gapNodeDb['pathName_hap'], 'same'] = True
+        gapNodeDb.loc[gapNodeDb['mainContig_hap'] != gapNodeDb['pathName_hap'], 'same'] = False
+
+
+        gapNodeDb_false = gapNodeDb.loc[gapNodeDb['same'] == False,:]
+        gapNodeDb_false.reset_index(drop=True, inplace=True)
+        gapNodeDb_false_count = gapNodeDb_false.groupby('node')['mainContig'].nunique().reset_index(name='count').sort_values(by='count', ascending=False)
+        unique_nodes = gapNodeDb_false_count.loc[gapNodeDb_false_count['count'] == 1, 'node'].tolist()
+        notUnique_nodes = gapNodeDb_false_count.loc[gapNodeDb_false_count['count'] > 1, 'node'].tolist()
+
+        gapNodeDb['fixed'] = gapNodeDb['mainContig']
+        gapNodeDb.loc[gapNodeDb['node'].isin(unique_nodes),'fixed'] = gapNodeDb.loc[gapNodeDb['node'].isin(unique_nodes),'mainContig']
+        gapNodeDb.loc[gapNodeDb['node'].isin(notUnique_nodes),'fixed'] = "unhap"
+        gapNodeDb = gapNodeDb[['mainContig', 'pathName', 'node', 'fixed','same']]
+        gapNodeDb.drop_duplicates(inplace=True)
+        gapNodeDb.reset_index(drop=True, inplace=True)
+
+        gapNodeDb['fixed'] = gapNodeDb['fixed'] + "_" + gapNodeDb['node']
+
+        stat_scfmap_gapNodedb = pd.merge(stat_scfmap, gapNodeDb, how = 'right', left_on = 'pathName', right_on = 'mainContig')
+        stat_scfmap_gapNodedb = stat_scfmap_gapNodedb[['node','pathName_x','pathName_y','ref_chr', 'hap','same']]
+        stat_scfmap_gapNodedb.columns = ['node','mainContig_pathName','original_pathName', 'ref_chr', 'hap', 'same']
+        stat_scfmap_gapNodedb['ref_chr_pathName'] = stat_scfmap_gapNodedb['ref_chr'].astype(str) + "_" + stat_scfmap_gapNodedb['hap'].astype(str) + "_random_" + stat_scfmap_gapNodedb['node'].astype(str)
+        stat_scfmap_gapNodedb = pd.merge(stat_scfmap_gapNodedb, scfmap, how = 'left', left_on = 'original_pathName', right_on = 'pathName')
+        stat_scfmap_gapNodedb.rename(columns = {'contig' : 'original_contig'}, inplace = True)
+        node_feature_dict = dict(zip(stat_scfmap_gapNodedb["original_contig"], stat_scfmap_gapNodedb["ref_chr_pathName"]))
+
+    
     return stat_scfmap_gapNodedb,node_feature_dict
