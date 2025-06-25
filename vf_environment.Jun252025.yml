@@ -1,8 +1,10 @@
-name: verkko-fillet
+name: 
 channels:
-  - conda-forge
+  - anaconda
   - bioconda
-  - defaults
+  - conda-forge
+  - pkgs/main
+  - r
 dependencies:
   - _libgcc_mutex==0.1=conda_forge
   - _openmp_mutex==4.5=2_gnu
@@ -16,6 +18,7 @@ dependencies:
   - attrs==24.3.0=pyh71513ae_0
   - bamtools==2.5.2=hdcf5f25_5
   - bbmap==39.13=he5f24ec_1
+  - bioconda::bedops
   - bedtools==2.31.1=hf5e1c6e_2
   - binutils_impl_linux-64==2.43=h4bf12b8_2
   - bioconductor-biobase==2.62.0=r43ha9d7317_3
@@ -54,6 +57,7 @@ dependencies:
   - capnproto==1.0.2=h2b92303_1
   - certifi
   - cffi==1.17.1=py39h15c3d72_0
+  - bioconda::chain2paf
   - charset-normalizer==3.4.0=pyhd8ed1ab_1
   - coin-or-cbc==2.10.12=h8b142ea_1
   - coin-or-cgl==0.60.7=h516709c_0
@@ -63,6 +67,7 @@ dependencies:
   - coincbc==2.10.12=1_metapackage
   - colorama==0.4.6=pyhd8ed1ab_1
   - comm==0.2.2=pyhd8ed1ab_1
+  - bioconda::compleasm
   - configargparse==1.7=pyhd8ed1ab_1
   - connection_pool==0.0.3=pyhd3deb0d_0
   - contourpy==1.3.0=py39h74842e3_2
@@ -80,8 +85,8 @@ dependencies:
   - expat==2.6.4=h5888daf_0
   - findutils==4.6.0=h166bdaf_1001
   - font-ttf-dejavu-sans-mono==2.37=hab24e00_0
-  - font-ttf-inconsolata==3.000=h77eed37_0
-  - font-ttf-source-code-pro==2.038=h77eed37_0
+  - font-ttf-inconsolata==3.0=h77eed37_0
+  - font-ttf-source-code-pro==2.38=h77eed37_0
   - font-ttf-ubuntu==0.83=h77eed37_3
   - fontconfig==2.14.2=h14ed4e7_0
   - fonts-conda-ecosystem==1=0
@@ -207,13 +212,13 @@ dependencies:
   - libxkbcommon==1.7.0=h662e7e4_0
   - libxml2==2.12.7=hc051c1a_1
   - libzlib==1.2.13=h4ab18f5_6
+  - bioconda::liftoff
   - lz4-c==1.10.0=h5888daf_1
   - make==4.4.1=hb9d3cd8_2
   - markupsafe==3.0.2=py39h9399b63_1
   - mash==2.3=hc74b729_7
   - mashmap==3.1.3=h07ea13f_1
   - matplotlib==3.9.1=py39hf3d152e_1
-  - matplotlib-base==3.9.1=py39h0565ad7_2
   - matplotlib-inline==0.1.7=pyhd8ed1ab_1
   - mbg==1.0.16=hdcf5f25_1
   - meryl==1.4.1=h9948957_2
@@ -224,6 +229,7 @@ dependencies:
   - mysql-common==8.3.0=hf1915f5_4
   - mysql-connector-c==6.1.11=h659d440_1008
   - mysql-libs==8.3.0=hca2cd23_4
+  - conda-forge::myst-nb
   - natsort==8.4.0=pyh29332c3_1
   - nbformat==5.10.4=pyhd8ed1ab_1
   - ncurses==6.5=he02047a_1
@@ -244,6 +250,7 @@ dependencies:
   - parasail-python==1.3.4=py39heaaa4ec_2
   - parso==0.8.4=pyhd8ed1ab_1
   - patsy==1.0.1=pyhd8ed1ab_1
+  - pb-cpg-tools
   - pcre2==10.43=hcad00b1_0
   - perl==5.32.1=7_hd590300_perl5
   - pexpect==4.9.0=pyhd8ed1ab_1
@@ -273,30 +280,29 @@ dependencies:
   - pysam==0.22.1=py39h61809e1_2
   - pysocks==1.7.1=pyha55dd90_7
   - anaconda::python=3.9
-  - python-dateutil==2.9.0.post0=pyhff2d567_1
+  - python-dateutil==2.9.0.0post0=pyhff2d567_1
   - python-fastjsonschema==2.21.1=pyhd8ed1ab_0
   - python-tzdata==2024.2=pyhd8ed1ab_1
-  - python_abi==3.9=5_cp39
   - pytz==2024.1=pyhd8ed1ab_0
   - pyyaml==6.0.2=py39h8cd3c5a_1
   - pyzmq==26.2.0=py39h4e4fb57_3
   - qhull==2020.2=h434a139_5
   - qt-main==5.15.8=hc9dc06e_21
-  - r-abind==1.4_5=r43hc72bb7e_1006
+  - r-abind==1.4.5=r43hc72bb7e_1006
   - r-askpass==1.2.1=r43h2b5f3a1_0
   - r-assertthat==0.2.1=r43hc72bb7e_5
   - r-base==4.3.3=hf0d99cb_1
-  - r-base64enc==0.1_3=r43hb1dbf0f_1007
-  - r-bh==1.87.0_1=r43hc72bb7e_0
-  - r-bitops==1.0_9=r43h2b5f3a1_0
-  - r-brew==1.0_10=r43hc72bb7e_1
+  - r-base64enc==0.1.3=r43hb1dbf0f_1007
+  - r-bh==1.87.0.1=r43hc72bb7e_0
+  - r-bitops==1.0.9=r43h2b5f3a1_0
+  - r-brew==1.0.10=r43hc72bb7e_1
   - r-brio==1.1.5=r43hb1dbf0f_1
   - r-bslib==0.8.0=r43hc72bb7e_0
   - r-cachem==1.1.0=r43hb1dbf0f_1
   - r-callr==3.7.6=r43hc72bb7e_1
   - r-cli==3.6.3=r43h0d4f4ea_1
   - r-clipr==0.8.0=r43hc72bb7e_3
-  - r-codetools==0.2_20=r43hc72bb7e_1
+  - r-codetools==0.2.20=r43hc72bb7e_1
   - r-commonmark==1.9.2=r43h2b5f3a1_0
   - r-cpp11==0.5.1=r43hc72bb7e_0
   - r-crayon==1.5.3=r43hc72bb7e_1
@@ -331,11 +337,11 @@ dependencies:
   - r-knitr==1.49=r43hc72bb7e_0
   - r-lambda.r==1.2.4=r43hc72bb7e_4
   - r-later==1.4.1=r43h93ab643_0
-  - r-lattice==0.22_6=r43hb1dbf0f_1
+  - r-lattice==0.22.6=r43hb1dbf0f_1
   - r-lifecycle==1.0.4=r43hc72bb7e_1
   - r-magrittr==2.0.3=r43hb1dbf0f_3
-  - r-mass==7.3_60=r43h76d94ec_0
-  - r-matrix==1.6_5=r43he966344_1
+  - r-mass==7.3.60=r43h76d94ec_0
+  - r-matrix==1.6.5=r43he966344_1
   - r-matrixstats==1.4.1=r43h2b5f3a1_0
   - r-memoise==2.0.1=r43hc72bb7e_3
   - r-mime==0.12=r43hb1dbf0f_3
@@ -357,8 +363,8 @@ dependencies:
   - r-ragg==1.3.3=r43h9aa3752_0
   - r-rappdirs==0.3.3=r43hb1dbf0f_3
   - r-rcmdcheck==1.4.0=r43h785f33e_3
-  - r-rcpp==1.0.13_1=r43h93ab643_0
-  - r-rcurl==1.98_1.16=r43h6b349a7_0
+  - r-rcpp==1.0.13.1=r43h93ab643_0
+  - r-rcurl==1.98.1.16=r43h6b349a7_0
   - r-rematch2==2.1.2=r43hc72bb7e_4
   - r-remotes==2.5.0=r43hc72bb7e_1
   - r-restfulr==0.0.15=r43h56115f1_4
@@ -372,8 +378,8 @@ dependencies:
   - r-sass==0.4.9=r43ha18555a_1
   - r-sessioninfo==1.2.2=r43hc72bb7e_3
   - r-shiny==1.10.0=r43h785f33e_0
-  - r-snow==0.4_4=r43hc72bb7e_3
-  - r-sourcetools==0.1.7_1=r43ha18555a_2
+  - r-snow==0.4.4=r43hc72bb7e_3
+  - r-sourcetools==0.1.7.1=r43ha18555a_2
   - r-stringi==1.8.4=r43ha8ce623_2
   - r-stringr==1.5.1=r43h785f33e_1
   - r-sys==3.4.3=r43h2b5f3a1_0
@@ -390,10 +396,10 @@ dependencies:
   - r-whisker==0.4.1=r43hc72bb7e_2
   - r-withr==3.0.2=r43hc72bb7e_0
   - r-xfun==0.49=r43h93ab643_0
-  - r-xml==3.99_0.17=r43he716329_1
+  - r-xml==3.99.0.17=r43he716329_1
   - r-xml2==1.3.6=r43h8194278_2
   - r-xopen==1.0.1=r43hc72bb7e_1
-  - r-xtable==1.8_4=r43hc72bb7e_6
+  - r-xtable==1.8.4=r43hc72bb7e_6
   - r-yaml==2.3.10=r43hdb488b9_0
   - r-zip==2.3.1=r43hb1dbf0f_1
   - readline==8.2=h8228510_1
@@ -402,6 +408,7 @@ dependencies:
   - reretry==0.11.8=pyhd8ed1ab_0
   - rpds-py==0.22.3=py39he612d8f_0
   - samtools==1.21=h50ea8bc_0
+  - anaconda::scikit-learn
   - scipy==1.13.1=py39haf93ffa_0
   - seaborn==0.13.2=hd8ed1ab_3
   - seaborn-base==0.13.2=pyhd8ed1ab_3
@@ -438,7 +445,7 @@ dependencies:
   - verkko==2.2.1=h45dadce_0
   - wcwidth==0.2.13=pyhd8ed1ab_1
   - wheel==0.45.1=pyhd8ed1ab_1
-  - winnowmap==2.03=h43eeafb_2
+  - winnowmap==2.3=h43eeafb_2
   - wrapt==1.17.0=py39h8cd3c5a_0
   - xcb-util==0.4.0=hd590300_1
   - xcb-util-image==0.4.0=h8ee46fc_1
@@ -477,6 +484,38 @@ dependencies:
   - zlib==1.2.13=h4ab18f5_6
   - zstandard==0.23.0=py39h08a7858_1
   - zstd==1.5.6=ha6fb4c9_0
-  - bioconda::chain2paf
-  - pb-cpg-tools
-  - anaconda::scikit-learn
+  - pip:
+    - SecretStorage==3.3.3
+    - adjustText==1.3.0
+    - babel==2.16.0
+    - backports.tarfile==1.2.0
+    - biser==1.4
+    - build==1.2.2.post1
+    - cryptography==44.0.0
+    - gfapy==1.2.3
+    - hatchling==1.27.0
+    - igv-reports==1.14.1
+    - jaraco.classes==3.4.0
+    - jaraco.context==6.0.1
+    - jaraco.functools==4.1.0
+    - jeepney==0.8.0
+    - kaleido==0.2.1
+    - keyring==25.6.0
+    - more-itertools==10.6.0
+    - nh3==0.2.20
+    - pathspec==0.12.1
+    - pkginfo==1.12.0
+    - pluggy==1.5.0
+    - pyGenomeTracks==3.9
+    - pyproject_hooks==1.2.0
+    - readme_renderer==44.0
+    - requests-toolbelt==1.0.0
+    - rfc3986==2.0.0
+    - rich==13.9.4
+    - session-info==1.0.0
+    - stdlib-list==0.11.0
+    - trove-classifiers==2025.1.15.22
+    - truvari==5.2.0
+    - twine==6.0.1
+    - whatshap==1.7
+

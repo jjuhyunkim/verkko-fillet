@@ -264,10 +264,25 @@ def searchSplit(obj, node_list_input, min_mapq = 0 , min_qlen=5000, min_mapStart
     target_elements = set([f"@{node}@" for node in node_list_input])
     rows_with_both = result[result['path_modi'].apply(lambda x: target_elements.issubset(x))].reset_index(drop=True)
 
-    num_rows = rows_with_both.shape[0]
-    print(f"{num_rows} reads were found that contain both nodes {node_list_input}")
+    # filter the rows_with_both['qname'] only rows that count < 2
+
+    gaf_sub = gaf.loc[gaf['qname'].isin(rows_with_both['qname']),]
+
+    gaf_sub_qname = gaf_sub.groupby('qname')['qname'].count()
+    gaf_sub_qname = gaf_sub_qname.reset_index(name='qname_count')
+    gaf_sub_qname = gaf_sub_qname.loc[gaf_sub_qname["qname_count"] <3, :]
     
-    return rows_with_both
+    gaf_sub = gaf_sub.loc[gaf_sub['qname'].isin(gaf_sub_qname['qname']),]
+    gaf_sub['pname'] = gaf_sub['pname'].str.replace('<', '&lt;').str.replace('>', '&gt;')
+    
+    gaf_sub_unique = gaf_sub.drop_duplicates(subset=['qname'])
+    num_rows = gaf_sub_unique.shape[0]
+    print(f"{num_rows} reads were found that contain both nodes {node_list_input}")
+    print("These reads are:")
+    for i, row in gaf_sub_unique.iterrows():
+        print(f"{row['qname']}")
+
+    return gaf_sub
 
 # Use subprocess to run the grep command
 

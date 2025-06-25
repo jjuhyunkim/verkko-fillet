@@ -68,8 +68,18 @@ echo -e "$name\t$path\n"
 # grep $path $path_file | cut -f 2 | tr ',' '\n' | sed -e 's/-$//'| sed -e 's/+$//' | grep -v "\["  > $name.utig4.list &&
 grep $path $path_file | cut -f 2 | sed 's/>/\n/g' | sed 's/,/\n/g' | sed 's/</\n/g' | sed -e 's/\[.*//g' | sed -e '/^$/d' | sed 's/[-+]$//' > $name.utig4.list &&
 awk 'NR==FNR {list[$1]; next} $1 == "S" && $2 in list {print ">"$2; print $3}' "$name.utig4.list" "$gfa" > $name.unitigs.hpc.subset.fasta &&
-minimap2 -t $threads -H -d $name.mmi $name.fa &&
+
+if [ ! -f $name.mmi ]; then
+echo -e "Indexing the reference genome $name.fa"
+minimap2 -t $threads -H -d $name.mmi $name.fa
+else
+echo -e "Reference genome $name.fa already indexed"
+fi
+
+echo -e "Aligning $name.unitigs.hpc.subset.fasta to $name.fa"
 minimap2 -t $threads -a $name.mmi $name.unitigs.hpc.subset.fasta > $name.alignment.sam &&
+echo -e "Alignment of $name.unitigs.hpc.subset.fasta to $name.fa done"
+
 rm $name.unitigs.hpc.subset.fasta &&
 rm $name.mmi &&
 rm $name.fa &&

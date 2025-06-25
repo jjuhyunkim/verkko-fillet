@@ -272,7 +272,8 @@ def connectContigs(obj, contig, contig_to,  at = "left", gap = "[N5000N:connectC
                   "startMatch" : "",
                   "endMatch" : "",
                   "finalGaf" : "",
-                  "done" : True})
+                  "done" : True,
+                  "cat" : "connectContig",})
 
     gapdb = pd.concat([gapdb,gap_new_line], ignore_index=True)
     obj_sub = addHistory(obj_sub, f"{gapid_add} was created", 'connectContig')
@@ -312,8 +313,31 @@ def deleteGap(obj, gapId):
     obj_sub = addHistory(obj_sub, f"{gapId} was removed", 'deleteGap')
     return obj_sub
 
+def saveGapNodes(obj, save = "gapNodes.tsv"):
 
-def writeFixedPaths(obj, save_path = "assembly.fixed.paths.tsv", save_gaf = "assembly.fixed.paths.gaf"):
+    gapdf = obj.gaps.copy()
+
+    gapdf=gapdf.loc[(gapdf['cat'] != "") & (pd.notna(gapdf['cat']))]
+    gapdf = gapdf[['cat', 'fixedPath']]
+
+    gapdf['fixedPath'] = gapdf['fixedPath'].str.split(',\s*')  # split on comma + optional space
+
+    # Step 2: Explode to create new rows for each element
+    gapdf = gapdf.explode('fixedPath')
+    gapdf['fixedPath'] = gapdf['fixedPath'].replace(r'-$', '', regex=True)
+    gapdf['fixedPath'] = gapdf['fixedPath'].replace(r'\+$', '', regex=True)
+    gapdf = gapdf[~gapdf['fixedPath'].str.contains(r'\[', na=False)]
+
+    gapdf['color'] = ""
+    gapdf.loc[gapdf['cat'] == 'gapFill_with_evidence', 'color'] = '#4ceb34' #green
+    gapdf.loc[gapdf['cat'] == 'maynot_correct', 'color'] = '#eb34e5' #red
+    gapdf.loc[gapdf['cat'] == 'random_assign', 'color'] = '#a020f0' #purple
+    gapdf.loc[gapdf['cat'] == 'connectContig', 'color'] = '#fff34f' #yellow
+    gapdf.columns = ['cat', 'node', 'color']
+    print("Saving gap nodes to ", save)
+    gapdf.to_csv(save, index=False, sep='\t')
+
+def writeFixedPaths(obj, save_path = "assembly.fixed.paths.tsv", save_gaf = "assembly.fixed.paths.gaf", save_gapNode= "gap.nodes.tsv"):
     """
     Writes the fixed paths to a file.
 
@@ -465,6 +489,9 @@ def writeFixedPaths(obj, save_path = "assembly.fixed.paths.tsv", save_gaf = "ass
     contigs_with_gaps = path.loc[path['path'].str.contains(r'\[', regex=True), 'name'].tolist()
     print(" ")
     print("the contigs that have gaps:", contigs_with_gaps)
+
+
+    saveGapNodes(obj, save = save_gapNode)
     return path
 
 def checkDisconnectNode(obj, min_hpc_len = 100_000):

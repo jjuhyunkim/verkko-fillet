@@ -92,7 +92,7 @@ def readNode(obj, graph = "assembly.homopolymer-compressed.noseq.gfa", color = "
     nodeLen['len'] = pd.to_numeric(nodeLen['len'], errors='coerce')  # Handle non-numeric values gracefully
     print(f"Reading {color}")
     color = pd.read_csv(color, sep='\t', header=0)
-    df = pd.merge(nodeLen, color, on='node')
+    df = pd.merge(nodeLen, color, on='node', how='left')
 
     if ont_cov_df is not None:
         df = pd.merge(df, ont_cov_df, on='node', how='left')
@@ -304,7 +304,9 @@ def hard_copy_symlink(symlink_path, destination_path):
 
 
 
-def updateCNSdir_missingEdges(obj, new_folder_path, tmp_id ="missing_edge/ont_subset.tmp.id", tmp_fasta = "missing_edge/ont_subset.tmp.fasta",final_gaf = "assembly.fixed.paths.gaf",  showOnly = False, longLog = False):
+def updateCNSdir_missingEdges(obj, new_folder_path, 
+                              missing_edge_dir ="missing_edge",
+                              final_gaf = "assembly.fixed.paths.gaf",  showOnly = False, longLog = False):
     """
     Updates the CNS directory by handling missing edges and creating necessary symbolic links or files.
     
@@ -322,14 +324,17 @@ def updateCNSdir_missingEdges(obj, new_folder_path, tmp_id ="missing_edge/ont_su
     newFolder = os.path.abspath(new_folder_path)
     filletDir = os.path.abspath(obj.verkko_fillet_dir)  # Define oriDir only once
     verkkoDir = os.path.abspath(obj.verkkoDir)
+    missing_edge_dir = os.path.abspath(missing_edge_dir)
     
     # Check if the new folder exists
     if not os.path.exists(newFolder):
         print("New verkko folder for CNS is not exists!")
         return
-    
+    if not os.path.exists(missing_edge_dir):
+        print("New verkko folder for CNS is not exists!")
+        return
     script = os.path.abspath(os.path.join(script_path, "_updateCNSdir_missingEdges.sh"))
-    cmd=f"sh {script} {filletDir} {verkkoDir} {newFolder} {final_gaf} {tmp_id} {tmp_fasta}"
+    cmd=f"sh {script} {filletDir} {verkkoDir} {newFolder} {final_gaf} {missing_edge_dir}"
     run_shell(cmd, wkDir=filletDir, functionName = "make_verkko_fillet_dir" ,longLog = longLog, showOnly = showOnly)
 
 
@@ -354,7 +359,8 @@ def checkFiles(folder):
 
 
 
-def mkCNSdir(obj, new_folder_path, final_gaf = "assembly.fixed.paths.gaf", missingEdge = False, tmp_id ="missing_edge/ont_subset.tmp.id", tmp_fasta = "missing_edge/ont_subset.tmp.fasta"):
+def mkCNSdir(obj, new_folder_path, final_gaf = "assembly.fixed.paths.gaf", 
+             missingEdge = False, missing_edge_dir = "missing_edge",):
     """\
     Creates a new CNS directory by creating symbolic links to the original verkko directory.
 
@@ -382,9 +388,10 @@ def mkCNSdir(obj, new_folder_path, final_gaf = "assembly.fixed.paths.gaf", missi
     print(f"missingEdge mode is set to: {missingEdge}")
 
     newFolder = os.path.abspath(new_folder_path)
+    verkko_fillet_dir = os.path.abspath(obj.verkko_fillet_dir)  # Define original directory
     verkkoDir = os.path.abspath(obj.verkkoDir)  # Define original directory
     final_gaf = os.path.abspath(final_gaf)  # Define final GAF file
-
+    missing_edge_dir = os.path.abspath(os.path.join(verkko_fillet_dir, missing_edge_dir))
     # Create the new folder (only if it doesn't exist)
     os.makedirs(newFolder, exist_ok=True)
 
@@ -407,7 +414,8 @@ def mkCNSdir(obj, new_folder_path, final_gaf = "assembly.fixed.paths.gaf", missi
             os.symlink(source_path, link_path)
 
     if missingEdge:
-        updateCNSdir_missingEdges(obj = obj,  new_folder_path= new_folder_path, final_gaf = final_gaf, tmp_id =tmp_id, tmp_fasta = tmp_fasta)
+        print(f"Handling missing edges in the new folder: {newFolder}")
+        updateCNSdir_missingEdges(obj = obj,  new_folder_path= new_folder_path, final_gaf = final_gaf, missing_edge_dir =missing_edge_dir)
         
     else:
         # Create additional folders
