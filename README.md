@@ -16,11 +16,16 @@ Using `pip` is recommended. [link](https://pypi.org/project/verkkofillet/)
 The default name of the Mamba or Conda environment is `verkko-fillet`. If you want to use a different name, please update the name field in the `environment.yaml` file before proceeding.
 
 ```
-# Generate mamba or conda env with installing dependencies.
-mamba env create --file=environment.yaml
+# Generate a mamba or conda environment and install dependencies.
+mamba create -n verkko-fillet -f vf_environment.Jun252025.yml -vvv --dry-run --channel-priority flexible
+
+# Once you’ve checked the generated environment, please re-run this without the --dry-run option. It may take some time.
+mamba create -n verkko-fillet -f vf_environment.Jun252025.yml -vvv --channel-priority flexible
+
+# Acivate the environment.
 mamba activate verkko-fillet # or the name you desired
 
-# Add python jupyter kernel
+# Add python jupyter kernel.
 python -m ipykernel install --user --name verkko-fillet --display-name verkko-fillet
 pip install verkkofillet
 ```
