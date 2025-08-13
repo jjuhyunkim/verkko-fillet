@@ -1,4 +1,4 @@
-## Polishing the Final Assembly
+# Polishing the Final Assembly
 
 After generating the updated consensus from Verkko using revised paths and performing necessary post-processing steps—such as trimming, sorting, and renaming—the assembly is ready for polishing.
 
@@ -6,8 +6,7 @@ Polishing addresses small sequence errors in the assembly. Several established t
 
 The polishing workflow consists of the following steps:
 
-
-### Generate Haplotype Specific References
+## Generate Haplotype Specific References
 For diploid genomes, it is necessary to generate haplotype-specific references—for example, hap1.fasta (maternal) and hap2.fasta (paternal). Each haplotype-specific reference should include all autosomes for that haplotype, both sex chromosomes (chrX and chrY), the mitochondrial chromosome (chrM), and any additional accessory chromosomes, if present.
 
 Expected outputs for giraffe genome:
@@ -26,7 +25,7 @@ samtools faidx dip.fasta chr1_pat chr2_pat .... chr14_pat chrX_mat chrY_pat chrM
 samtools faidx hap2.fasta
 ```
 
-### Align ONT, HiFi, and Illumina reads
+## Align ONT, HiFi, and Illumina reads
 The ONT reads are aligned to the diploid reference, while the HiFi and Illumina short reads are aligned to both the diploid reference and each haplotype-specific reference. Only primary alignments are retained after filtering. For Illumina read alignments, duplicate reads are removed during the deduplication step.
 
 For ONT and HiFi read alignments to the diploid, hap1, and hap2 genomes, we use `winnowmap`.
@@ -78,7 +77,7 @@ Outputs are :
 * HiFi/Illumina aligned on the hap1.fasta -> `HiFi.hap1.pri.bam` / `illu.hap1.pri.bam`
 * HiFi/Illumina aligned on the hap2.fasta -> `HiFi.hap2.pri.bam` / `illu.hap2.pri.bam`
 
-### Create a hybrid alignment (HiFi and Illumina combined)
+## Create a hybrid alignment (HiFi and Illumina combined)
 To run DeepVariant in `HYBRID_PACBIO_ILLUMINA` mode[^6] in the next step, the HiFi and Illumina short-read alignments must be merged into a single BAM file for each reference (diploid, hap1, and hap2).
 
 ```bash
@@ -96,7 +95,7 @@ samtools index hybrid.hap2.pri.bam
 Outputs are 
 * `hybrid.{dip/hap1/hap2}.pri.bam` and their indexs (`.bai`)
 
-### Run DeepVariant in different modes depending on the reference type
+## Run DeepVariant in different modes depending on the reference type
 Note that when using BAM files aligned to the diploid reference (`dip.fasta`), a mapping quality (MAPQ) threshold of 0 was applied. For BAM files aligned to haplotype-specific references (`hap1.fasta` or `hap2.fasta`), a MAPQ threshold of -1 was used. Additionally, ensure that the DeepVariant `mode` corresponds to the read type: use ONT mode for `ONT` reads and `HYBRID_PACBIO_ILLUMINA` mode for combined HiFi and Illumina reads.
 
 For ONT aligned on `dip.fasta`
@@ -122,7 +121,7 @@ Outputs are
 * `hybrid.hap1.vcf`
 * `hybrid.hap2.vcf`
 
-### Build HiFi-illumina hybrid meryl Db and get the haploid coverage
+## Build HiFi-illumina hybrid meryl Db and get the haploid coverage
 The hybrid k-mer databases from HiFi and Illumina reads, along with the estimated coverage for each haplotype, are required for the next step. We use meryl with a k-mer size of 31 to generate k-mer databases separately from HiFi and Illumina reads using `meryl`[^7]. Unique k-mers present exclusively in one database are then filtered, and the two databases are merged to create the hybrid k-mer database.
 ```bash
 # Generating meryl DB
@@ -153,7 +152,7 @@ Outputs are
 * peak : estimated coverage for one haplotype
 
 
-### Filter variants precisely to retain only true variants
+## Filter variants precisely to retain only true variants
 We obtained four VCF files as described above, which we then merged. To filter out less confident variant calls, we used a script from the T2T-Ref pipeline. Within this script, variants with a quality score below 00 were filtered out. Finally, Merfin was applied to remove variants overlapping error-prone k-mers.
 
 ```bash
@@ -187,20 +186,20 @@ tabix -p vcf snv_candidates.merfin-loose.mainChr.vcf.gz
 Output is 
 * `snv_candidates.merfin-loose.exc_tel.vcf.gz`
 
-### Build a new consensus using the true variant set
+## Build a new consensus using the true variant set
 Once the confident variant call set is ready. The new assembly could be generated using `bcftools consensus`. 
 
 ```bash
 bcftools consensus -H1 --chain dip_to_dipPolished.chain -f $ori_fa snv_candidates.merfin-loose.exc_tel.vcf.gz > dip.polished.fasta
 ```
 
-### (Optional) Perform quality checks on the new assembly
+## (Optional) Perform quality checks on the new assembly
 Once the polishing step is complete, the assembly is ready for downstream analyses or mapping. However, it is important to assess the assembly quality before proceeding. Below are some widely used assembly evaluation tools:
 * NucFlag[^8] and NucFreq[^9]
 * BUSCO[^10]
 * QUAST[^11]
 
-### References
+## References
 [^1]: Vaser, Robert, et al. "Fast and accurate de novo genome assembly from long uncorrected reads." Genome research 27.5 (2017): 737-746.
 [^2]: Mastoras, Mira, et al. "Highly accurate assembly polishing with DeepPolisher." Genome Research 35.7 (2025): 1595-1608.
 [^3]: https://github.com/arangrhie/T2T-Polish.git
