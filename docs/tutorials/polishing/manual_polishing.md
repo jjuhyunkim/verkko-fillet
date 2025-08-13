@@ -1,22 +1,20 @@
 ## Polishing the Final Assembly
 
-**Currently under development**
-
 After generating the updated consensus from Verkko using revised paths and performing necessary post-processing steps—such as trimming, sorting, and renaming—the assembly is ready for polishing.
 
 Polishing addresses small sequence errors in the assembly. Several established tools exist for this purpose, such as Racon[^1] and DeepPolisher[^2]. In this tutorial, we focus on a manual curation approach based on the T2T-Ref GitHub repository[^3] and the Primate T2T paper[^4]. This method uses DeepVariant[^5] for variant detection, followed by stringent filtering to retain only true variants. The resulting high-confidence variant set is then applied to generate an error-corrected assembly.
 
 The polishing workflow consists of the following steps:
-1. [Generate haplotype specific references](#generate-haplotype-specific-references)
-2. [Align ONT, HiFi, and Illumina reads](#align-ont-hifi-and-illumina-reads)
-3. [Create a hybrid alignment (HiFi and Illumina combined)](#create-a-hybrid-alignment-hifi-and-illumina-combined)
-4. [Run DeepVariant in different modes depending on the reference type](#run-deepvariant-in-different-modes-depending-on-the-reference-type)
-5. [Build HiFi-illumina hybrid meryl Db and get the haploid coverage](#build-hifi-illumina-hybrid-meryl-db-and-get-the-haploid-coverage)
-6. [Filter variants precisely to retain only true variants](#filter-variants-precisely-to-retain-only-true-variants)
-7. [Build a new consensus using the true variant set](#build-a-new-consensus-using-the-true-variant-set)
-8. [(Optional) Perform quality checks on the new assembly](#optional-perform-quality-checks-on-the-new-assembly)
-1. [Generate haplotype specific references](#idx1)
-2. [Align ONT, HiFi, and Illumina reads](#idx2)
+- [Polishing the Final Assembly](#polishing-the-final-assembly)
+  - [Generate Haplotype Specific References](#generate-haplotype-specific-references)
+  - [Align ONT, HiFi, and Illumina reads](#align-ont-hifi-and-illumina-reads)
+  - [Create a hybrid alignment (HiFi and Illumina combined)](#create-a-hybrid-alignment-hifi-and-illumina-combined)
+  - [Run DeepVariant in different modes depending on the reference type](#run-deepvariant-in-different-modes-depending-on-the-reference-type)
+  - [Build HiFi-illumina hybrid meryl Db and get the haploid coverage](#build-hifi-illumina-hybrid-meryl-db-and-get-the-haploid-coverage)
+  - [Filter variants precisely to retain only true variants](#filter-variants-precisely-to-retain-only-true-variants)
+  - [Build a new consensus using the true variant set](#build-a-new-consensus-using-the-true-variant-set)
+  - [(Optional) Perform quality checks on the new assembly](#optional-perform-quality-checks-on-the-new-assembly)
+  - [References](#references)
 
 
 ### Generate Haplotype Specific References
