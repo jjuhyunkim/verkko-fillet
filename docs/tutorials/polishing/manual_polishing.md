@@ -5,6 +5,16 @@ After generating the updated consensus from Verkko using revised paths and perfo
 Polishing addresses small sequence errors in the assembly. Several established tools exist for this purpose, such as Racon[^1] and DeepPolisher[^2]. In this tutorial, we focus on a manual curation approach based on the T2T-Ref GitHub repository[^3] and the Primate T2T paper[^4]. This method uses DeepVariant[^5] for variant detection, followed by stringent filtering to retain only true variants. The resulting high-confidence variant set is then applied to generate an error-corrected assembly.
 
 The polishing workflow consists of the following steps:
+- [Polishing the Final Assembly](#polishing-the-final-assembly)
+  - [Generate Haplotype Specific References](#generate-haplotype-specific-references)
+  - [Align ONT, HiFi, and Illumina reads](#align-ont-hifi-and-illumina-reads)
+  - [Create a hybrid alignment (HiFi and Illumina combined)](#create-a-hybrid-alignment-hifi-and-illumina-combined)
+  - [Run DeepVariant in different modes depending on the reference type](#run-deepvariant-in-different-modes-depending-on-the-reference-type)
+  - [Build HiFi-illumina hybrid meryl Db and get the haploid coverage](#build-hifi-illumina-hybrid-meryl-db-and-get-the-haploid-coverage)
+  - [Filter variants precisely to retain only true variants](#filter-variants-precisely-to-retain-only-true-variants)
+  - [Build a new consensus using the true variant set](#build-a-new-consensus-using-the-true-variant-set)
+  - [(Optional) Perform quality checks on the new assembly](#optional-perform-quality-checks-on-the-new-assembly)
+  - [References](#references)
 
 ### Generate Haplotype Specific References
 For diploid genomes, it is necessary to generate haplotype-specific references—for example, hap1.fasta (maternal) and hap2.fasta (paternal). Each haplotype-specific reference should include all autosomes for that haplotype, both sex chromosomes (chrX and chrY), the mitochondrial chromosome (chrM), and any additional accessory chromosomes, if present.
@@ -199,7 +209,9 @@ Once the polishing step is complete, the assembly is ready for downstream analys
 * BUSCO[^10]
 * QUAST[^11]
 
+
 ### References
+Here are the papers and links referenced in this document.
 [^1]: Vaser, Robert, et al. "Fast and accurate de novo genome assembly from long uncorrected reads." Genome research 27.5 (2017): 737-746.
 [^2]: Mastoras, Mira, et al. "Highly accurate assembly polishing with DeepPolisher." Genome Research 35.7 (2025): 1595-1608.
 [^3]: https://github.com/arangrhie/T2T-Polish.git

@@ -1,7 +1,5 @@
 # Tutorials
 
-## Basic workflows
-
 ```{toctree}
 :maxdepth: 2
 
