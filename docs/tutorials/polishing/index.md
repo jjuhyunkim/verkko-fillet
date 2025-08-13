@@ -1,7 +1,7 @@
-# HiC
+# Polishing
 
 ```{toctree}
 :maxdepth: 1
 
-manual_polishing.md
+manual_polishing
 ```
