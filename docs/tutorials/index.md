@@ -7,4 +7,5 @@
 
 basics/index
 hic/index
+polishing/index
 ```

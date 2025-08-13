@@ -1,6 +1,8 @@
 #! /bin/bash
 
 ml verkko
+ml seqtk
+
 
 verkkofilletdir=$1
 verkkodir=$2
@@ -38,6 +40,7 @@ done
 
 
 if [ ! -f $missing_edge_dir/ont_subset.tmp.fasta ]; then
+    echo "Extracting fasta sequences for missing edges..."
     cat $missing_edge_dir/patch.gapid*id > $missing_edge_dir/ont_subset.tmp.id
     cat $missing_edge_dir/patch.gapid*gaf > $missing_edge_dir/ont_subset.tmp.gaf
     zcat $verkkodir/3-align/split/ont*.fasta.gz | seqtk subseq - $missing_edge_dir/ont_subset.tmp.id > $missing_edge_dir/ont_subset.tmp.fasta
