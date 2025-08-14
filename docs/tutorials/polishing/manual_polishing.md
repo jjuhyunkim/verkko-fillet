@@ -20,6 +20,7 @@ The polishing workflow consists of the following steps:
 For diploid genomes, it is necessary to generate haplotype-specific references—for example, hap1.fasta (maternal) and hap2.fasta (paternal). Each haplotype-specific reference should include all autosomes for that haplotype, both sex chromosomes (chrX and chrY), the mitochondrial chromosome (chrM), and any additional accessory chromosomes, if present.
 
 ![ref](../../figs/polishing.png)
+
 Expected outputs for giraffe genome:
 * hap1.fasta: autosomes from hap1 + chrX + chrY + chrM
 * hap2.fasta: autosomes from hap2 + chrX + chrY + chrM
