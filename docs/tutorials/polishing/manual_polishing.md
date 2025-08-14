@@ -19,7 +19,7 @@ The polishing workflow consists of the following steps:
 ### Generate Haplotype Specific References
 For diploid genomes, it is necessary to generate haplotype-specific references—for example, hap1.fasta (maternal) and hap2.fasta (paternal). Each haplotype-specific reference should include all autosomes for that haplotype, both sex chromosomes (chrX and chrY), the mitochondrial chromosome (chrM), and any additional accessory chromosomes, if present.
 
-![ref](../../figs/polishing.png)
+![ref](../../figs/polishing.2.png)
 
 Expected outputs for giraffe genome:
 * hap1.fasta: autosomes from hap1 + chrX + chrY + chrM
@@ -209,7 +209,7 @@ bcftools consensus -H1 --chain dip_to_dipPolished.chain -f $ori_fa snv_candidate
 
 ### (Optional but Recommended) Perform quality checks on the new assembly
 Once the polishing step is complete, the assembly is ready for downstream analyses or mapping. However, it is important to assess the assembly quality before proceeding. Below are some widely used assembly evaluation tools:
-* NucFlag[^8] and NucFreq[^9]
+* NucFlag[^8]
 * BUSCO[^10]
 * QUAST[^11]
 
@@ -224,6 +224,5 @@ Here are the papers and links referenced in this document.
 [^6]: https://github.com/google/deepvariant/blob/r1.9/docs/deepvariant-hybrid-case-study.md
 [^7]: Rhie, Arang, et al. "Merqury: reference-free quality, completeness, and phasing assessment for genome assemblies." Genome biology 21.1 (2020): 245.
 [^8]: https://github.com/logsdon-lab/NucFlag
-[^9]: https://github.com/mrvollger/NucFreq
-[^10]:https://github.com/metashot/busco
-[^11]:https://github.com/ablab/quast
+[^9]:https://github.com/metashot/busco
+[^10]:https://github.com/ablab/quast
