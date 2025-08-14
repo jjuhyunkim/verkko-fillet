@@ -96,23 +96,22 @@ Outputs are
 * `hybrid.{dip/hap1/hap2}.pri.bam` and their indexs (`.bai`)
 
 ### Run DeepVariant in different modes depending on the reference type
-Note that when using BAM files aligned to the diploid reference (`dip.fasta`), a mapping quality (MAPQ) threshold of 0 was applied. For BAM files aligned to haplotype-specific references (`hap1.fasta` or `hap2.fasta`), a MAPQ threshold of -1 was used. Additionally, ensure that the DeepVariant `mode` corresponds to the read type: use ONT mode for `ONT` reads and `HYBRID_PACBIO_ILLUMINA` mode for combined HiFi and Illumina reads.
+Note that when using BAM files aligned to the diploid reference (`dip.fasta`), a mapping quality (MAPQ) threshold of 0 was applied. For BAM files aligned to haplotype-specific references (`hap1.fasta` or `hap2.fasta`), a MAPQ threshold of -1 was used. Additionally, ensure that the DeepVariant `mode` corresponds to the read type: use ONT mode for `ONT` reads and `HYBRID_PACBIO_ILLUMINA` mode for combined HiFi and Illumina reads. We employ a script from the T2T-polishing GitHub repository[^3] ([download link](https://github.com/arangrhie/T2T-Polish/tree/master/deepvariant)). This script requires five inputs, in order: the reference genome, the BAM file, the DeepVariant mode, the sample name, and the mapping quality threshold.
 
 For ONT aligned on `dip.fasta`
 ```bash
+_submit_deepvariant_with_minqual.sh dip.fasta ONT.dip.pri.bam ONT_R104 giraffe 0
 ```
-
 For hybrid aligned on `dip.fasta`
 ```bash
+_submit_deepvariant_with_minqual.sh dip.fasta hybrid.dip.pri.bam HYBRID_PACBIO_ILLUMINA giraffe 0
 ```
-
-
 For hybrid aligned on `hap1/2.fasta`
 ```bash
 # for hap1
-
+_submit_deepvariant_with_minqual.sh hap1.fasta hybrid.hapa.pri.bam HYBRID_PACBIO_ILLUMINA giraffe -1
 # for hap2
-
+_submit_deepvariant_with_minqual.sh hap2.fasta hybrid.hap2.pri.bam HYBRID_PACBIO_ILLUMINA giraffe -1
 ```
 
 Outputs are
