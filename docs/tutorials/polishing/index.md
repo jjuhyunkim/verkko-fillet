@@ -1,7 +1,7 @@
 # Polishing
 
 ```{toctree}
-:maxdepth: 1
+:maxdepth: 2
 
 manual_polishing
 ```
