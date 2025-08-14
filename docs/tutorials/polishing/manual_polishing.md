@@ -2,13 +2,24 @@
 
 After generating the updated consensus from Verkko using revised paths and performing necessary post-processing steps—such as trimming, sorting, and renaming—the assembly is ready for polishing.
 
-Polishing addresses small sequence errors in the assembly. Several established tools exist for this purpose, such as Racon[^1] and DeepPolisher[^2]. In this tutorial, we focus on a manual curation approach based on the T2T-Ref GitHub repository[^3] and the Primate T2T paper[^4]. This method uses DeepVariant[^5] for variant detection, followed by stringent filtering to retain only true variants. The resulting high-confidence variant set is then applied to generate an error-corrected assembly.
+Polishing addresses small sequence errors in the assembly. Several established tools exist for this purpose, such as Racon[^1] and DeepPolisher[^2]. In this tutorial, we focus on a manual curation approach based on the T2T-Ref GitHub repository[^3] and the Primate T2T paper[^4]. This method uses DeepVariant[^5] for variant detection, followed by stringent filtering to retain only true variants. The resulting high-confidence variant set is then applied to generate an error-corrected assembly. The diagram below illustrates all the files that need to be prepared, along with the options recommended in the Primate T2T paper[^4].
+![ape_paper_supFig](../../figs/var_candidate.png)
+
 
 The polishing workflow consists of the following steps:
+1. Generate Haplotype Specific References
+2. Align ONT, HiFi, and Illumina reads
+3. Create a hybrid alignment (HiFi and Illumina combined)
+4. Run DeepVariant in different modes depending on the reference type
+5. Build HiFi-illumina hybrid meryl Db and get the haploid coverage
+6. Filter variants precisely to retain only true variants
+7. Build a new consensus using the true variant set
+8. (Optional but Recommended) Perform quality checks on the new assembly
 
 ### Generate Haplotype Specific References
 For diploid genomes, it is necessary to generate haplotype-specific references—for example, hap1.fasta (maternal) and hap2.fasta (paternal). Each haplotype-specific reference should include all autosomes for that haplotype, both sex chromosomes (chrX and chrY), the mitochondrial chromosome (chrM), and any additional accessory chromosomes, if present.
 
+![ref](../../figs/polishing.png)
 Expected outputs for giraffe genome:
 * hap1.fasta: autosomes from hap1 + chrX + chrY + chrM
 * hap2.fasta: autosomes from hap2 + chrX + chrY + chrM
@@ -145,6 +156,8 @@ meryl histogram illu.hifi.hybrid.k31.meryl > hybrid.k31.kmer_freq.hist
 ```
 
 By plotting a histogram of k-mer multiplicity versus k-mer counts, the coverage distribution becomes apparent. In diploid genomes, this histogram typically displays two prominent peaks: the first peak represents haploid coverage, while the second corresponds to diploid coverage. For example, in the giraffe genome, the haploid coverage peak occurs around 68, which will be used in subsequent variant filtering steps.
+![kmer_histo](../../figs/giraffe_ill_hifi_hybrid.kmerCount.histo.png)
+
 
 Outputs are 
 * `illu.hifi.hybrid.k31.meryl`
@@ -164,6 +177,7 @@ hybrid_to_hap2=ONT.dip.pri.vcf
 hybridkmer=illu.hifi.hybrid.k31.meryl # from step5
 peak=68 # from step5
 
+mkdir -p polishing_variants && cd polishing_variants
 sh snv_candidates.sh $fa $ver $ont_to_dip $hybrid_to_dip $hybrid_to_hap1 $hybrid_to_hap2 $hybridkmer $peak
 ```
 
@@ -192,7 +206,7 @@ Once the confident variant call set is ready. The new assembly could be generate
 bcftools consensus -H1 --chain dip_to_dipPolished.chain -f $ori_fa snv_candidates.merfin-loose.exc_tel.vcf.gz > dip.polished.fasta
 ```
 
-### (Optional) Perform quality checks on the new assembly
+### (Optional but Recommended) Perform quality checks on the new assembly
 Once the polishing step is complete, the assembly is ready for downstream analyses or mapping. However, it is important to assess the assembly quality before proceeding. Below are some widely used assembly evaluation tools:
 * NucFlag[^8] and NucFreq[^9]
 * BUSCO[^10]
