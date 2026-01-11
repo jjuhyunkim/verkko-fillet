@@ -4,7 +4,6 @@ import time
 from tqdm import tqdm
 import pandas as pd
 import os
-
 import re
 import sys
 
@@ -476,7 +475,7 @@ def getNodeSpace_from_onePath(node_list, segment, link):
     return node_space
 
 
-def getNodeSpace_from_allPath(obj, segment, link, file):
+def getNodeSpace_from_allPath(obj, segment, link):
     node_space = pd.DataFrame()
 
     for j in tqdm(range(len(obj.paths))):
@@ -494,6 +493,6 @@ def getNodeSpace_from_allPath(obj, segment, link, file):
         
     node_space.columns = ['chrom','chromStart','chromEnd','name','score','strand']
     
-    node_space.to_csv(file, index=False, sep = '\t', header = True)
+    # node_space.to_csv(file, index=False, sep = '\t', header = True)
     
     return node_space

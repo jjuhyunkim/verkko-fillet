@@ -385,7 +385,15 @@ def mkCNSdir(obj, new_folder_path, final_gaf = "assembly.fixed.paths.gaf",
     """
     print(f"Creating a new verkko folder for CNS at: {new_folder_path}")
     print(f"Copying the final GAF file from: {final_gaf}")
-    print(f"missingEdge mode is set to: {missingEdge}")
+
+    # if missing_edge_dir is exist, set missingEdge to True
+    if os.path.exists(missing_edge_dir):
+        missingEdge = True
+        print(f"missing_edge_dir {missing_edge_dir} is exist, set missingEdge to True")
+        print(f"missingEdge mode is set to: {missingEdge}")
+        
+    
+    
 
     newFolder = os.path.abspath(new_folder_path)
     verkko_fillet_dir = os.path.abspath(obj.verkko_fillet_dir)  # Define original directory

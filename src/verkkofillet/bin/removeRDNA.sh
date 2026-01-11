@@ -73,10 +73,10 @@ if [ ! -s compressed.sketch.msh ]; then
    fi
 fi
 
-if [ ! -e assembly.telomere.bed ]; then
+if [ ! -e stats/assembly.telomere.bed ]; then
    echo "Need seqtk telo, please compute telomere first"
    exit
 fi
 $mash screen compressed.sketch.msh $repeatUnit | awk '{if ($1 > 0.9 && $4 < 0.05) print $NF}' > target.screennodes.out
 
-python $verkko -r target.screennodes.out -t assembly.telomere.bed
+python $verkko -r target.screennodes.out -t stats/assembly.telomere.bed

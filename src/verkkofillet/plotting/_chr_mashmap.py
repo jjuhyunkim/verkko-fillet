@@ -11,7 +11,7 @@ matplotlib.rcParams['pdf.fonttype'] = 42
 matplotlib.rcParams['ps.fonttype'] = 42
 
 
-def showMashmapOri(obj, mashmap_out = "chromosome_assignment/assembly.mashmap.out.filtered.out", by = "chr_hap", 
+def showMashmapOri(obj, mashmap_out = "chromosome_assignment/assembly.mashmap.out", by = "chr_hap", 
                    width = 5, height = 7, save = True, figName = None):
     """
     Generates a bar plot showing the covered regions of the assembly for each reference.

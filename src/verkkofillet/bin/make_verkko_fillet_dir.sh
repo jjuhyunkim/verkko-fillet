@@ -22,10 +22,14 @@ echo -e "verkko_fillet_dir : $verkko_fillet_dir"
 # Array of files and directories to link
 files=("assembly.fasta" "assembly.scfmap" "assembly.colors.csv" "assembly.homopolymer-compressed.gfa" "assembly.homopolymer-compressed.noseq.gfa" "assembly.paths.tsv" "assembly.fasta.fai" "8-hicPipeline/rukki.paths.gaf" "5-untip/unitig-unrolled-unitig-unrolled-popped-unitig-normal-connected-tip.hifi-coverage.csv" "8-hicPipeline/unitigs.hpc.fasta" "5-untip/unitig-unrolled-unitig-unrolled-popped-unitig-normal-connected-tip.gfa" "8-hicPipeline/hic.byread.compressed" "8-hicPipeline/final_contigs/assembly.ont-coverage.csv" "8-hicPipeline/final_contigs/assembly.hifi-coverage.csv")
 
-# Iterate over the files and create symbolic links
+# Iterate over the files and create symbolic links, handling subdirectories recursively
 for file in "${files[@]}"; do
-    if [ -e "$verkko_original_dir/$file" ]; then
-        cmd="ln -s \"$verkko_original_dir/$file\" $file"
+    src="$verkko_original_dir/$file"
+    dest="$verkko_fillet_dir/$file"
+    if [ -e "$src" ]; then
+        # Create parent directory if it doesn't exist
+        mkdir -p "$(dirname "$dest")"
+        cmd="ln -s \"$src\" \"$dest\""
         echo $cmd && eval $cmd
     else
         echo "Error: $file does not exist in $verkko_original_dir."

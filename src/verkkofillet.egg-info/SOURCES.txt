@@ -29,8 +29,10 @@ verkkofillet/bin/getChrNames.sh
 verkkofillet/bin/getT2T.sh
 verkkofillet/bin/graph_functions.py
 verkkofillet/bin/insert_aln_gaps.py
+verkkofillet/bin/insert_rDNA.py
 verkkofillet/bin/lift_seqs.py
 verkkofillet/bin/lock_folder.sh
+verkkofillet/bin/make_patched_rDNA.sh
 verkkofillet/bin/make_verkko_fillet_dir.sh
 verkkofillet/bin/meryl.sh
 verkkofillet/bin/node_align.sh
@@ -111,6 +113,7 @@ verkkofillet/preprocessing/_find_intra_telo.py
 verkkofillet/preprocessing/_generate_final_assembly.py
 verkkofillet/preprocessing/_getQV.py
 verkkofillet/preprocessing/_highlight_nodes.py
+verkkofillet/preprocessing/_patching_from_other_asm.py
 verkkofillet/preprocessing/_read_chr.py
 verkkofillet/preprocessing/_read_wirte.py
 verkkofillet/preprocessing/_searchNodes.py

@@ -177,7 +177,7 @@ def fillGaps(obj, gapId, final_path, notes = None, cat = "gapFill_with_evidence"
 
         # Check the direction and update 'startMatch' and 'endMatch'
         gap.loc[gap['gapId'] == gapId, 'startMatch'] = check_match(gap_row.gaps, elements[0], 0)
-        gap.loc[gap['gapId'] == gapId, 'endMatch'] = check_match(gap_row.gaps, elements[-1], 2)
+        gap.loc[gap['gapId'] == gapId, 'endMatch'] = check_match(gap_row.gaps, elements[-1], -1)
         
         if notes is not None:
             gap.loc[gap['gapId'] == gapId, 'notes'] = notes
@@ -193,7 +193,7 @@ def fillGaps(obj, gapId, final_path, notes = None, cat = "gapFill_with_evidence"
         else :
             print("❌ The start node and its direction do not match the original node.")
         
-        if check_match(gap_row.gaps, elements[-1], 2) == "match" :
+        if check_match(gap_row.gaps, elements[-1], -1) == "match" :
             print("✅ The end node and its direction match the original node.")
         else :
             print("❌ The end node and its direction do not match the original node.")

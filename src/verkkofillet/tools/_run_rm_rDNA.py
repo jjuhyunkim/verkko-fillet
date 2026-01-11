@@ -72,11 +72,13 @@ def rmrDNA(
             check=True,  # Raises CalledProcessError for non-zero return code
             cwd=working_dir  # Run command in the specified working directory
         )
+        
         print("remove rDNA was done!")
         print("Output files: ")
         for file in output_files:
             print(file)
     except subprocess.CalledProcessError as e:
+        
         print(f"Command failed: {cmd}")
         print(f"Error code: {e.returncode}")
         print(f"Error output: {e.stderr.decode().strip()}")

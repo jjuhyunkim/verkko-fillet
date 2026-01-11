@@ -2,11 +2,12 @@ import seaborn as sns
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
+import os
 import numpy as np
 import copy
 
 
-def barCovKmer(obj, node_list):
+def barCovKmer(obj, node_list, save = True, figName = None, cov_column = "hifi"):
     """"
     Plot the coverage and trio kmers by nodes"
 
@@ -16,6 +17,12 @@ def barCovKmer(obj, node_list):
         A verkkofillet object
     node_list: list
         A list of nodes to plot
+    save: bool
+        Whether to save the plot or not. Default is True.
+    figName: str
+        The name of the file to save the plot. Default is None, which will save the plot as "figs/node.barplot.png".
+    covbase: str
+        The coverage base to use. Default is "hifi". Other options are "ont".
     """
     obj= copy.deepcopy(obj)
 
@@ -79,4 +86,19 @@ def barCovKmer(obj, node_list):
     ax2.legend(handles=legend1 + legend2, loc='upper left', bbox_to_anchor=(1.15, 1), frameon=False)
     
     # Show the plot
+    if figName is None:
+        figName = f"figs/node.barplot.png"
+
+    if save:
+        if not os.path.exists("figs"):
+            print("Creating figs directory")
+            os.makedirs("figs")
+
+        if os.path.exists(figName):
+            print(f"File {figName} already exists")
+            print("Please remove the file or change the name")
+
+        elif not os.path.exists(figName):
+            plt.savefig(figName)
+            print(f"File {figName} saved")
     plt.show()

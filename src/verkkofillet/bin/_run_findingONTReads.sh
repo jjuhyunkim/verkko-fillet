@@ -32,6 +32,18 @@ echo "Extract ont reads from 3-align/split/ont*.fasta.gz"
 echo "This step may take a while"
 echo " " 
 zcat $verkkodir/3-align/split/ont*.fasta.gz | seqkit grep -j $threads -I -n -f $verkkofilletdir/missing_edge/ont_subset.tmp.id > $verkkofilletdir/missing_edge/ont_subset.tmp.fasta &&
+shopt -s nullglob
+files=("$verkkofilletdir/missing_edge/"*patching.fasta)
+if [ ${#files[@]} -eq 1 ] && [ "${files[0]}" = "$verkkofilletdir/missing_edge/*patching.fasta" ]; then
+    echo "No patching.fasta files found, skipping."
+else
+    for f in "${files[@]}"; do
+        if [ -s "$f" ]; then
+            cat "$f" >> "$verkkofilletdir/missing_edge/ont_subset.tmp.fasta"
+        fi
+    done
+fi
+shopt -u nullglob
 echo "Extracted ont reads are saved in $verkkofilletdir/missing_edge/ont_subset.tmp.fasta"
 echo " "
 echo "Done"

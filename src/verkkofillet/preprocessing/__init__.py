@@ -7,10 +7,10 @@ from ._estLoop import estLoops,calNodeDepth, impute_depth
 from ._getQV import getQV
 from ._find_intra_telo import find_intra_telo,find_reads_intra_telo
 from ._highlight_nodes import highlight_nodes
-from ._chrNaming import find_multi_used_node, naming_contigs, grabNodesInGap, flatten_and_remove_none, keepNodesInUnresolvedGaps, reClusteringGapNodeByPath
-from ._findNode_from_region import getNodes_from_unHPCregion,bed_to_regionsList, readGAF_extractRegion,read_untig_Scfmap,read_hapAssignRead,readGraph,readNodeInfo,get_hap_ratio,getNodeCoor,finding_nodes,getNodeSpace_from_allPath
+from ._chrNaming import find_multi_used_node, naming_contigs, grabNodesInGap, flatten_and_remove_none, keepNodesInUnresolvedGaps, reClusteringGapNodeByPath, cut_graph_using_ancestors
+from ._findNode_from_region import getNodes_from_unHPCregion,bed_to_regionsList, readGAF_extractRegion,read_untig_Scfmap,read_hapAssignRead,readGraph,readNodeInfo,get_hap_ratio,getNodeCoor,finding_nodes,getNodeSpace_from_allPath,getNodeSpace_from_onePath, parse_cigar, query_to_target_position
 from ._generate_final_assembly import anotateContig, annoteContigDict, generateJointPathFile, make_cat_column_unique, writeSeparateFastaFileWithNewName, pickPrimaryContigs
-
+from ._patching_from_other_asm import patchFromOtherAsm, AddNewGap,clip_paf_df
 
 __all__ = [
     "read_Verkko",
@@ -82,4 +82,10 @@ __all__ = [
     "writeSeparateFastaFileWithNewName",
     "pickPrimaryContigs",
     "saveGapNodes",
+    "cut_graph_using_ancestors",
+    "getNodeSpace_from_onePath",
+    "parse_cigar",
+    "query_to_target_position",
+    "patchFromOtherAsm",
+    "AddNewGap"
     ]

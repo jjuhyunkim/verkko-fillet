@@ -89,7 +89,7 @@ def percTel(intra_telo , showContig=None,
 
 
 
-def readOnNode(tel, lineNum, readBed):
+def readOnNode(tel, lineNum, readBed, figName = None):
     tel = tel.copy()
     df_copy = readBed.copy()
     ind = lineNum
@@ -213,23 +213,24 @@ def readOnNode(tel, lineNum, readBed):
         for elements in track_contents:
             subprocess.run(f"echo {elements} >> {trackFile}", shell=True)
 
-    finalPlot=f"internal_telomere/{prefix}_output.png"
+    
+    figName=f"internal_telomere/{prefix}_output.svg" if figName is None else figName
 
-    if os.path.exists(finalPlot):
+    if os.path.exists(figName):
         print("Plot file exists")
     else:
         print("Creating plot file")
         result = subprocess.run(
-            f"pyGenomeTracks --tracks {trackFile} --dpi 400 --region {contig}:{show_start}-{show_end} --outFileName {finalPlot}",
+            f"pyGenomeTracks --tracks {trackFile} --dpi 400 --region {contig}:{show_start}-{show_end} --outFileName {figName}",
             check=True, shell=True, capture_output=True, text=True
         )
         print("pyGenomeTracks STDOUT:", result.stdout)
         print("pyGenomeTracks STDERR:", result.stderr)
 
     try:
-        img = Image.open(finalPlot)
+        img = Image.open(figName)
     except FileNotFoundError:
-        print(f"Error: Image file not found at '{finalPlot}'")
+        print(f"Error: Image file not found at '{figName}'")
     else:
         # Display the image
         display(img)
